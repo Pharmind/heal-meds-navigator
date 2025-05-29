@@ -1,7 +1,8 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import AppSidebar from '../components/AppSidebar';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
 import { useAllData } from '../hooks/useSupabaseData';
@@ -79,45 +80,48 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-heal-green-50 flex">
-      <Sidebar 
-        onCategoryChange={setSelectedCategory}
-        selectedCategory={selectedCategory}
-      />
-      
-      <div className="flex-1 lg:ml-0">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-8 lg:ml-64">
-            <h1 className="text-3xl md:text-4xl font-bold text-heal-green-800 mb-2">
-              Sistema HEAL
-            </h1>
-            <p className="text-lg text-heal-green-600">
-              Hospital Estadual de Águas Lindas de Goiás
-            </p>
-            <p className="text-sm text-heal-green-500 mt-1">
-              Sistema de Pesquisa de Medicamentos, Materiais e Dietas
-            </p>
-          </div>
-
-          {/* Search Box */}
-          <div className="mb-8 lg:ml-64">
-            <SearchBox onSearch={setSearchQuery} />
-          </div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="text-center py-12 lg:ml-64">
-              <div className="bg-heal-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <div className="w-6 h-6 bg-heal-green-400 rounded-full"></div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-heal-green-50">
+        <AppSidebar 
+          onCategoryChange={setSelectedCategory}
+          selectedCategory={selectedCategory}
+        />
+        
+        <main className="flex-1">
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+              <SidebarTrigger className="lg:hidden" />
+              <div className="text-center flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-heal-green-800 mb-2">
+                  Sistema HEAL
+                </h1>
+                <p className="text-lg text-heal-green-600">
+                  Hospital Estadual de Águas Lindas de Goiás
+                </p>
+                <p className="text-sm text-heal-green-500 mt-1">
+                  Sistema de Pesquisa de Medicamentos, Materiais e Dietas
+                </p>
               </div>
-              <h3 className="text-lg font-medium text-gray-700">Carregando dados...</h3>
             </div>
-          )}
 
-          {/* Results */}
-          {!isLoading && (
-            <div className="lg:ml-64">
+            {/* Search Box */}
+            <div className="mb-8 max-w-2xl mx-auto">
+              <SearchBox onSearch={setSearchQuery} />
+            </div>
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="text-center py-12">
+                <div className="bg-heal-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <div className="w-6 h-6 bg-heal-green-400 rounded-full"></div>
+                </div>
+                <h3 className="text-lg font-medium text-gray-700">Carregando dados...</h3>
+              </div>
+            )}
+
+            {/* Results */}
+            {!isLoading && (
               <SearchResults
                 medications={filteredData.medications}
                 materials={filteredData.materials}
@@ -125,11 +129,11 @@ const Index = () => {
                 onMedicationClick={handleMedicationClick}
                 searchQuery={searchQuery}
               />
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

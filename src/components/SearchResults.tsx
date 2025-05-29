@@ -1,7 +1,7 @@
 
-import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar } from 'lucide-react';
+import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
 import { Medication, Material, Diet } from '../types/heal';
-import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SearchResultsProps {
   medications: Medication[];
@@ -23,11 +23,15 @@ const SearchResults = ({
   if (!hasResults && searchQuery) {
     return (
       <div className="text-center py-12">
-        <div className="bg-heal-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-          <Pill className="text-heal-green-400" size={24} />
-        </div>
-        <h3 className="text-lg font-medium text-gray-700 mb-2">Nenhum resultado encontrado</h3>
-        <p className="text-gray-500">Tente ajustar sua pesquisa ou use termos diferentes</p>
+        <Alert className="max-w-md mx-auto border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800 font-medium">
+            Item não padronizado
+          </AlertDescription>
+        </Alert>
+        <p className="text-gray-500 mt-4 text-sm">
+          Tente ajustar sua pesquisa ou use termos diferentes
+        </p>
       </div>
     );
   }
