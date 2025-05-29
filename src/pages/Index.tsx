@@ -17,6 +17,15 @@ const Index = () => {
 
   // Filtrar dados baseado na pesquisa e categoria
   const filteredData = useMemo(() => {
+    // Se não há pesquisa, não mostrar nenhum resultado
+    if (!searchQuery.trim()) {
+      return {
+        medications: [],
+        materials: [],
+        diets: []
+      };
+    }
+
     let filteredMeds = medications;
     let filteredMats = materials;
     let filteredDiets = diets;
@@ -34,28 +43,26 @@ const Index = () => {
     }
 
     // Filtrar por pesquisa
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      
-      filteredMeds = filteredMeds.filter(med => 
-        med.name.toLowerCase().includes(query) ||
-        med.mvCode.toLowerCase().includes(query) ||
-        med.therapeuticClass.toLowerCase().includes(query) ||
-        med.indication.toLowerCase().includes(query)
-      );
+    const query = searchQuery.toLowerCase().trim();
+    
+    filteredMeds = filteredMeds.filter(med => 
+      med.name.toLowerCase().includes(query) ||
+      med.mvCode.toLowerCase().includes(query) ||
+      med.therapeuticClass.toLowerCase().includes(query) ||
+      med.indication.toLowerCase().includes(query)
+    );
 
-      filteredMats = filteredMats.filter(mat => 
-        mat.name.toLowerCase().includes(query) ||
-        mat.mvCode.toLowerCase().includes(query) ||
-        mat.observation.toLowerCase().includes(query)
-      );
+    filteredMats = filteredMats.filter(mat => 
+      mat.name.toLowerCase().includes(query) ||
+      mat.mvCode.toLowerCase().includes(query) ||
+      mat.observation.toLowerCase().includes(query)
+    );
 
-      filteredDiets = filteredDiets.filter(diet => 
-        diet.name.toLowerCase().includes(query) ||
-        diet.mvCode.toLowerCase().includes(query) ||
-        diet.observation.toLowerCase().includes(query)
-      );
-    }
+    filteredDiets = filteredDiets.filter(diet => 
+      diet.name.toLowerCase().includes(query) ||
+      diet.mvCode.toLowerCase().includes(query) ||
+      diet.observation.toLowerCase().includes(query)
+    );
 
     return {
       medications: filteredMeds,
@@ -87,50 +94,79 @@ const Index = () => {
           selectedCategory={selectedCategory}
         />
         
-        <main className="flex-1">
-          <div className="container mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
-              <SidebarTrigger className="lg:hidden" />
-              <div className="text-center flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold text-heal-green-800 mb-2">
-                  Sistema HEAL
-                </h1>
-                <p className="text-lg text-heal-green-600">
-                  Hospital Estadual de Águas Lindas de Goiás
-                </p>
-                <p className="text-sm text-heal-green-500 mt-1">
-                  Sistema de Pesquisa de Medicamentos, Materiais e Dietas
-                </p>
-              </div>
-            </div>
-
-            {/* Search Box */}
-            <div className="mb-8 max-w-2xl mx-auto">
-              <SearchBox onSearch={setSearchQuery} />
-            </div>
-
-            {/* Loading State */}
-            {isLoading && (
-              <div className="text-center py-12">
-                <div className="bg-heal-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                  <div className="w-6 h-6 bg-heal-green-400 rounded-full"></div>
+        <main className="flex-1 flex flex-col">
+          <div className="flex-1">
+            <div className="container mx-auto px-4 py-8">
+              {/* Header */}
+              <div className="flex items-center gap-4 mb-8">
+                <SidebarTrigger className="h-8 w-8" />
+                <div className="text-center flex-1">
+                  <h1 className="text-3xl md:text-4xl font-bold text-heal-green-800 mb-2">
+                    Padronização HEAL
+                  </h1>
+                  <p className="text-lg text-heal-green-600">
+                    Hospital Estadual de Águas Lindas de Goiás
+                  </p>
+                  <p className="text-sm text-heal-green-500 mt-1">
+                    Sistema de Pesquisa de Medicamentos, Materiais e Dietas
+                  </p>
                 </div>
-                <h3 className="text-lg font-medium text-gray-700">Carregando dados...</h3>
               </div>
-            )}
 
-            {/* Results */}
-            {!isLoading && (
-              <SearchResults
-                medications={filteredData.medications}
-                materials={filteredData.materials}
-                diets={filteredData.diets}
-                onMedicationClick={handleMedicationClick}
-                searchQuery={searchQuery}
-              />
-            )}
+              {/* Search Box */}
+              <div className="mb-8 max-w-2xl mx-auto">
+                <SearchBox onSearch={setSearchQuery} />
+              </div>
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="text-center py-12">
+                  <div className="bg-heal-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <div className="w-6 h-6 bg-heal-green-400 rounded-full"></div>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-700">Carregando dados...</h3>
+                </div>
+              )}
+
+              {/* Welcome Message - shown when no search */}
+              {!isLoading && !searchQuery.trim() && (
+                <div className="text-center py-16">
+                  <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                    <div className="w-8 h-8 bg-heal-green-600 rounded-full"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-heal-green-800 mb-2">
+                    Bem-vindo ao Sistema de Padronização HEAL
+                  </h3>
+                  <p className="text-gray-600 max-w-md mx-auto">
+                    Digite na barra de pesquisa acima para encontrar medicamentos, materiais e dietas padronizados.
+                  </p>
+                </div>
+              )}
+
+              {/* Results */}
+              {!isLoading && searchQuery.trim() && (
+                <SearchResults
+                  medications={filteredData.medications}
+                  materials={filteredData.materials}
+                  diets={filteredData.diets}
+                  onMedicationClick={handleMedicationClick}
+                  searchQuery={searchQuery}
+                />
+              )}
+            </div>
           </div>
+
+          {/* Footer */}
+          <footer className="bg-heal-green-800 text-white py-6 mt-auto">
+            <div className="container mx-auto px-4 text-center">
+              <p className="text-sm">
+                Sistema desenvolvido pelo Farmacêutico Clínico <span className="font-semibold">Fernando Carneiro</span>
+              </p>
+              <p className="text-xs text-heal-green-200 mt-1">
+                Hospital Estadual de Águas Lindas de Goiás - HEAL
+              </p>
+            </div>
+          </footer>
         </main>
       </div>
     </SidebarProvider>

@@ -24,15 +24,15 @@ const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => 
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-6">
+      <SidebarHeader className="p-6 border-b border-heal-green-200">
         <div className="space-y-1">
-          <h1 className="text-xl font-bold text-heal-green-800">HEAL</h1>
+          <h1 className="text-xl font-bold text-heal-green-800">Padronização HEAL</h1>
           <p className="text-sm text-heal-green-600">Sistema de Pesquisa</p>
           <p className="text-xs text-heal-green-500">Hospital Estadual de Águas Lindas - GO</p>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-4 py-6">
         <SidebarMenu>
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -41,7 +41,7 @@ const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => 
                 <SidebarMenuButton
                   onClick={() => onCategoryChange(item.id as any)}
                   isActive={selectedCategory === item.id}
-                  className="w-full justify-start"
+                  className="w-full justify-start hover:bg-heal-green-100 data-[active=true]:bg-heal-green-200 data-[active=true]:text-heal-green-800"
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
