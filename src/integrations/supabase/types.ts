@@ -9,16 +9,163 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      diets: {
+        Row: {
+          created_at: string
+          id: string
+          mv_code: string
+          name: string
+          observation: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mv_code: string
+          name: string
+          observation: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mv_code?: string
+          name?: string
+          observation?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      materials: {
+        Row: {
+          created_at: string
+          id: string
+          mv_code: string
+          name: string
+          observation: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mv_code: string
+          name: string
+          observation: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mv_code?: string
+          name?: string
+          observation?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medications: {
+        Row: {
+          administration_route: string
+          created_at: string
+          dose_adjustment: string
+          dose_adult: string
+          dose_maximum: string
+          dose_pediatric: string
+          id: string
+          indication: string
+          mv_code: string
+          name: string
+          observation: string
+          photosensitive: boolean
+          preparation_dilution: string
+          preparation_heal_standard: string
+          preparation_reconstitution: string
+          presentation: string
+          stability: string
+          therapeutic_class: string
+          updated_at: string
+        }
+        Insert: {
+          administration_route: string
+          created_at?: string
+          dose_adjustment: string
+          dose_adult: string
+          dose_maximum: string
+          dose_pediatric: string
+          id?: string
+          indication: string
+          mv_code: string
+          name: string
+          observation: string
+          photosensitive?: boolean
+          preparation_dilution: string
+          preparation_heal_standard: string
+          preparation_reconstitution: string
+          presentation: string
+          stability: string
+          therapeutic_class: string
+          updated_at?: string
+        }
+        Update: {
+          administration_route?: string
+          created_at?: string
+          dose_adjustment?: string
+          dose_adult?: string
+          dose_maximum?: string
+          dose_pediatric?: string
+          id?: string
+          indication?: string
+          mv_code?: string
+          name?: string
+          observation?: string
+          photosensitive?: boolean
+          preparation_dilution?: string
+          preparation_heal_standard?: string
+          preparation_reconstitution?: string
+          presentation?: string
+          stability?: string
+          therapeutic_class?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      item_type: "medication" | "material" | "diet"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +280,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      item_type: ["medication", "material", "diet"],
+      user_role: ["admin", "user"],
+    },
   },
 } as const
