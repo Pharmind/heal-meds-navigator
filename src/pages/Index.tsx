@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '../components/AppSidebar';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
+import CategoryTable from '../components/CategoryTable';
 import { useAllData } from '../hooks/useSupabaseData';
 import { Medication } from '../types/heal';
 
@@ -17,7 +18,16 @@ const Index = () => {
 
   // Filtrar dados baseado na pesquisa e categoria
   const filteredData = useMemo(() => {
-    // Se não há pesquisa, não mostrar nenhum resultado
+    // Se há uma categoria específica selecionada (não 'all') e não há pesquisa, mostrar todos os itens da categoria
+    if (selectedCategory !== 'all' && !searchQuery.trim()) {
+      return {
+        medications: selectedCategory === 'medications' ? medications : [],
+        materials: selectedCategory === 'materials' ? materials : [],
+        diets: selectedCategory === 'diets' ? diets : []
+      };
+    }
+
+    // Se não há pesquisa e categoria é 'all', não mostrar nenhum resultado
     if (!searchQuery.trim()) {
       return {
         medications: [],
@@ -75,6 +85,11 @@ const Index = () => {
     navigate(`/medicamento/${medication.id}`);
   };
 
+  // Determinar se deve mostrar tabela ou resultados de pesquisa
+  const showTable = selectedCategory !== 'all' && !searchQuery.trim();
+  const showSearchResults = searchQuery.trim();
+  const showWelcome = selectedCategory === 'all' && !searchQuery.trim();
+
   if (error) {
     return (
       <div className="min-h-screen bg-heal-green-50 flex items-center justify-center">
@@ -128,8 +143,8 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Welcome Message - shown when no search */}
-              {!isLoading && !searchQuery.trim() && (
+              {/* Welcome Message - shown when category is 'all' and no search */}
+              {!isLoading && showWelcome && (
                 <div className="text-center py-16">
                   <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
                     <div className="w-8 h-8 bg-heal-green-600 rounded-full"></div>
@@ -138,13 +153,24 @@ const Index = () => {
                     Bem-vindo ao Sistema de Padronização HEAL
                   </h3>
                   <p className="text-gray-600 max-w-md mx-auto">
-                    Digite na barra de pesquisa acima para encontrar medicamentos, materiais e dietas padronizados.
+                    Use o menu lateral para navegar pelas categorias ou digite na barra de pesquisa para encontrar itens específicos.
                   </p>
                 </div>
               )}
 
-              {/* Results */}
-              {!isLoading && searchQuery.trim() && (
+              {/* Category Table - shown when a specific category is selected and no search */}
+              {!isLoading && showTable && (
+                <CategoryTable
+                  category={selectedCategory}
+                  medications={filteredData.medications}
+                  materials={filteredData.materials}
+                  diets={filteredData.diets}
+                  onMedicationClick={handleMedicationClick}
+                />
+              )}
+
+              {/* Search Results - shown when there's a search query */}
+              {!isLoading && showSearchResults && (
                 <SearchResults
                   medications={filteredData.medications}
                   materials={filteredData.materials}

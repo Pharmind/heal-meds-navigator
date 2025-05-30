@@ -36,12 +36,13 @@ const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => 
         <SidebarMenu>
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = selectedCategory === item.id;
             return (
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton
                   onClick={() => onCategoryChange(item.id as any)}
-                  isActive={selectedCategory === item.id}
-                  className="w-full justify-start hover:bg-heal-green-100 data-[active=true]:bg-heal-green-200 data-[active=true]:text-heal-green-800"
+                  isActive={isActive}
+                  className="w-full justify-start hover:bg-heal-green-100 data-[active=true]:bg-heal-green-200 data-[active=true]:text-heal-green-800 data-[active=true]:font-semibold"
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
