@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
 import CategoryTable from '../components/CategoryTable';
+import ClinicalPharmacy from '../components/ClinicalPharmacy';
 import AppSidebar from '../components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAllData } from '../hooks/useSupabaseData';
 import { Medication } from '../types/heal';
-import { Menu } from 'lucide-react';
+import { Menu, Pill } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'medications' | 'materials' | 'diets'>('all');
   const [showCategoryTable, setShowCategoryTable] = useState(false);
+  const [activeTab, setActiveTab] = useState('padronizacao');
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -70,6 +73,14 @@ const Index = () => {
     navigate(`/medication/${medication.id}`);
   };
 
+  const resetSearch = () => {
+    setHasSearched(false);
+    setShowCategoryTable(false);
+    setSearchResults({ medications: [], materials: [], diets: [] });
+    setSearchQuery('');
+    setSelectedCategory('all');
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
@@ -79,84 +90,104 @@ const Index = () => {
         />
         
         <SidebarInset>
-          {/* Header com botão do menu para mobile */}
+          {/* Header */}
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-heal-green-200 bg-white px-4 shadow-sm">
             <div className="flex items-center gap-3">
-              {/* Botão do menu mais visível no mobile */}
               <div className="md:hidden">
                 <SidebarTrigger className="h-10 w-10 bg-heal-green-600 text-white hover:bg-heal-green-700 rounded-lg shadow-md">
                   <Menu size={20} />
                 </SidebarTrigger>
               </div>
               
-              {/* Trigger discreto no desktop */}
               <div className="hidden md:block">
                 <SidebarTrigger className="h-8 w-8 text-heal-green-600 hover:bg-heal-green-100 rounded-md" />
               </div>
               
-              <div className="flex flex-col">
-                <h1 className="text-lg font-semibold text-heal-green-800 md:text-xl">
-                  Padronização HEAL
-                </h1>
-                <p className="text-xs text-heal-green-600 md:text-sm">
-                  Sistema de Pesquisa - Hospital Estadual de Águas Lindas
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="bg-heal-green-600 p-2 rounded-lg">
+                  <Pill className="text-white" size={24} />
+                </div>
+                <div className="flex flex-col">
+                  <h1 className="text-lg font-bold text-heal-green-800 md:text-xl">
+                    Guia Farmacêutico - HEAL
+                  </h1>
+                  <p className="text-xs text-heal-green-600 md:text-sm">
+                    Hospital Estadual de Águas Lindas
+                  </p>
+                </div>
               </div>
             </div>
           </header>
 
-          {/* Conteúdo principal */}
-          <main className="flex-1 p-4 md:p-6 space-y-6">
-            {/* Barra de pesquisa sempre visível */}
-            <div className="w-full max-w-2xl mx-auto">
-              <SearchBox
-                onSearch={handleSearch}
-              />
-            </div>
+          {/* Conteúdo principal com abas */}
+          <main className="flex-1 p-4 md:p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="padronizacao" className="flex items-center gap-2">
+                  <Menu size={16} />
+                  Padronização
+                </TabsTrigger>
+                <TabsTrigger value="farmacia-clinica" className="flex items-center gap-2">
+                  <Pill size={16} />
+                  Farmácia Clínica
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Conteúdo dinâmico */}
-            <div className="w-full">
-              {showCategoryTable && selectedCategory !== 'all' ? (
-                <CategoryTable
-                  category={selectedCategory}
-                  medications={medications}
-                  materials={materials}
-                  diets={diets}
-                  onMedicationClick={handleMedicationClick}
-                />
-              ) : hasSearched ? (
-                <SearchResults
-                  medications={searchResults.medications}
-                  materials={searchResults.materials}
-                  diets={searchResults.diets}
-                  onMedicationClick={handleMedicationClick}
-                  searchQuery={searchQuery}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                    <Menu className="text-heal-green-600" size={32} />
-                  </div>
-                  <h2 className="text-2xl font-bold text-heal-green-800 mb-4">
-                    Bem-vindo ao Sistema HEAL
-                  </h2>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas, 
-                    ou navegue pelas categorias no menu lateral.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm text-heal-green-600">
-                    <div className="flex items-center gap-2 md:hidden">
-                      <Menu size={16} />
-                      <span>Toque no ícone do menu para navegar</span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-2">
-                      <Menu size={16} />
-                      <span>Use o menu lateral para navegar por categorias</span>
-                    </div>
-                  </div>
+              <TabsContent value="padronizacao" className="space-y-6">
+                {/* Barra de pesquisa */}
+                <div className="w-full max-w-2xl mx-auto">
+                  <SearchBox onSearch={handleSearch} />
                 </div>
-              )}
-            </div>
+
+                {/* Conteúdo dinâmico */}
+                <div className="w-full">
+                  {showCategoryTable && selectedCategory !== 'all' ? (
+                    <CategoryTable
+                      category={selectedCategory}
+                      medications={medications}
+                      materials={materials}
+                      diets={diets}
+                      onMedicationClick={handleMedicationClick}
+                    />
+                  ) : hasSearched ? (
+                    <SearchResults
+                      medications={searchResults.medications}
+                      materials={searchResults.materials}
+                      diets={searchResults.diets}
+                      onMedicationClick={handleMedicationClick}
+                      searchQuery={searchQuery}
+                    />
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                        <Menu className="text-heal-green-600" size={32} />
+                      </div>
+                      <h2 className="text-2xl font-bold text-heal-green-800 mb-4">
+                        Bem-vindo ao Guia Farmacêutico HEAL
+                      </h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas, 
+                        ou navegue pelas categorias no menu lateral.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm text-heal-green-600">
+                        <div className="flex items-center gap-2 md:hidden">
+                          <Menu size={16} />
+                          <span>Toque no ícone do menu para navegar</span>
+                        </div>
+                        <div className="hidden md:flex items-center gap-2">
+                          <Menu size={16} />
+                          <span>Use o menu lateral para navegar por categorias</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="farmacia-clinica">
+                <ClinicalPharmacy />
+              </TabsContent>
+            </Tabs>
           </main>
 
           {/* Rodapé */}
