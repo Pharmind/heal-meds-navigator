@@ -6,20 +6,54 @@ import SearchResults from '../components/SearchResults';
 import CategoryTable from '../components/CategoryTable';
 import AppSidebar from '../components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { useSupabaseData } from '../hooks/useSupabaseData';
+import { useAllData } from '../hooks/useSupabaseData';
 import { Medication } from '../types/heal';
 import { Menu } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { medications, materials, diets } = useSupabaseData();
-  const [searchResults, setSearchResults] = useState<Medication[]>([]);
+  const { medications, materials, diets } = useAllData();
+  const [searchResults, setSearchResults] = useState<{
+    medications: Medication[];
+    materials: any[];
+    diets: any[];
+  }>({ medications: [], materials: [], diets: [] });
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'medications' | 'materials' | 'diets'>('all');
   const [showCategoryTable, setShowCategoryTable] = useState(false);
 
-  const handleSearch = (results: Medication[]) => {
-    setSearchResults(results);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      setSearchResults({ medications: [], materials: [], diets: [] });
+      setHasSearched(false);
+      return;
+    }
+
+    const searchTerm = query.toLowerCase();
+    
+    const filteredMedications = medications.filter(med => 
+      med.name.toLowerCase().includes(searchTerm) ||
+      med.mvCode.toLowerCase().includes(searchTerm) ||
+      med.therapeuticClass.toLowerCase().includes(searchTerm)
+    );
+
+    const filteredMaterials = materials.filter(mat => 
+      mat.name.toLowerCase().includes(searchTerm) ||
+      mat.mvCode.toLowerCase().includes(searchTerm)
+    );
+
+    const filteredDiets = diets.filter(diet => 
+      diet.name.toLowerCase().includes(searchTerm) ||
+      diet.mvCode.toLowerCase().includes(searchTerm)
+    );
+
+    setSearchResults({
+      medications: filteredMedications,
+      materials: filteredMaterials,
+      diets: filteredDiets
+    });
     setHasSearched(true);
     setShowCategoryTable(false);
   };
@@ -28,7 +62,8 @@ const Index = () => {
     setSelectedCategory(category);
     setShowCategoryTable(category !== 'all');
     setHasSearched(false);
-    setSearchResults([]);
+    setSearchResults({ medications: [], materials: [], diets: [] });
+    setSearchQuery('');
   };
 
   const handleMedicationClick = (medication: Medication) => {
@@ -75,8 +110,7 @@ const Index = () => {
             {/* Barra de pesquisa sempre visível */}
             <div className="w-full max-w-2xl mx-auto">
               <SearchBox
-                medications={medications}
-                onSearchResults={handleSearch}
+                onSearch={handleSearch}
               />
             </div>
 
@@ -92,8 +126,11 @@ const Index = () => {
                 />
               ) : hasSearched ? (
                 <SearchResults
-                  results={searchResults}
+                  medications={searchResults.medications}
+                  materials={searchResults.materials}
+                  diets={searchResults.diets}
                   onMedicationClick={handleMedicationClick}
+                  searchQuery={searchQuery}
                 />
               ) : (
                 <div className="text-center py-12">
