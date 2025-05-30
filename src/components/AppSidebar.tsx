@@ -1,5 +1,5 @@
 
-import { Search, Pill, Package, UtensilsCrossed } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,16 +10,25 @@ import {
 } from '@/components/ui/sidebar';
 
 interface AppSidebarProps {
-  onCategoryChange: (category: 'all' | 'medications' | 'materials' | 'diets') => void;
-  selectedCategory: string;
+  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols') => void;
+  selectedSection: string;
 }
 
-const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => {
-  const menuItems = [
-    { id: 'all', label: 'Todos os Itens', icon: Search },
+const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
+  const padronizacaoItems = [
+    { id: 'search', label: 'Busca Geral', icon: Search },
     { id: 'medications', label: 'Medicamentos', icon: Pill },
     { id: 'materials', label: 'Materiais', icon: Package },
     { id: 'diets', label: 'Dietas', icon: UtensilsCrossed },
+  ];
+
+  const farmaciaClinicaItems = [
+    { id: 'intoxication', label: 'Intoxicação e Antídotos', icon: AlertTriangle },
+    { id: 'high-alert', label: 'Alta Vigilância', icon: Eye },
+    { id: 'elderly', label: 'Medicamentos p/ Idosos', icon: Users },
+    { id: 'pharmacovigilance', label: 'Farmacovigilância', icon: Shield },
+    { id: 'cft', label: 'CFT', icon: FileText },
+    { id: 'protocols', label: 'Protocolos', icon: Heart },
   ];
 
   return (
@@ -33,16 +42,17 @@ const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => 
       </SidebarHeader>
       
       <SidebarContent className="px-4 py-6">
-        <div className="mb-4">
+        {/* Seção Padronização */}
+        <div className="mb-6">
           <h3 className="text-sm font-semibold text-heal-green-700 mb-3">Padronização</h3>
           <SidebarMenu className="space-y-2">
-            {menuItems.map((item) => {
+            {padronizacaoItems.map((item) => {
               const Icon = item.icon;
-              const isActive = selectedCategory === item.id;
+              const isActive = selectedSection === item.id;
               return (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
-                    onClick={() => onCategoryChange(item.id as any)}
+                    onClick={() => onSectionChange(item.id as any)}
                     isActive={isActive}
                     className={`
                       w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
@@ -54,6 +64,35 @@ const AppSidebar = ({ onCategoryChange, selectedCategory }: AppSidebarProps) => 
                   >
                     <Icon size={20} className="shrink-0" />
                     <span className="font-medium">{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </div>
+
+        {/* Seção Farmácia Clínica */}
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-heal-green-700 mb-3">Farmácia Clínica</h3>
+          <SidebarMenu className="space-y-2">
+            {farmaciaClinicaItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = selectedSection === item.id;
+              return (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    onClick={() => onSectionChange(item.id as any)}
+                    isActive={isActive}
+                    className={`
+                      w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
+                      ${isActive 
+                        ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
+                        : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
+                      }
+                    `}
+                  >
+                    <Icon size={18} className="shrink-0" />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );

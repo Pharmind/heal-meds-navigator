@@ -4,13 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
 import CategoryTable from '../components/CategoryTable';
+import IntoxicationSection from '../components/clinical/IntoxicationSection';
+import HighAlertSection from '../components/clinical/HighAlertSection';
+import ElderlySection from '../components/clinical/ElderlySection';
 import ClinicalPharmacy from '../components/ClinicalPharmacy';
 import AppSidebar from '../components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAllData } from '../hooks/useSupabaseData';
 import { Medication } from '../types/heal';
 import { Menu, Pill } from 'lucide-react';
+
+type SectionType = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,9 +26,7 @@ const Index = () => {
   }>({ medications: [], materials: [], diets: [] });
   const [hasSearched, setHasSearched] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'medications' | 'materials' | 'diets'>('all');
-  const [showCategoryTable, setShowCategoryTable] = useState(false);
-  const [activeTab, setActiveTab] = useState('padronizacao');
+  const [selectedSection, setSelectedSection] = useState<SectionType>('search');
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -58,12 +60,11 @@ const Index = () => {
       diets: filteredDiets
     });
     setHasSearched(true);
-    setShowCategoryTable(false);
   };
 
-  const handleCategoryChange = (category: 'all' | 'medications' | 'materials' | 'diets') => {
-    setSelectedCategory(category);
-    setShowCategoryTable(category !== 'all');
+  const handleSectionChange = (section: SectionType) => {
+    setSelectedSection(section);
+    // Reset search when changing sections
     setHasSearched(false);
     setSearchResults({ medications: [], materials: [], diets: [] });
     setSearchQuery('');
@@ -73,20 +74,99 @@ const Index = () => {
     navigate(`/medication/${medication.id}`);
   };
 
-  const resetSearch = () => {
-    setHasSearched(false);
-    setShowCategoryTable(false);
-    setSearchResults({ medications: [], materials: [], diets: [] });
-    setSearchQuery('');
-    setSelectedCategory('all');
+  const renderMainContent = () => {
+    switch (selectedSection) {
+      case 'search':
+        return (
+          <>
+            <div className="w-full max-w-2xl mx-auto mb-6">
+              <SearchBox onSearch={handleSearch} />
+            </div>
+            <div className="w-full">
+              {hasSearched ? (
+                <SearchResults
+                  medications={searchResults.medications}
+                  materials={searchResults.materials}
+                  diets={searchResults.diets}
+                  onMedicationClick={handleMedicationClick}
+                  searchQuery={searchQuery}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                    <Menu className="text-heal-green-600" size={32} />
+                  </div>
+                  <h2 className="text-2xl font-bold text-heal-green-800 mb-4">
+                    Bem-vindo ao Guia Farmacêutico HEAL
+                  </h2>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas, 
+                    ou navegue pelas seções no menu lateral.
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        );
+      
+      case 'medications':
+        return (
+          <CategoryTable
+            category="medications"
+            medications={medications}
+            materials={materials}
+            diets={diets}
+            onMedicationClick={handleMedicationClick}
+          />
+        );
+      
+      case 'materials':
+        return (
+          <CategoryTable
+            category="materials"
+            medications={medications}
+            materials={materials}
+            diets={diets}
+            onMedicationClick={handleMedicationClick}
+          />
+        );
+      
+      case 'diets':
+        return (
+          <CategoryTable
+            category="diets"
+            medications={medications}
+            materials={materials}
+            diets={diets}
+            onMedicationClick={handleMedicationClick}
+          />
+        );
+      
+      case 'intoxication':
+        return <IntoxicationSection />;
+      
+      case 'high-alert':
+        return <HighAlertSection />;
+      
+      case 'elderly':
+        return <ElderlySection />;
+      
+      case 'pharmacovigilance':
+      case 'cft':
+      case 'protocols':
+        return <ClinicalPharmacy activeTab={selectedSection} />;
+      
+      default:
+        return null;
+    }
   };
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
         <AppSidebar 
-          onCategoryChange={handleCategoryChange}
-          selectedCategory={selectedCategory}
+          onSectionChange={handleSectionChange}
+          selectedSection={selectedSection}
         />
         
         <SidebarInset>
@@ -119,75 +199,9 @@ const Index = () => {
             </div>
           </header>
 
-          {/* Conteúdo principal com abas */}
+          {/* Conteúdo principal */}
           <main className="flex-1 p-4 md:p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="padronizacao" className="flex items-center gap-2">
-                  <Menu size={16} />
-                  Padronização
-                </TabsTrigger>
-                <TabsTrigger value="farmacia-clinica" className="flex items-center gap-2">
-                  <Pill size={16} />
-                  Farmácia Clínica
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="padronizacao" className="space-y-6">
-                {/* Barra de pesquisa */}
-                <div className="w-full max-w-2xl mx-auto">
-                  <SearchBox onSearch={handleSearch} />
-                </div>
-
-                {/* Conteúdo dinâmico */}
-                <div className="w-full">
-                  {showCategoryTable && selectedCategory !== 'all' ? (
-                    <CategoryTable
-                      category={selectedCategory}
-                      medications={medications}
-                      materials={materials}
-                      diets={diets}
-                      onMedicationClick={handleMedicationClick}
-                    />
-                  ) : hasSearched ? (
-                    <SearchResults
-                      medications={searchResults.medications}
-                      materials={searchResults.materials}
-                      diets={searchResults.diets}
-                      onMedicationClick={handleMedicationClick}
-                      searchQuery={searchQuery}
-                    />
-                  ) : (
-                    <div className="text-center py-12">
-                      <div className="bg-heal-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                        <Menu className="text-heal-green-600" size={32} />
-                      </div>
-                      <h2 className="text-2xl font-bold text-heal-green-800 mb-4">
-                        Bem-vindo ao Guia Farmacêutico HEAL
-                      </h2>
-                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas, 
-                        ou navegue pelas categorias no menu lateral.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm text-heal-green-600">
-                        <div className="flex items-center gap-2 md:hidden">
-                          <Menu size={16} />
-                          <span>Toque no ícone do menu para navegar</span>
-                        </div>
-                        <div className="hidden md:flex items-center gap-2">
-                          <Menu size={16} />
-                          <span>Use o menu lateral para navegar por categorias</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="farmacia-clinica">
-                <ClinicalPharmacy />
-              </TabsContent>
-            </Tabs>
+            {renderMainContent()}
           </main>
 
           {/* Rodapé */}
