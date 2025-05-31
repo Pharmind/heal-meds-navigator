@@ -1,5 +1,6 @@
 
-import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -8,6 +9,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface AppSidebarProps {
   onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols') => void;
@@ -15,6 +21,18 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
+  const [openSections, setOpenSections] = useState({
+    padronizacao: true,
+    farmaciaClinica: false
+  });
+
+  const toggleSection = (section: 'padronizacao' | 'farmaciaClinica') => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   const padronizacaoItems = [
     { id: 'search', label: 'Busca Geral', icon: Search },
     { id: 'medications', label: 'Medicamentos', icon: Pill },
@@ -43,62 +61,94 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
       
       <SidebarContent className="px-4 py-6">
         {/* Seção Padronização */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-heal-green-700 mb-3">Padronização</h3>
-          <SidebarMenu className="space-y-2">
-            {padronizacaoItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = selectedSection === item.id;
-              return (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onSectionChange(item.id as any)}
-                    isActive={isActive}
-                    className={`
-                      w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
-                      ${isActive 
-                        ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
-                        : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
-                      }
-                    `}
-                  >
-                    <Icon size={20} className="shrink-0" />
-                    <span className="font-medium">{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </div>
+        <Collapsible 
+          open={openSections.padronizacao} 
+          onOpenChange={() => toggleSection('padronizacao')}
+          className="mb-6"
+        >
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-heal-green-100 transition-colors">
+              <h3 className="text-sm font-semibold text-heal-green-700">Padronização</h3>
+              <ChevronDown 
+                size={16} 
+                className={`text-heal-green-600 transition-transform duration-200 ${
+                  openSections.padronizacao ? 'rotate-180' : ''
+                }`} 
+              />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <SidebarMenu className="space-y-2">
+              {padronizacaoItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = selectedSection === item.id;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onSectionChange(item.id as any)}
+                      isActive={isActive}
+                      className={`
+                        w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
+                        ${isActive 
+                          ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
+                          : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
+                        }
+                      `}
+                    >
+                      <Icon size={20} className="shrink-0" />
+                      <span className="font-medium">{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Seção Farmácia Clínica */}
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold text-heal-green-700 mb-3">Farmácia Clínica</h3>
-          <SidebarMenu className="space-y-2">
-            {farmaciaClinicaItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = selectedSection === item.id;
-              return (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onSectionChange(item.id as any)}
-                    isActive={isActive}
-                    className={`
-                      w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
-                      ${isActive 
-                        ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
-                        : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
-                      }
-                    `}
-                  >
-                    <Icon size={18} className="shrink-0" />
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </div>
+        <Collapsible 
+          open={openSections.farmaciaClinica} 
+          onOpenChange={() => toggleSection('farmaciaClinica')}
+          className="mb-4"
+        >
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-heal-green-100 transition-colors">
+              <h3 className="text-sm font-semibold text-heal-green-700">Farmácia Clínica</h3>
+              <ChevronDown 
+                size={16} 
+                className={`text-heal-green-600 transition-transform duration-200 ${
+                  openSections.farmaciaClinica ? 'rotate-180' : ''
+                }`} 
+              />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <SidebarMenu className="space-y-2">
+              {farmaciaClinicaItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = selectedSection === item.id;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onSectionChange(item.id as any)}
+                      isActive={isActive}
+                      className={`
+                        w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
+                        ${isActive 
+                          ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
+                          : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
+                        }
+                      `}
+                    >
+                      <Icon size={18} className="shrink-0" />
+                      <span className="font-medium text-sm">{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </Collapsible>
       </SidebarContent>
       
       {/* Footer da sidebar */}
