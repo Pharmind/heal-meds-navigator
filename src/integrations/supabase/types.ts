@@ -36,6 +36,39 @@ export type Database = {
         }
         Relationships: []
       }
+      intoxications: {
+        Row: {
+          antidote: string
+          antidote_dosage: string
+          bibliography: string
+          created_at: string
+          id: string
+          intoxication_agent: string
+          preparation_administration: string
+          updated_at: string
+        }
+        Insert: {
+          antidote: string
+          antidote_dosage: string
+          bibliography: string
+          created_at?: string
+          id?: string
+          intoxication_agent: string
+          preparation_administration: string
+          updated_at?: string
+        }
+        Update: {
+          antidote?: string
+          antidote_dosage?: string
+          bibliography?: string
+          created_at?: string
+          id?: string
+          intoxication_agent?: string
+          preparation_administration?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           created_at: string

@@ -40,6 +40,28 @@ interface SupabaseDiet {
   observation: string;
 }
 
+interface SupabaseIntoxication {
+  id: string;
+  intoxication_agent: string;
+  antidote: string;
+  antidote_dosage: string;
+  preparation_administration: string;
+  bibliography: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Intoxication {
+  id: string;
+  intoxicationAgent: string;
+  antidote: string;
+  antidoteDosage: string;
+  preparationAdministration: string;
+  bibliography: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Função para converter dados do Supabase para o formato da aplicação
 const convertMedication = (med: SupabaseMedication): Medication => ({
   id: med.id,
@@ -78,6 +100,17 @@ const convertDiet = (diet: SupabaseDiet): Diet => ({
   mvCode: diet.mv_code,
   name: diet.name,
   observation: diet.observation,
+});
+
+const convertIntoxication = (intox: SupabaseIntoxication): Intoxication => ({
+  id: intox.id,
+  intoxicationAgent: intox.intoxication_agent,
+  antidote: intox.antidote,
+  antidoteDosage: intox.antidote_dosage,
+  preparationAdministration: intox.preparation_administration,
+  bibliography: intox.bibliography,
+  createdAt: intox.created_at,
+  updatedAt: intox.updated_at,
 });
 
 // Hook para buscar medicamentos
@@ -142,6 +175,28 @@ export const useDiets = () => {
 
       console.log('Dietas encontradas:', data?.length);
       return data?.map(convertDiet) || [];
+    },
+  });
+};
+
+// Hook para buscar intoxicações
+export const useIntoxications = () => {
+  return useQuery({
+    queryKey: ['intoxications'],
+    queryFn: async () => {
+      console.log('Buscando intoxicações...');
+      const { data, error } = await supabase
+        .from('intoxications')
+        .select('*')
+        .order('intoxication_agent');
+
+      if (error) {
+        console.error('Erro ao buscar intoxicações:', error);
+        throw error;
+      }
+
+      console.log('Intoxicações encontradas:', data?.length);
+      return data?.map(convertIntoxication) || [];
     },
   });
 };
