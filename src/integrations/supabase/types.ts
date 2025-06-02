@@ -36,6 +36,30 @@ export type Database = {
         }
         Relationships: []
       }
+      high_alert_medications: {
+        Row: {
+          active_ingredient: string
+          created_at: string
+          id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          active_ingredient: string
+          created_at?: string
+          id?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          active_ingredient?: string
+          created_at?: string
+          id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       intoxications: {
         Row: {
           antidote: string

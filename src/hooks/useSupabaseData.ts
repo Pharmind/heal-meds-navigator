@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,6 +50,14 @@ interface SupabaseIntoxication {
   updated_at: string;
 }
 
+interface SupabaseHighAlertMedication {
+  id: string;
+  type: string;
+  active_ingredient: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Intoxication {
   id: string;
   intoxicationAgent: string;
@@ -58,6 +65,14 @@ export interface Intoxication {
   antidoteDosage: string;
   preparationAdministration: string;
   bibliography: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HighAlertMedication {
+  id: string;
+  type: string;
+  activeIngredient: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +126,14 @@ const convertIntoxication = (intox: SupabaseIntoxication): Intoxication => ({
   bibliography: intox.bibliography,
   createdAt: intox.created_at,
   updatedAt: intox.updated_at,
+});
+
+const convertHighAlertMedication = (ham: SupabaseHighAlertMedication): HighAlertMedication => ({
+  id: ham.id,
+  type: ham.type,
+  activeIngredient: ham.active_ingredient,
+  createdAt: ham.created_at,
+  updatedAt: ham.updated_at,
 });
 
 // Hook para buscar medicamentos
@@ -222,6 +245,29 @@ export const useMedication = (id: string) => {
       return data ? convertMedication(data) : null;
     },
     enabled: !!id,
+  });
+};
+
+// Hook para buscar medicamentos de alta vigilância
+export const useHighAlertMedications = () => {
+  return useQuery({
+    queryKey: ['highAlertMedications'],
+    queryFn: async () => {
+      console.log('Buscando medicamentos de alta vigilância...');
+      const { data, error } = await supabase
+        .from('high_alert_medications')
+        .select('*')
+        .order('type', { ascending: true })
+        .order('active_ingredient', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao buscar medicamentos de alta vigilância:', error);
+        throw error;
+      }
+
+      console.log('Medicamentos de alta vigilância encontrados:', data?.length);
+      return data?.map(convertHighAlertMedication) || [];
+    },
   });
 };
 

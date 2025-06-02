@@ -3,71 +3,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, AlertTriangle } from 'lucide-react';
+import { Eye, AlertTriangle, Loader2 } from 'lucide-react';
+import { useHighAlertMedications } from '@/hooks/useSupabaseData';
 
 const HighAlertSection = () => {
-  const highAlertMedications = [
-    {
-      type: "Anticoagulantes",
-      activeIngredient: "Heparina"
-    },
-    {
-      type: "Anticoagulantes",
-      activeIngredient: "Warfarina"
-    },
-    {
-      type: "Anticoagulantes",
-      activeIngredient: "Dabigatrana"
-    },
-    {
-      type: "Insulinas",
-      activeIngredient: "Insulina Regular"
-    },
-    {
-      type: "Insulinas",
-      activeIngredient: "Insulina NPH"
-    },
-    {
-      type: "Insulinas",
-      activeIngredient: "Insulina Glargina"
-    },
-    {
-      type: "Quimioterápicos",
-      activeIngredient: "Metotrexato"
-    },
-    {
-      type: "Quimioterápicos",
-      activeIngredient: "5-Fluorouracil"
-    },
-    {
-      type: "Quimioterápicos",
-      activeIngredient: "Cisplatina"
-    },
-    {
-      type: "Opioides",
-      activeIngredient: "Morfina"
-    },
-    {
-      type: "Opioides",
-      activeIngredient: "Fentanil"
-    },
-    {
-      type: "Bloqueadores Neuromusculares",
-      activeIngredient: "Atracúrio"
-    },
-    {
-      type: "Bloqueadores Neuromusculares",
-      activeIngredient: "Succinilcolina"
-    },
-    {
-      type: "Soluções Eletrolíticas Concentradas",
-      activeIngredient: "Cloreto de Potássio 19,1%"
-    },
-    {
-      type: "Soluções Eletrolíticas Concentradas",
-      activeIngredient: "Cloreto de Sódio 20%"
-    }
-  ];
+  const { data: highAlertMedications, isLoading, error } = useHighAlertMedications();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <span className="ml-2 text-red-700">Carregando medicamentos de alta vigilância...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            Erro ao carregar medicamentos de alta vigilância. Tente novamente mais tarde.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -110,8 +72,8 @@ const HighAlertSection = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {highAlertMedications.map((medication, index) => (
-                  <TableRow key={index} className="hover:bg-red-50 border-red-100">
+                {highAlertMedications?.map((medication, index) => (
+                  <TableRow key={medication.id} className="hover:bg-red-50 border-red-100">
                     <TableCell className="font-medium text-red-800 border-r border-red-100">
                       {medication.type}
                     </TableCell>
@@ -119,7 +81,7 @@ const HighAlertSection = () => {
                       {medication.activeIngredient}
                     </TableCell>
                   </TableRow>
-                ))}
+                )) || []}
               </TableBody>
             </Table>
           </div>
