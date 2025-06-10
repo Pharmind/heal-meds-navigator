@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Medication, Material, Diet } from '../types/heal';
+import DietEditDialog from './DietEditDialog';
+import { useState } from 'react';
 
 interface CategoryTableProps {
   category: 'medications' | 'materials' | 'diets';
@@ -27,6 +29,8 @@ const CategoryTable = ({
   diets, 
   onMedicationClick 
 }: CategoryTableProps) => {
+  const [currentDiets, setCurrentDiets] = useState(diets);
+
   const getCategoryData = () => {
     switch (category) {
       case 'medications':
@@ -47,12 +51,18 @@ const CategoryTable = ({
         return {
           title: 'Dietas',
           icon: UtensilsCrossed,
-          data: diets,
-          columns: ['Código MV', 'Imagem', 'Nome', 'Observação']
+          data: currentDiets,
+          columns: ['Código MV', 'Imagem', 'Nome', 'Observação', 'Ações']
         };
       default:
         return null;
     }
+  };
+
+  const handleDietUpdate = (updatedDiet: Diet) => {
+    setCurrentDiets(prev => 
+      prev.map(diet => diet.id === updatedDiet.id ? updatedDiet : diet)
+    );
   };
 
   const categoryData = getCategoryData();
@@ -108,7 +118,7 @@ const CategoryTable = ({
                         <img 
                           src={(item as Diet).imageUrl} 
                           alt={item.name}
-                          className="w-12 h-12 object-cover rounded-md"
+                          className="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -153,12 +163,28 @@ const CategoryTable = ({
                     </>
                   )}
                   
-                  {(category === 'materials' || category === 'diets') && (
+                  {category === 'materials' && (
                     <TableCell className="text-sm text-gray-600 max-w-xs">
-                      <div className="truncate" title={(item as Material | Diet).observation}>
-                        {(item as Material | Diet).observation}
+                      <div className="truncate" title={(item as Material).observation}>
+                        {(item as Material).observation}
                       </div>
                     </TableCell>
+                  )}
+
+                  {category === 'diets' && (
+                    <>
+                      <TableCell className="text-sm text-gray-600 max-w-xs">
+                        <div className="truncate" title={(item as Diet).observation}>
+                          {(item as Diet).observation}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <DietEditDialog
+                          diet={item as Diet}
+                          onUpdate={handleDietUpdate}
+                        />
+                      </TableCell>
+                    </>
                   )}
                 </TableRow>
               ))}
