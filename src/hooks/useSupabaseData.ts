@@ -37,6 +37,7 @@ interface SupabaseDiet {
   mv_code: string;
   name: string;
   observation: string;
+  image_url?: string;
 }
 
 interface SupabaseIntoxication {
@@ -115,6 +116,7 @@ const convertDiet = (diet: SupabaseDiet): Diet => ({
   mvCode: diet.mv_code,
   name: diet.name,
   observation: diet.observation,
+  imageUrl: diet.image_url || undefined,
 });
 
 const convertIntoxication = (intox: SupabaseIntoxication): Intoxication => ({

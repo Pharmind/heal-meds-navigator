@@ -1,5 +1,5 @@
 
-import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
+import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar, AlertTriangle, ImageIcon } from 'lucide-react';
 import { Medication, Material, Diet } from '../types/heal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -128,6 +128,33 @@ const SearchResults = ({
                     {diet.mvCode}
                   </span>
                 </div>
+                
+                {/* Área da imagem */}
+                {diet.imageUrl ? (
+                  <div className="mb-3">
+                    <img 
+                      src={diet.imageUrl} 
+                      alt={diet.name}
+                      className="w-full h-32 object-cover rounded-md"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const placeholder = target.nextElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                    />
+                    <div 
+                      className="hidden w-full h-32 bg-gray-100 rounded-md items-center justify-center"
+                    >
+                      <ImageIcon className="text-gray-400" size={24} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-3 w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                    <ImageIcon className="text-gray-400" size={24} />
+                  </div>
+                )}
+                
                 <h3 className="font-semibold text-gray-800 mb-2">
                   {diet.name}
                 </h3>

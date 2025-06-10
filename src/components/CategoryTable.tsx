@@ -1,5 +1,5 @@
 
-import { Eye, Pill, Package, UtensilsCrossed } from 'lucide-react';
+import { Eye, Pill, Package, UtensilsCrossed, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -48,7 +48,7 @@ const CategoryTable = ({
           title: 'Dietas',
           icon: UtensilsCrossed,
           data: diets,
-          columns: ['Código MV', 'Nome', 'Observação']
+          columns: ['Código MV', 'Imagem', 'Nome', 'Observação']
         };
       default:
         return null;
@@ -101,6 +101,34 @@ const CategoryTable = ({
               {data.map((item) => (
                 <TableRow key={item.id} className="hover:bg-heal-green-50">
                   <TableCell className="font-medium">{item.mvCode}</TableCell>
+                  
+                  {category === 'diets' && (
+                    <TableCell>
+                      {(item as Diet).imageUrl ? (
+                        <img 
+                          src={(item as Diet).imageUrl} 
+                          alt={item.name}
+                          className="w-12 h-12 object-cover rounded-md"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const placeholder = target.nextElementSibling as HTMLElement;
+                            if (placeholder) placeholder.style.display = 'flex';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                          <ImageIcon className="text-gray-400" size={16} />
+                        </div>
+                      )}
+                      <div 
+                        className="hidden w-12 h-12 bg-gray-100 rounded-md items-center justify-center"
+                      >
+                        <ImageIcon className="text-gray-400" size={16} />
+                      </div>
+                    </TableCell>
+                  )}
+                  
                   <TableCell className="font-medium">{item.name}</TableCell>
                   
                   {category === 'medications' && (

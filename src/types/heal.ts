@@ -36,6 +36,7 @@ export interface Diet {
   mvCode: string;
   name: string;
   observation: string;
+  imageUrl?: string;
 }
 
 export type SearchItem = Medication | Material | Diet;
