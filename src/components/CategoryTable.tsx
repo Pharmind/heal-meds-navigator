@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Medication, Material, Diet } from '../types/heal';
-import DietEditDialog from './DietEditDialog';
-import { useState } from 'react';
+import DietImageDialog from './DietImageDialog';
 
 interface CategoryTableProps {
   category: 'medications' | 'materials' | 'diets';
@@ -29,8 +28,6 @@ const CategoryTable = ({
   diets, 
   onMedicationClick 
 }: CategoryTableProps) => {
-  const [currentDiets, setCurrentDiets] = useState(diets);
-
   const getCategoryData = () => {
     switch (category) {
       case 'medications':
@@ -51,18 +48,12 @@ const CategoryTable = ({
         return {
           title: 'Dietas',
           icon: UtensilsCrossed,
-          data: currentDiets,
-          columns: ['Código MV', 'Imagem', 'Nome', 'Observação', 'Ações']
+          data: diets,
+          columns: ['Código MV', 'Imagem', 'Nome', 'Observação']
         };
       default:
         return null;
     }
-  };
-
-  const handleDietUpdate = (updatedDiet: Diet) => {
-    setCurrentDiets(prev => 
-      prev.map(diet => diet.id === updatedDiet.id ? updatedDiet : diet)
-    );
   };
 
   const categoryData = getCategoryData();
@@ -115,27 +106,32 @@ const CategoryTable = ({
                   {category === 'diets' && (
                     <TableCell>
                       {(item as Diet).imageUrl ? (
-                        <img 
-                          src={(item as Diet).imageUrl} 
-                          alt={item.name}
-                          className="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const placeholder = target.nextElementSibling as HTMLElement;
-                            if (placeholder) placeholder.style.display = 'flex';
-                          }}
-                        />
+                        <DietImageDialog 
+                          imageUrl={(item as Diet).imageUrl!} 
+                          dietName={item.name}
+                        >
+                          <img 
+                            src={(item as Diet).imageUrl} 
+                            alt={item.name}
+                            className="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const placeholder = target.nextElementSibling as HTMLElement;
+                              if (placeholder) placeholder.style.display = 'flex';
+                            }}
+                          />
+                          <div 
+                            className="hidden w-12 h-12 bg-gray-100 rounded-md items-center justify-center cursor-pointer"
+                          >
+                            <ImageIcon className="text-gray-400" size={16} />
+                          </div>
+                        </DietImageDialog>
                       ) : (
                         <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
                           <ImageIcon className="text-gray-400" size={16} />
                         </div>
                       )}
-                      <div 
-                        className="hidden w-12 h-12 bg-gray-100 rounded-md items-center justify-center"
-                      >
-                        <ImageIcon className="text-gray-400" size={16} />
-                      </div>
                     </TableCell>
                   )}
                   
@@ -172,19 +168,11 @@ const CategoryTable = ({
                   )}
 
                   {category === 'diets' && (
-                    <>
-                      <TableCell className="text-sm text-gray-600 max-w-xs">
-                        <div className="truncate" title={(item as Diet).observation}>
-                          {(item as Diet).observation}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <DietEditDialog
-                          diet={item as Diet}
-                          onUpdate={handleDietUpdate}
-                        />
-                      </TableCell>
-                    </>
+                    <TableCell className="text-sm text-gray-600 max-w-xs">
+                      <div className="truncate" title={(item as Diet).observation}>
+                        {(item as Diet).observation}
+                      </div>
+                    </TableCell>
                   )}
                 </TableRow>
               ))}
