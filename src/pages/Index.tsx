@@ -5,7 +5,7 @@ import SearchBox from '@/components/SearchBox';
 import SearchResults from '@/components/SearchResults';
 import CategoryTable from '@/components/CategoryTable';
 import AppSidebar from '@/components/AppSidebar';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { useAllData } from '@/hooks/useSupabaseData';
 import ClinicalPharmacy from '@/components/ClinicalPharmacy';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const { medications, materials, diets } = useSupabaseData();
+  const { medications, materials, diets } = useAllData();
 
   const [filteredMedications, setFilteredMedications] = useState<Medication[]>([]);
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
