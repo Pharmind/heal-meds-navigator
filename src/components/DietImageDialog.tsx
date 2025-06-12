@@ -19,7 +19,9 @@ const DietImageDialog = ({ imageUrl, dietName, children }: DietImageDialogProps)
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {children}
+        <div className="cursor-pointer">
+          {children}
+        </div>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>

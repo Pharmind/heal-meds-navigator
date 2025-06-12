@@ -1,4 +1,3 @@
-
 import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar, AlertTriangle, ImageIcon } from 'lucide-react';
 import { Medication, Material, Diet } from '../types/heal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -133,7 +132,7 @@ const SearchResults = ({
                 {/* Área da imagem */}
                 {diet.imageUrl ? (
                   <DietImageDialog imageUrl={diet.imageUrl} dietName={diet.name}>
-                    <div className="mb-3 cursor-pointer">
+                    <div className="mb-3">
                       <img 
                         src={diet.imageUrl} 
                         alt={diet.name}

@@ -1,4 +1,3 @@
-
 import { Eye, Pill, Package, UtensilsCrossed, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -110,21 +109,23 @@ const CategoryTable = ({
                           imageUrl={(item as Diet).imageUrl!} 
                           dietName={item.name}
                         >
-                          <img 
-                            src={(item as Diet).imageUrl} 
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const placeholder = target.nextElementSibling as HTMLElement;
-                              if (placeholder) placeholder.style.display = 'flex';
-                            }}
-                          />
-                          <div 
-                            className="hidden w-12 h-12 bg-gray-100 rounded-md items-center justify-center cursor-pointer"
-                          >
-                            <ImageIcon className="text-gray-400" size={16} />
+                          <div>
+                            <img 
+                              src={(item as Diet).imageUrl} 
+                              alt={item.name}
+                              className="w-12 h-12 object-cover rounded-md hover:opacity-80 transition-opacity"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const placeholder = target.nextElementSibling as HTMLElement;
+                                if (placeholder) placeholder.style.display = 'flex';
+                              }}
+                            />
+                            <div 
+                              className="hidden w-12 h-12 bg-gray-100 rounded-md items-center justify-center"
+                            >
+                              <ImageIcon className="text-gray-400" size={16} />
+                            </div>
                           </div>
                         </DietImageDialog>
                       ) : (
