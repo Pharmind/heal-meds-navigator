@@ -1,42 +1,26 @@
+
 import { useState, useEffect } from 'react';
 import { Medication, Material, Diet } from '../types/heal';
 import SearchBox from '@/components/SearchBox';
 import SearchResults from '@/components/SearchResults';
 import CategoryTable from '@/components/CategoryTable';
 import AppSidebar from '@/components/AppSidebar';
-import { getAllMedications, getAllMaterials, getAllDiets } from '@/lib/api';
-import IntoxicationSection from '@/components/IntoxicationSection';
-import HighAlertSection from '@/components/HighAlertSection';
-import ElderlySection from '@/components/ElderlySection';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import ClinicalPharmacy from '@/components/ClinicalPharmacy';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [selectedSection, setSelectedSection] = useState<
     'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines'
   >('search');
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [diets, setDiets] = useState<Diet[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const { medications, materials, diets } = useSupabaseData();
+
   const [filteredMedications, setFilteredMedications] = useState<Medication[]>([]);
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
   const [filteredDiets, setFilteredDiets] = useState<Diet[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const medicationsData = await getAllMedications();
-      const materialsData = await getAllMaterials();
-      const dietsData = await getAllDiets();
-
-      setMedications(medicationsData);
-      setMaterials(materialsData);
-      setDiets(dietsData);
-    };
-
-    fetchData();
-  }, []);
 
   useEffect(() => {
     const filterData = () => {
@@ -69,7 +53,7 @@ const Index = () => {
   };
 
   const handleMedicationClick = (medication: Medication) => {
-    router.push(`/medication/${medication.id}`);
+    navigate(`/medication/${medication.id}`);
   };
 
   const handleSectionChange = (section:
@@ -147,13 +131,14 @@ const Index = () => {
         );
 
       case 'intoxication':
-        return <IntoxicationSection />;
-
       case 'high-alert':
-        return <HighAlertSection />;
-
       case 'elderly':
-        return <ElderlySection />;
+        return (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-semibold text-gray-700">Seção em desenvolvimento</h2>
+            <p className="text-gray-500 mt-2">Esta funcionalidade será implementada em breve.</p>
+          </div>
+        );
 
       case 'pharmacovigilance':
       case 'cft':
