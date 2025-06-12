@@ -2,14 +2,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, FileText, Heart } from 'lucide-react';
+import PictogramPrescription from './clinical/PictogramPrescription';
+import DischargeGuidelines from './clinical/DischargeGuidelines';
 
 interface ClinicalPharmacyProps {
-  activeTab: 'pharmacovigilance' | 'cft' | 'protocols';
+  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines';
 }
 
 const ClinicalPharmacy = ({ activeTab }: ClinicalPharmacyProps) => {
   const renderContent = () => {
     switch (activeTab) {
+      case 'pictogram':
+        return <PictogramPrescription />;
+        
+      case 'discharge-guidelines':
+        return <DischargeGuidelines />;
+
       case 'pharmacovigilance':
         return (
           <div className="space-y-6">
