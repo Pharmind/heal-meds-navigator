@@ -8,6 +8,7 @@ import AppSidebar from '@/components/AppSidebar';
 import { useAllData } from '@/hooks/useSupabaseData';
 import ClinicalPharmacy from '@/components/ClinicalPharmacy';
 import { useNavigate } from 'react-router-dom';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 const Index = () => {
   const [selectedSection, setSelectedSection] = useState<
@@ -157,12 +158,16 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
-        {renderContent()}
-      </main>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
+        <SidebarInset>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
+            {renderContent()}
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
