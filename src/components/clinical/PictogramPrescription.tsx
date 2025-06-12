@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Plus, Download, Printer, FileText, Sun, Moon, Pill } from 'lucide-react';
+import { Trash2, Plus, Download, Printer, FileText, Sun, Moon, Pill, Clock } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 interface PatientData {
   name: string;
@@ -23,6 +24,7 @@ interface Medication {
   concentration: string;
   type: string;
   schedule: string;
+  customTime: string;
   observation: string;
 }
 
@@ -42,6 +44,7 @@ const PictogramPrescription = () => {
       concentration: '',
       type: '',
       schedule: '',
+      customTime: '',
       observation: ''
     }
   ]);
@@ -49,13 +52,19 @@ const PictogramPrescription = () => {
   const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const medicationTypes = ['Comprimido', 'Cápsula', 'Xarope', 'Gotas', 'Injetável', 'Pomada', 'Spray', 'Supositório'];
   const scheduleOptions = [
-    { value: '08:00', label: '08:00 ☀️', icon: '☀️' },
-    { value: '12:00', label: '12:00 ☀️', icon: '☀️' },
-    { value: '18:00', label: '18:00 🌙', icon: '🌙' },
-    { value: '22:00', label: '22:00 🌙', icon: '🌙' },
     { value: '06:00', label: '06:00 ☀️', icon: '☀️' },
+    { value: '08:00', label: '08:00 ☀️', icon: '☀️' },
+    { value: '10:00', label: '10:00 ☀️', icon: '☀️' },
+    { value: '12:00', label: '12:00 ☀️', icon: '☀️' },
     { value: '14:00', label: '14:00 ☀️', icon: '☀️' },
-    { value: '20:00', label: '20:00 🌙', icon: '🌙' }
+    { value: '16:00', label: '16:00 ☀️', icon: '☀️' },
+    { value: '18:00', label: '18:00 🌙', icon: '🌙' },
+    { value: '20:00', label: '20:00 🌙', icon: '🌙' },
+    { value: '22:00', label: '22:00 🌙', icon: '🌙' },
+    { value: '00:00', label: '00:00 🌙', icon: '🌙' },
+    { value: '02:00', label: '02:00 🌙', icon: '🌙' },
+    { value: '04:00', label: '04:00 🌙', icon: '🌙' },
+    { value: 'custom', label: 'Horário personalizado', icon: '🕐' }
   ];
 
   const handlePatientDataChange = (field: keyof PatientData, value: string) => {
@@ -78,6 +87,7 @@ const PictogramPrescription = () => {
       concentration: '',
       type: '',
       schedule: '',
+      customTime: '',
       observation: ''
     };
     setMedications(prev => [...prev, newMedication]);
@@ -89,49 +99,114 @@ const PictogramPrescription = () => {
     }
   };
 
-  const generatePrescription = () => {
-    const prescriptionContent = `
-      RECEITA EM PICTOGRAMA
-      
-      DADOS DO PACIENTE:
-      Nome: ${patientData.name}
-      Idade: ${patientData.age}
-      Alergia: ${patientData.allergy || 'Nenhuma'}
-      Tipo Sanguíneo: ${patientData.bloodType}
-      Contato de Emergência: ${patientData.emergencyContact}
-      
-      MEDICAMENTOS DE USO CONTÍNUO:
-      ${medications.map((med, index) => `
-        ${index + 1}. ${med.name}
-           Concentração: ${med.concentration}
-           Tipo: ${med.type}
-           Horário: ${med.schedule}
-           Observação: ${med.observation}
-      `).join('\n')}
-      
-      Data: ${new Date().toLocaleDateString('pt-BR')}
-    `;
+  const generatePDF = () => {
+    const doc = new jsPDF();
     
-    console.log('Receita gerada:', prescriptionContent);
-    alert('Receita gerada! Verifique o console para ver o conteúdo.');
+    // Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RECEITA EM PICTOGRAMA', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Hospital Estadual de Águas Lindas de Goiás - HEAL', 105, 30, { align: 'center' });
+    
+    // Patient data section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DADOS DO PACIENTE', 20, 50);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    let yPos = 60;
+    
+    doc.text(`Nome: ${patientData.name}`, 20, yPos);
+    yPos += 8;
+    doc.text(`Idade: ${patientData.age}`, 20, yPos);
+    yPos += 8;
+    doc.text(`Alergia: ${patientData.allergy || 'Nenhuma'}`, 20, yPos);
+    yPos += 8;
+    doc.text(`Tipo Sanguíneo: ${patientData.bloodType}`, 20, yPos);
+    yPos += 8;
+    doc.text(`Contato de Emergência: ${patientData.emergencyContact}`, 20, yPos);
+    yPos += 15;
+    
+    // Medications section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MEDICAMENTOS DE USO CONTÍNUO', 20, yPos);
+    yPos += 10;
+    
+    medications.forEach((med, index) => {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${index + 1}. ${med.name}`, 20, yPos);
+      yPos += 8;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Concentração: ${med.concentration}`, 25, yPos);
+      yPos += 6;
+      doc.text(`Tipo: ${med.type}`, 25, yPos);
+      yPos += 6;
+      
+      const displayTime = med.schedule === 'custom' ? med.customTime : med.schedule;
+      doc.text(`Horário: ${displayTime}`, 25, yPos);
+      yPos += 6;
+      
+      if (med.observation) {
+        doc.text(`Observação: ${med.observation}`, 25, yPos);
+        yPos += 6;
+      }
+      yPos += 8;
+    });
+    
+    // Footer
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(10);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, yPos + 20);
+    doc.text('_'.repeat(40), 120, yPos + 40);
+    doc.text('Assinatura do Farmacêutico', 120, yPos + 45);
+    
+    return doc;
+  };
+
+  const generatePrescription = () => {
+    const doc = generatePDF();
+    const prescriptionContent = doc.output('datauristring');
+    
+    // Open PDF in new window for preview
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`<iframe width='100%' height='100%' src='${prescriptionContent}'></iframe>`);
+    }
   };
 
   const downloadPrescription = () => {
-    const prescriptionContent = `RECEITA EM PICTOGRAMA\n\nDADOS DO PACIENTE:\nNome: ${patientData.name}\nIdade: ${patientData.age}\nAlergia: ${patientData.allergy || 'Nenhuma'}\nTipo Sanguíneo: ${patientData.bloodType}\nContato de Emergência: ${patientData.emergencyContact}\n\nMEDICAMENTOS DE USO CONTÍNUO:\n${medications.map((med, index) => `${index + 1}. ${med.name}\n   Concentração: ${med.concentration}\n   Tipo: ${med.type}\n   Horário: ${med.schedule}\n   Observação: ${med.observation}`).join('\n\n')}\n\nData: ${new Date().toLocaleDateString('pt-BR')}`;
-    
-    const blob = new Blob([prescriptionContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `receita_pictograma_${patientData.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const doc = generatePDF();
+    doc.save(`receita_pictograma_${patientData.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const printPrescription = () => {
-    window.print();
+    const doc = generatePDF();
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    const printWindow = window.open(pdfUrl);
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
   };
 
   return (
@@ -281,6 +356,17 @@ const PictogramPrescription = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  {medication.schedule === 'custom' && (
+                    <div>
+                      <Label>Horário Personalizado</Label>
+                      <Input
+                        type="time"
+                        value={medication.customTime}
+                        onChange={(e) => handleMedicationChange(medication.id, 'customTime', e.target.value)}
+                        placeholder="HH:MM"
+                      />
+                    </div>
+                  )}
                   <div className="md:col-span-2">
                     <Label>Observação</Label>
                     <Textarea
@@ -308,15 +394,15 @@ const PictogramPrescription = () => {
           <div className="flex flex-wrap gap-4 justify-center">
             <Button onClick={generatePrescription} className="bg-heal-green-600 hover:bg-heal-green-700">
               <FileText size={16} className="mr-2" />
-              Gerar Receita
+              Gerar Receita PDF
             </Button>
             <Button onClick={downloadPrescription} variant="outline">
               <Download size={16} className="mr-2" />
-              Baixar
+              Baixar PDF
             </Button>
             <Button onClick={printPrescription} variant="outline">
               <Printer size={16} className="mr-2" />
-              Imprimir
+              Imprimir PDF
             </Button>
           </div>
         </CardContent>

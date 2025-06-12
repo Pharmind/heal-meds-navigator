@@ -1,7 +1,9 @@
-import { Pill, Package, UtensilsCrossed, ChevronRight, Calendar, AlertTriangle, ImageIcon } from 'lucide-react';
+
 import { Medication, Material, Diet } from '../types/heal';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import DietImageDialog from './DietImageDialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Pill, Package, UtensilsCrossed } from 'lucide-react';
 
 interface SearchResultsProps {
   medications: Medication[];
@@ -18,155 +20,141 @@ const SearchResults = ({
   onMedicationClick, 
   searchQuery 
 }: SearchResultsProps) => {
-  const hasResults = medications.length > 0 || materials.length > 0 || diets.length > 0;
-
-  if (!hasResults && searchQuery) {
+  // Only show results if there's an active search query
+  if (!searchQuery.trim()) {
     return (
       <div className="text-center py-12">
-        <Alert className="max-w-md mx-auto border-amber-200 bg-amber-50">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800 font-medium">
-            Item não padronizado
-          </AlertDescription>
-        </Alert>
-        <p className="text-gray-500 mt-4 text-sm">
-          Tente ajustar sua pesquisa ou use termos diferentes
-        </p>
+        <div className="max-w-md mx-auto">
+          <div className="text-6xl mb-4">🔍</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Digite para pesquisar
+          </h3>
+          <p className="text-gray-500">
+            Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalResults = medications.length + materials.length + diets.length;
+
+  if (totalResults === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="max-w-md mx-auto">
+          <div className="text-6xl mb-4">😔</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Nenhum resultado encontrado
+          </h3>
+          <p className="text-gray-500">
+            Tente pesquisar com outros termos ou verifique a ortografia
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Medicamentos */}
+    <div className="space-y-6">
+      <div className="text-center">
+        <p className="text-gray-600">
+          Encontrados <span className="font-semibold">{totalResults}</span> resultados para "{searchQuery}"
+        </p>
+      </div>
+
+      {/* Medications */}
       {medications.length > 0 && (
-        <section>
-          <h2 className="flex items-center text-xl font-semibold text-heal-green-800 mb-4">
-            <Pill className="mr-2" size={24} />
-            Medicamentos ({medications.length})
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {medications.map((medication) => (
-              <div
-                key={medication.id}
-                onClick={() => onMedicationClick(medication)}
-                className="bg-white rounded-lg shadow-md border border-heal-green-200 p-4 cursor-pointer hover:shadow-lg hover:border-heal-green-400 transition-all duration-200 group"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="bg-heal-green-100 text-heal-green-800 text-xs font-medium px-2 py-1 rounded">
-                    {medication.mvCode}
-                  </span>
-                  <ChevronRight 
-                    className="text-heal-green-400 group-hover:text-heal-green-600 transition-colors" 
-                    size={16} 
-                  />
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-                  {medication.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-1">
-                  {medication.presentation}
-                </p>
-                <p className="text-xs text-heal-green-600 font-medium">
-                  {medication.therapeuticClass}
-                </p>
-                <div className="flex items-center mt-3 text-xs text-gray-500">
-                  <Calendar size={12} className="mr-1" />
-                  {medication.lastUpdate}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Materiais */}
-      {materials.length > 0 && (
-        <section>
-          <h2 className="flex items-center text-xl font-semibold text-heal-green-800 mb-4">
-            <Package className="mr-2" size={24} />
-            Materiais ({materials.length})
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {materials.map((material) => (
-              <div
-                key={material.id}
-                className="bg-white rounded-lg shadow-md border border-heal-green-200 p-4 hover:shadow-lg hover:border-heal-green-400 transition-all duration-200"
-              >
-                <div className="mb-3">
-                  <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded">
-                    {material.mvCode}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  {material.name}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {material.observation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Dietas */}
-      {diets.length > 0 && (
-        <section>
-          <h2 className="flex items-center text-xl font-semibold text-heal-green-800 mb-4">
-            <UtensilsCrossed className="mr-2" size={24} />
-            Dietas ({diets.length})
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {diets.map((diet) => (
-              <div
-                key={diet.id}
-                className="bg-white rounded-lg shadow-md border border-heal-green-200 p-4 hover:shadow-lg hover:border-heal-green-400 transition-all duration-200"
-              >
-                <div className="mb-3">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                    {diet.mvCode}
-                  </span>
-                </div>
-                
-                {/* Área da imagem */}
-                {diet.imageUrl ? (
-                  <DietImageDialog imageUrl={diet.imageUrl} dietName={diet.name}>
-                    <div className="mb-3">
-                      <img 
-                        src={diet.imageUrl} 
-                        alt={diet.name}
-                        className="w-full h-32 object-cover rounded-md hover:opacity-80 transition-opacity"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const placeholder = target.nextElementSibling as HTMLElement;
-                          if (placeholder) placeholder.style.display = 'flex';
-                        }}
-                      />
-                      <div 
-                        className="hidden w-full h-32 bg-gray-100 rounded-md items-center justify-center"
-                      >
-                        <ImageIcon className="text-gray-400" size={24} />
-                      </div>
-                    </div>
-                  </DietImageDialog>
-                ) : (
-                  <div className="mb-3 w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
-                    <ImageIcon className="text-gray-400" size={24} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Pill className="text-blue-600" size={24} />
+              Medicamentos ({medications.length})
+            </CardTitle>
+            <CardDescription>
+              Medicamentos encontrados na pesquisa
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {medications.map((medication) => (
+                <div key={medication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-lg">{medication.name}</h4>
+                    <Badge variant="secondary">{medication.mvCode}</Badge>
                   </div>
-                )}
-                
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  {diet.name}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {diet.observation}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+                  <p className="text-sm text-gray-600 mb-2">{medication.therapeuticClass}</p>
+                  <p className="text-sm text-gray-500 mb-3">{medication.concentration}</p>
+                  <Button 
+                    onClick={() => onMedicationClick(medication)}
+                    size="sm"
+                    className="w-full"
+                  >
+                    Ver Detalhes
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Materials */}
+      {materials.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="text-green-600" size={24} />
+              Materiais ({materials.length})
+            </CardTitle>
+            <CardDescription>
+              Materiais médicos encontrados na pesquisa
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {materials.map((material) => (
+                <div key={material.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-lg">{material.name}</h4>
+                    <Badge variant="secondary">{material.mvCode}</Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{material.category}</p>
+                  <p className="text-sm text-gray-500">{material.unit}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Diets */}
+      {diets.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UtensilsCrossed className="text-orange-600" size={24} />
+              Dietas ({diets.length})
+            </CardTitle>
+            <CardDescription>
+              Dietas encontradas na pesquisa
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {diets.map((diet) => (
+                <div key={diet.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-lg">{diet.name}</h4>
+                    <Badge variant="secondary">{diet.mvCode}</Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{diet.category}</p>
+                  <p className="text-sm text-gray-500">{diet.description}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
