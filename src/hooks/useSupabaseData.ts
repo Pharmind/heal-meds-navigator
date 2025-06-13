@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,6 +59,20 @@ interface SupabaseHighAlertMedication {
   updated_at: string;
 }
 
+interface SupabaseDrugInteraction {
+  id: string;
+  drug1_name: string;
+  drug2_name: string;
+  interaction_type: string;
+  severity_level: string;
+  clinical_effect: string;
+  mechanism: string;
+  management: string;
+  bibliography: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Intoxication {
   id: string;
   intoxicationAgent: string;
@@ -75,6 +88,20 @@ export interface HighAlertMedication {
   id: string;
   type: string;
   activeIngredient: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DrugInteractionData {
+  id: string;
+  drug1Name: string;
+  drug2Name: string;
+  interactionType: string;
+  severityLevel: string;
+  clinicalEffect: string;
+  mechanism: string;
+  management: string;
+  bibliography: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -137,6 +164,20 @@ const convertHighAlertMedication = (ham: SupabaseHighAlertMedication): HighAlert
   activeIngredient: ham.active_ingredient,
   createdAt: ham.created_at,
   updatedAt: ham.updated_at,
+});
+
+const convertDrugInteractionData = (interaction: SupabaseDrugInteraction): DrugInteractionData => ({
+  id: interaction.id,
+  drug1Name: interaction.drug1_name,
+  drug2Name: interaction.drug2_name,
+  interactionType: interaction.interaction_type,
+  severityLevel: interaction.severity_level,
+  clinicalEffect: interaction.clinical_effect,
+  mechanism: interaction.mechanism,
+  management: interaction.management,
+  bibliography: interaction.bibliography,
+  createdAt: interaction.created_at,
+  updatedAt: interaction.updated_at,
 });
 
 // Hook para buscar medicamentos
@@ -270,6 +311,28 @@ export const useHighAlertMedications = () => {
 
       console.log('Medicamentos de alta vigilância encontrados:', data?.length);
       return data?.map(convertHighAlertMedication) || [];
+    },
+  });
+};
+
+// Hook para buscar interações medicamentosas
+export const useDrugInteractionsData = () => {
+  return useQuery({
+    queryKey: ['drugInteractionsData'],
+    queryFn: async () => {
+      console.log('Buscando interações medicamentosas...');
+      const { data, error } = await supabase
+        .from('drug_interactions')
+        .select('*')
+        .order('drug1_name');
+
+      if (error) {
+        console.error('Erro ao buscar interações medicamentosas:', error);
+        throw error;
+      }
+
+      console.log('Interações medicamentosas encontradas:', data?.length);
+      return data?.map(convertDrugInteractionData) || [];
     },
   });
 };

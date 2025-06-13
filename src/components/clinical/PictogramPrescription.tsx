@@ -1,25 +1,19 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Trash2, Plus, Download, Printer, FileText, Type } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Download, Plus, Trash2, FileText, AlertTriangle } from 'lucide-react';
 import { generatePictogramPDF } from '@/utils/pdfGenerator';
-
-interface PatientData {
-  name: string;
-  age: string;
-  allergy: string;
-  bloodType: string;
-  emergencyContact: string;
-}
+import { toast } from 'sonner';
+import DrugInteractions from './DrugInteractions';
 
 interface Medication {
-  id: string;
   name: string;
   concentration: string;
   type: string;
@@ -29,7 +23,7 @@ interface Medication {
 }
 
 const PictogramPrescription = () => {
-  const [patientData, setPatientData] = useState<PatientData>({
+  const [patientData, setPatientData] = useState({
     name: '',
     age: '',
     allergy: '',
@@ -39,150 +33,117 @@ const PictogramPrescription = () => {
 
   const [medications, setMedications] = useState<Medication[]>([
     {
-      id: '1',
       name: '',
       concentration: '',
-      type: '',
-      schedule: '',
+      type: 'comprimido',
+      schedule: '8-8h',
       customTime: '',
       observation: ''
     }
   ]);
 
   const [fontSize, setFontSize] = useState(0);
-
-  const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const medicationTypes = ['Comprimido', 'Cápsula', 'Xarope', 'Gotas', 'Injetável', 'Pomada', 'Spray', 'Supositório'];
-  
-  const scheduleOptions = [
-    { value: '06:00', label: '06:00 ☀️' },
-    { value: '07:00', label: '07:00 ☀️' },
-    { value: '08:00', label: '08:00 ☀️' },
-    { value: '09:00', label: '09:00 ☀️' },
-    { value: '10:00', label: '10:00 ☀️' },
-    { value: '11:00', label: '11:00 ☀️' },
-    { value: '12:00', label: '12:00 ☀️' },
-    { value: '13:00', label: '13:00 ☀️' },
-    { value: '14:00', label: '14:00 ☀️' },
-    { value: '15:00', label: '15:00 ☀️' },
-    { value: '16:00', label: '16:00 ☀️' },
-    { value: '17:00', label: '17:00 ☀️' },
-    { value: '18:00', label: '18:00 🌙' },
-    { value: '19:00', label: '19:00 🌙' },
-    { value: '20:00', label: '20:00 🌙' },
-    { value: '21:00', label: '21:00 🌙' },
-    { value: '22:00', label: '22:00 🌙' },
-    { value: '23:00', label: '23:00 🌙' },
-    { value: '00:00', label: '00:00 🌙' },
-    { value: '01:00', label: '01:00 🌙' },
-    { value: '02:00', label: '02:00 🌙' },
-    { value: '03:00', label: '03:00 🌙' },
-    { value: '04:00', label: '04:00 🌙' },
-    { value: '05:00', label: '05:00 🌙' },
-    { value: 'custom', label: '🕐 Horário personalizado' }
-  ];
-
-  const handlePatientDataChange = (field: keyof PatientData, value: string) => {
-    setPatientData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleMedicationChange = (id: string, field: keyof Medication, value: string) => {
-    setMedications(prev => prev.map(med => 
-      med.id === id ? { ...med, [field]: value } : med
-    ));
-  };
+  const [showInteractions, setShowInteractions] = useState(false);
 
   const addMedication = () => {
-    const newMedication: Medication = {
-      id: Date.now().toString(),
+    setMedications([...medications, {
       name: '',
       concentration: '',
-      type: '',
-      schedule: '',
+      type: 'comprimido',
+      schedule: '8-8h',
       customTime: '',
       observation: ''
-    };
-    setMedications(prev => [...prev, newMedication]);
+    }]);
   };
 
-  const removeMedication = (id: string) => {
+  const removeMedication = (index: number) => {
     if (medications.length > 1) {
-      setMedications(prev => prev.filter(med => med.id !== id));
+      setMedications(medications.filter((_, i) => i !== index));
     }
   };
 
-  const generatePrescription = () => {
-    const pdfData = {
-      patientData,
-      medications: medications.filter(med => med.name.trim() !== ''),
-      fontSize
-    };
-
-    const doc = generatePictogramPDF(pdfData);
-    
-    // Open PDF in new window
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
+  const updateMedication = (index: number, field: keyof Medication, value: string) => {
+    const updated = [...medications];
+    updated[index] = { ...updated[index], [field]: value };
+    setMedications(updated);
   };
 
-  const downloadPrescription = () => {
-    const pdfData = {
-      patientData,
-      medications: medications.filter(med => med.name.trim() !== ''),
-      fontSize
-    };
-
-    const doc = generatePictogramPDF(pdfData);
-    doc.save(`receita_pictograma_${patientData.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
-
-  const printPrescription = () => {
-    const pdfData = {
-      patientData,
-      medications: medications.filter(med => med.name.trim() !== ''),
-      fontSize
-    };
-
-    const doc = generatePictogramPDF(pdfData);
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
+  const generatePDF = () => {
+    const hasRequiredData = patientData.name && medications.some(med => med.name);
     
-    const printWindow = window.open(pdfUrl);
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print();
-      };
+    if (!hasRequiredData) {
+      toast.error('Preencha pelo menos o nome do paciente e um medicamento');
+      return;
     }
+
+    const data = {
+      patientData,
+      medications: medications.filter(med => med.name.trim() !== ''),
+      fontSize
+    };
+
+    const pdf = generatePictogramPDF(data);
+    pdf.save(`receita-pictograma-${patientData.name || 'paciente'}-${Date.now()}.pdf`);
+    
+    toast.success('Receita em pictograma gerada com sucesso!');
   };
+
+  const exportToInteractions = () => {
+    const medicationNames = medications
+      .filter(med => med.name.trim() !== '')
+      .map(med => med.name);
+    
+    if (medicationNames.length < 2) {
+      toast.error('Adicione pelo menos 2 medicamentos para verificar interações');
+      return;
+    }
+
+    setShowInteractions(true);
+    toast.success('Medicamentos exportados para verificação de interações!');
+  };
+
+  if (showInteractions) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">Verificação de Interações - Medicamentos Importados</h3>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowInteractions(false)}
+          >
+            Voltar ao Pictograma
+          </Button>
+        </div>
+        <DrugInteractions 
+          importedMedications={medications.filter(med => med.name.trim() !== '').map(med => med.name)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Receita em Pictograma</h2>
-        <p className="text-gray-600">Prescrição visual para facilitar a compreensão do paciente</p>
+        <p className="text-gray-600">Prescrição visual para melhor compreensão do tratamento</p>
       </div>
 
       {/* Dados do Paciente */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="text-heal-green-600" size={24} />
-            Dados do Paciente
-          </CardTitle>
+          <CardTitle>Dados do Paciente</CardTitle>
+          <CardDescription>Informações básicas para a receita</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Nome Completo</Label>
+              <Label htmlFor="name">Nome Completo *</Label>
               <Input
                 id="name"
                 value={patientData.name}
-                onChange={(e) => handlePatientDataChange('name', e.target.value)}
-                placeholder="Nome do paciente"
+                onChange={(e) => setPatientData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Nome completo do paciente"
+                required
               />
             </div>
             <div>
@@ -190,68 +151,36 @@ const PictogramPrescription = () => {
               <Input
                 id="age"
                 value={patientData.age}
-                onChange={(e) => handlePatientDataChange('age', e.target.value)}
-                placeholder="Idade"
+                onChange={(e) => setPatientData(prev => ({ ...prev, age: e.target.value }))}
+                placeholder="Idade do paciente"
               />
             </div>
             <div>
-              <Label htmlFor="allergy">Alergia</Label>
+              <Label htmlFor="allergy">Alergias</Label>
               <Input
                 id="allergy"
                 value={patientData.allergy}
-                onChange={(e) => handlePatientDataChange('allergy', e.target.value)}
+                onChange={(e) => setPatientData(prev => ({ ...prev, allergy: e.target.value }))}
                 placeholder="Alergias conhecidas"
               />
             </div>
             <div>
               <Label htmlFor="bloodType">Tipo Sanguíneo</Label>
-              <Select value={patientData.bloodType} onValueChange={(value) => handlePatientDataChange('bloodType', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo sanguíneo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {bloodTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="bloodType"
+                value={patientData.bloodType}
+                onChange={(e) => setPatientData(prev => ({ ...prev, bloodType: e.target.value }))}
+                placeholder="Ex: O+, A-, AB+"
+              />
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="emergencyContact">Contato de Emergência</Label>
               <Input
                 id="emergencyContact"
                 value={patientData.emergencyContact}
-                onChange={(e) => handlePatientDataChange('emergencyContact', e.target.value)}
+                onChange={(e) => setPatientData(prev => ({ ...prev, emergencyContact: e.target.value }))}
                 placeholder="Nome e telefone do contato de emergência"
               />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Configurações de Fonte */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Type className="text-purple-600" size={24} />
-            Tamanho da Fonte
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Label>Ajustar tamanho da fonte: {fontSize > 0 ? `+${fontSize}` : fontSize}</Label>
-            <Slider
-              value={[fontSize]}
-              onValueChange={(value) => setFontSize(value[0])}
-              min={-2}
-              max={4}
-              step={1}
-              className="w-full"
-            />
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Menor</span>
-              <span>Normal</span>
-              <span>Maior</span>
             </div>
           </div>
         </CardContent>
@@ -260,140 +189,177 @@ const PictogramPrescription = () => {
       {/* Medicamentos */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="text-blue-600" size={24} />
+          <CardTitle className="flex items-center justify-between">
             Medicamentos de Uso Contínuo
+            <Button onClick={addMedication} size="sm">
+              <Plus size={16} className="mr-1" />
+              Adicionar Medicamento
+            </Button>
           </CardTitle>
+          <CardDescription>
+            Configure os medicamentos e seus horários de administração
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             {medications.map((medication, index) => (
-              <div key={medication.id} className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-lg">Medicamento {index + 1}</h4>
+              <div key={index} className="border rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">Medicamento {index + 1}</h4>
                   {medications.length > 1 && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => removeMedication(medication.id)}
-                      className="text-red-600 hover:bg-red-50"
+                      onClick={() => removeMedication(index)}
                     >
                       <Trash2 size={16} />
                     </Button>
                   )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Nome do Medicamento</Label>
+                    <Label>Nome do Medicamento *</Label>
                     <Input
                       value={medication.name}
-                      onChange={(e) => handleMedicationChange(medication.id, 'name', e.target.value)}
-                      placeholder="Nome do medicamento"
+                      onChange={(e) => updateMedication(index, 'name', e.target.value)}
+                      placeholder="Nome comercial ou genérico"
+                      required
                     />
                   </div>
                   <div>
                     <Label>Concentração</Label>
                     <Input
                       value={medication.concentration}
-                      onChange={(e) => handleMedicationChange(medication.id, 'concentration', e.target.value)}
-                      placeholder="ex: 500mg, 5ml"
+                      onChange={(e) => updateMedication(index, 'concentration', e.target.value)}
+                      placeholder="Ex: 500mg, 10mg/ml"
                     />
                   </div>
                   <div>
                     <Label>Tipo</Label>
-                    <Select 
-                      value={medication.type} 
-                      onValueChange={(value) => handleMedicationChange(medication.id, 'type', value)}
+                    <Select
+                      value={medication.type}
+                      onValueChange={(value) => updateMedication(index, 'type', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {medicationTypes.map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
+                        <SelectItem value="comprimido">Comprimido</SelectItem>
+                        <SelectItem value="capsula">Cápsula</SelectItem>
+                        <SelectItem value="liquido">Líquido</SelectItem>
+                        <SelectItem value="injetavel">Injetável</SelectItem>
+                        <SelectItem value="pomada">Pomada/Creme</SelectItem>
+                        <SelectItem value="spray">Spray</SelectItem>
+                        <SelectItem value="gotas">Gotas</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Horário</Label>
-                    <Select 
-                      value={medication.schedule} 
-                      onValueChange={(value) => handleMedicationChange(medication.id, 'schedule', value)}
+                    <Label>Horário de Administração</Label>
+                    <Select
+                      value={medication.schedule}
+                      onValueChange={(value) => updateMedication(index, 'schedule', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o horário" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {scheduleOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="1x/dia">1x ao dia</SelectItem>
+                        <SelectItem value="12-12h">12 em 12 horas</SelectItem>
+                        <SelectItem value="8-8h">8 em 8 horas</SelectItem>
+                        <SelectItem value="6-6h">6 em 6 horas</SelectItem>
+                        <SelectItem value="4-4h">4 em 4 horas</SelectItem>
+                        <SelectItem value="custom">Personalizado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {medication.schedule === 'custom' && (
-                    <div>
-                      <Label>Horário Personalizado</Label>
-                      <Input
-                        type="time"
-                        value={medication.customTime}
-                        onChange={(e) => handleMedicationChange(medication.id, 'customTime', e.target.value)}
-                        placeholder="HH:MM"
-                      />
-                    </div>
-                  )}
-                  <div className="md:col-span-2">
-                    <Label>Observação</Label>
-                    <Textarea
-                      value={medication.observation}
-                      onChange={(e) => handleMedicationChange(medication.id, 'observation', e.target.value)}
-                      placeholder="Observações especiais (ex: tomar com alimento, jejum)"
-                      rows={2}
+                </div>
+                
+                {medication.schedule === 'custom' && (
+                  <div>
+                    <Label>Horário Personalizado</Label>
+                    <Input
+                      value={medication.customTime}
+                      onChange={(e) => updateMedication(index, 'customTime', e.target.value)}
+                      placeholder="Ex: 8h, 14h, 20h"
                     />
                   </div>
+                )}
+                
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea
+                    value={medication.observation}
+                    onChange={(e) => updateMedication(index, 'observation', e.target.value)}
+                    placeholder="Instruções especiais (tomar com alimentos, em jejum, etc.)"
+                    rows={2}
+                  />
                 </div>
               </div>
             ))}
-            
-            <Button onClick={addMedication} variant="outline" className="w-full">
-              <Plus size={16} className="mr-2" />
-              Adicionar Medicamento
-            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Configurações de Formato */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Configurações de Formato</CardTitle>
+          <CardDescription>Ajuste o tamanho da fonte para melhor legibilidade</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label>Ajuste de Fonte ({fontSize > 0 ? '+' : ''}{fontSize})</Label>
+              <Slider
+                value={[fontSize]}
+                onValueChange={([value]) => setFontSize(value)}
+                min={-3}
+                max={5}
+                step={1}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-sm text-gray-500 mt-1">
+                <span>Menor</span>
+                <span>Normal</span>
+                <span>Maior</span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Ações */}
-      <Card>
+      <div className="flex gap-4 justify-center flex-wrap">
+        <Button onClick={generatePDF} className="flex items-center gap-2">
+          <Download size={16} />
+          Gerar Receita PDF
+        </Button>
+        
+        <Button 
+          onClick={exportToInteractions} 
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <AlertTriangle size={16} />
+          Verificar Interações
+        </Button>
+      </div>
+
+      {/* Aviso importante */}
+      <Card className="border-orange-200 bg-orange-50">
         <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button 
-              onClick={generatePrescription} 
-              className="bg-heal-green-600 hover:bg-heal-green-700"
-              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
-            >
-              <FileText size={16} className="mr-2" />
-              Gerar Receita PDF
-            </Button>
-            <Button 
-              onClick={downloadPrescription} 
-              variant="outline"
-              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
-            >
-              <Download size={16} className="mr-2" />
-              Baixar PDF
-            </Button>
-            <Button 
-              onClick={printPrescription} 
-              variant="outline"
-              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
-            >
-              <Printer size={16} className="mr-2" />
-              Imprimir PDF
-            </Button>
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="text-orange-600 mt-0.5" size={20} />
+            <div>
+              <h4 className="font-semibold text-orange-800 mb-1">Importante</h4>
+              <p className="text-sm text-orange-700">
+                A receita em pictograma é uma ferramenta auxiliar de comunicação. 
+                Sempre mantenha a prescrição médica original e oriente sobre a importância 
+                do acompanhamento médico regular.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

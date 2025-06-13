@@ -39,6 +39,48 @@ export type Database = {
         }
         Relationships: []
       }
+      drug_interactions: {
+        Row: {
+          bibliography: string | null
+          clinical_effect: string
+          created_at: string
+          drug1_name: string
+          drug2_name: string
+          id: string
+          interaction_type: string
+          management: string
+          mechanism: string
+          severity_level: string
+          updated_at: string
+        }
+        Insert: {
+          bibliography?: string | null
+          clinical_effect: string
+          created_at?: string
+          drug1_name: string
+          drug2_name: string
+          id?: string
+          interaction_type: string
+          management: string
+          mechanism: string
+          severity_level: string
+          updated_at?: string
+        }
+        Update: {
+          bibliography?: string | null
+          clinical_effect?: string
+          created_at?: string
+          drug1_name?: string
+          drug2_name?: string
+          id?: string
+          interaction_type?: string
+          management?: string
+          mechanism?: string
+          severity_level?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       high_alert_medications: {
         Row: {
           active_ingredient: string
@@ -60,6 +102,42 @@ export type Database = {
           id?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      interaction_checks: {
+        Row: {
+          check_date: string
+          created_at: string
+          id: string
+          interactions_found: Json | null
+          medications: Json
+          notes: string | null
+          patient_age: string | null
+          patient_name: string | null
+          pharmacist_name: string | null
+        }
+        Insert: {
+          check_date?: string
+          created_at?: string
+          id?: string
+          interactions_found?: Json | null
+          medications: Json
+          notes?: string | null
+          patient_age?: string | null
+          patient_name?: string | null
+          pharmacist_name?: string | null
+        }
+        Update: {
+          check_date?: string
+          created_at?: string
+          id?: string
+          interactions_found?: Json | null
+          medications?: Json
+          notes?: string | null
+          patient_age?: string | null
+          patient_name?: string | null
+          pharmacist_name?: string | null
         }
         Relationships: []
       }

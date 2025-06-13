@@ -1,17 +1,20 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, FileText, Heart } from 'lucide-react';
 import PictogramPrescription from './clinical/PictogramPrescription';
 import DischargeGuidelines from './clinical/DischargeGuidelines';
+import DrugInteractions from './clinical/DrugInteractions';
 
 interface ClinicalPharmacyProps {
-  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines';
+  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions';
 }
 
 const ClinicalPharmacy = ({ activeTab }: ClinicalPharmacyProps) => {
   const renderContent = () => {
     switch (activeTab) {
+      case 'drug-interactions':
+        return <DrugInteractions />;
+        
       case 'pictogram':
         return <PictogramPrescription />;
         

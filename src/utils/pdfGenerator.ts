@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 
 export interface DischargeGuidelinesData {
@@ -250,5 +249,207 @@ export const generatePictogramPDF = (data: PictogramData) => {
   doc.text('_'.repeat(40), pageWidth - 120, yPos + 10);
   doc.text('Assinatura do Farmacêutico', pageWidth - 120, yPos + 15);
   
+  return doc;
+};
+
+export interface InteractionReportData {
+  patientData: {
+    name: string;
+    age: string;
+    pharmacist: string;
+    notes: string;
+  };
+  medications: string[];
+  interactions: Array<{
+    drug1Name: string;
+    drug2Name: string;
+    severityLevel: string;
+    clinicalEffect: string;
+    mechanism: string;
+    management: string;
+    interactionType: string;
+    bibliography?: string;
+  }>;
+  checkDate: string;
+}
+
+export const generateInteractionReportPDF = (data: InteractionReportData) => {
+  const doc = new jsPDF();
+  let yPos = 20;
+  const pageWidth = doc.internal.pageSize.width;
+  const margin = 20;
+  const maxWidth = pageWidth - (margin * 2);
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RELATÓRIO DE INTERAÇÕES MEDICAMENTOSAS', pageWidth / 2, yPos, { align: 'center' });
+  
+  yPos += 10;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Hospital Estadual de Águas Lindas de Goiás - HEAL', pageWidth / 2, yPos, { align: 'center' });
+  
+  yPos += 20;
+
+  // Patient Info Section
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DO PACIENTE', margin, yPos);
+  yPos += 10;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  if (data.patientData.name) {
+    doc.text(`Paciente: ${data.patientData.name}`, margin, yPos);
+    yPos += 7;
+  }
+  if (data.patientData.age) {
+    doc.text(`Idade: ${data.patientData.age}`, margin, yPos);
+    yPos += 7;
+  }
+  doc.text(`Data da Verificação: ${data.checkDate}`, margin, yPos);
+  yPos += 7;
+  if (data.patientData.pharmacist) {
+    doc.text(`Farmacêutico: ${data.patientData.pharmacist}`, margin, yPos);
+    yPos += 15;
+  } else {
+    yPos += 10;
+  }
+
+  // Medications Section
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MEDICAMENTOS ANALISADOS', margin, yPos);
+  yPos += 10;
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  data.medications.forEach((med, index) => {
+    doc.text(`${index + 1}. ${med}`, margin + 5, yPos);
+    yPos += 6;
+  });
+  yPos += 10;
+
+  // Interactions Section
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`INTERAÇÕES ENCONTRADAS (${data.interactions.length})`, margin, yPos);
+  yPos += 15;
+
+  if (data.interactions.length === 0) {
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Nenhuma interação encontrada na base de dados consultada.', margin, yPos);
+    yPos += 10;
+    doc.setFont('helvetica', 'italic');
+    doc.text('Nota: A ausência de interações neste relatório não garante ausência', margin, yPos);
+    yPos += 5;
+    doc.text('total de interações. Sempre consulte literatura atualizada.', margin, yPos);
+  } else {
+    data.interactions.forEach((interaction, index) => {
+      // Check if we need a new page
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${index + 1}. ${interaction.drug1Name} × ${interaction.drug2Name}`, margin, yPos);
+      yPos += 7;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Gravidade: ${interaction.severityLevel.toUpperCase()} | Tipo: ${interaction.interactionType === 'drug-drug' ? 'Medicamento-Medicamento' : 'Medicamento-Nutriente'}`, margin + 5, yPos);
+      yPos += 8;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Efeito Clínico:', margin + 5, yPos);
+      yPos += 5;
+      doc.setFont('helvetica', 'normal');
+      const effectLines = doc.splitTextToSize(interaction.clinicalEffect, maxWidth - 10);
+      doc.text(effectLines, margin + 5, yPos);
+      yPos += effectLines.length * 5 + 3;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Mecanismo:', margin + 5, yPos);
+      yPos += 5;
+      doc.setFont('helvetica', 'normal');
+      const mechanismLines = doc.splitTextToSize(interaction.mechanism, maxWidth - 10);
+      doc.text(mechanismLines, margin + 5, yPos);
+      yPos += mechanismLines.length * 5 + 3;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Conduta Recomendada:', margin + 5, yPos);
+      yPos += 5;
+      doc.setFont('helvetica', 'normal');
+      const managementLines = doc.splitTextToSize(interaction.management, maxWidth - 10);
+      doc.text(managementLines, margin + 5, yPos);
+      yPos += managementLines.length * 5 + 5;
+
+      if (interaction.bibliography) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.text(`Bibliografia: ${interaction.bibliography}`, margin + 5, yPos);
+        yPos += 8;
+      }
+
+      yPos += 5;
+    });
+  }
+
+  // Recommendations
+  if (yPos > 220) {
+    doc.addPage();
+    yPos = 20;
+  }
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RECOMENDAÇÕES GERAIS:', margin, yPos);
+  yPos += 10;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  const recommendations = [
+    '• Este relatório deve ser utilizado como ferramenta de apoio clínico',
+    '• Sempre considere o contexto clínico individual do paciente',
+    '• Consulte literatura científica atualizada para informações adicionais',
+    '• Monitore o paciente conforme as condutas recomendadas',
+    '• Em caso de dúvidas, consulte o farmacêutico clínico ou médico especialista'
+  ];
+
+  recommendations.forEach(rec => {
+    doc.text(rec, margin, yPos);
+    yPos += 6;
+  });
+
+  // Notes
+  if (data.patientData.notes) {
+    yPos += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('OBSERVAÇÕES:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+    const notesLines = doc.splitTextToSize(data.patientData.notes, maxWidth);
+    doc.text(notesLines, margin, yPos);
+    yPos += notesLines.length * 5;
+  }
+
+  // Footer
+  yPos += 20;
+  doc.setFontSize(9);
+  doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, margin, yPos);
+  
+  if (data.patientData.pharmacist) {
+    yPos += 15;
+    doc.text('_'.repeat(40), margin, yPos);
+    yPos += 5;
+    doc.text(data.patientData.pharmacist, margin, yPos);
+    yPos += 3;
+    doc.text('Farmacêutico Responsável', margin, yPos);
+  }
+
   return doc;
 };

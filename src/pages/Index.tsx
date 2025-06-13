@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Medication, Material, Diet } from '../types/heal';
 import SearchBox from '@/components/SearchBox';
@@ -12,7 +11,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 const Index = () => {
   const [selectedSection, setSelectedSection] = useState<
-    'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines'
+    'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions'
   >('search');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -69,7 +68,8 @@ const Index = () => {
     'cft' |
     'protocols' |
     'pictogram' |
-    'discharge-guidelines'
+    'discharge-guidelines' |
+    'drug-interactions'
   ) => {
     setSelectedSection(section);
   };
@@ -146,6 +146,7 @@ const Index = () => {
       case 'protocols':
       case 'pictogram':
       case 'discharge-guidelines':
+      case 'drug-interactions':
         return <ClinicalPharmacy activeTab={selectedSection} />;
 
       default:
