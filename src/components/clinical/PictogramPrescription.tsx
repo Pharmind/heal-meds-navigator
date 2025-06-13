@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Trash2, Plus, Download, Printer, FileText, Sun, Moon, Pill, Clock } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { Slider } from '@/components/ui/slider';
+import { Trash2, Plus, Download, Printer, FileText, Type } from 'lucide-react';
+import { generatePictogramPDF } from '@/utils/pdfGenerator';
 
 interface PatientData {
   name: string;
@@ -49,22 +49,37 @@ const PictogramPrescription = () => {
     }
   ]);
 
+  const [fontSize, setFontSize] = useState(0);
+
   const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const medicationTypes = ['Comprimido', 'Cápsula', 'Xarope', 'Gotas', 'Injetável', 'Pomada', 'Spray', 'Supositório'];
+  
   const scheduleOptions = [
-    { value: '06:00', label: '06:00 ☀️', icon: '☀️' },
-    { value: '08:00', label: '08:00 ☀️', icon: '☀️' },
-    { value: '10:00', label: '10:00 ☀️', icon: '☀️' },
-    { value: '12:00', label: '12:00 ☀️', icon: '☀️' },
-    { value: '14:00', label: '14:00 ☀️', icon: '☀️' },
-    { value: '16:00', label: '16:00 ☀️', icon: '☀️' },
-    { value: '18:00', label: '18:00 🌙', icon: '🌙' },
-    { value: '20:00', label: '20:00 🌙', icon: '🌙' },
-    { value: '22:00', label: '22:00 🌙', icon: '🌙' },
-    { value: '00:00', label: '00:00 🌙', icon: '🌙' },
-    { value: '02:00', label: '02:00 🌙', icon: '🌙' },
-    { value: '04:00', label: '04:00 🌙', icon: '🌙' },
-    { value: 'custom', label: 'Horário personalizado', icon: '🕐' }
+    { value: '06:00', label: '06:00 ☀️' },
+    { value: '07:00', label: '07:00 ☀️' },
+    { value: '08:00', label: '08:00 ☀️' },
+    { value: '09:00', label: '09:00 ☀️' },
+    { value: '10:00', label: '10:00 ☀️' },
+    { value: '11:00', label: '11:00 ☀️' },
+    { value: '12:00', label: '12:00 ☀️' },
+    { value: '13:00', label: '13:00 ☀️' },
+    { value: '14:00', label: '14:00 ☀️' },
+    { value: '15:00', label: '15:00 ☀️' },
+    { value: '16:00', label: '16:00 ☀️' },
+    { value: '17:00', label: '17:00 ☀️' },
+    { value: '18:00', label: '18:00 🌙' },
+    { value: '19:00', label: '19:00 🌙' },
+    { value: '20:00', label: '20:00 🌙' },
+    { value: '21:00', label: '21:00 🌙' },
+    { value: '22:00', label: '22:00 🌙' },
+    { value: '23:00', label: '23:00 🌙' },
+    { value: '00:00', label: '00:00 🌙' },
+    { value: '01:00', label: '01:00 🌙' },
+    { value: '02:00', label: '02:00 🌙' },
+    { value: '03:00', label: '03:00 🌙' },
+    { value: '04:00', label: '04:00 🌙' },
+    { value: '05:00', label: '05:00 🌙' },
+    { value: 'custom', label: '🕐 Horário personalizado' }
   ];
 
   const handlePatientDataChange = (field: keyof PatientData, value: string) => {
@@ -99,105 +114,40 @@ const PictogramPrescription = () => {
     }
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    
-    // Header
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text('RECEITA EM PICTOGRAMA', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Hospital Estadual de Águas Lindas de Goiás - HEAL', 105, 30, { align: 'center' });
-    
-    // Patient data section
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DADOS DO PACIENTE', 20, 50);
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    let yPos = 60;
-    
-    doc.text(`Nome: ${patientData.name}`, 20, yPos);
-    yPos += 8;
-    doc.text(`Idade: ${patientData.age}`, 20, yPos);
-    yPos += 8;
-    doc.text(`Alergia: ${patientData.allergy || 'Nenhuma'}`, 20, yPos);
-    yPos += 8;
-    doc.text(`Tipo Sanguíneo: ${patientData.bloodType}`, 20, yPos);
-    yPos += 8;
-    doc.text(`Contato de Emergência: ${patientData.emergencyContact}`, 20, yPos);
-    yPos += 15;
-    
-    // Medications section
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MEDICAMENTOS DE USO CONTÍNUO', 20, yPos);
-    yPos += 10;
-    
-    medications.forEach((med, index) => {
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${index + 1}. ${med.name}`, 20, yPos);
-      yPos += 8;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Concentração: ${med.concentration}`, 25, yPos);
-      yPos += 6;
-      doc.text(`Tipo: ${med.type}`, 25, yPos);
-      yPos += 6;
-      
-      const displayTime = med.schedule === 'custom' ? med.customTime : med.schedule;
-      doc.text(`Horário: ${displayTime}`, 25, yPos);
-      yPos += 6;
-      
-      if (med.observation) {
-        doc.text(`Observação: ${med.observation}`, 25, yPos);
-        yPos += 6;
-      }
-      yPos += 8;
-    });
-    
-    // Footer
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
-    
-    doc.setFontSize(10);
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, yPos + 20);
-    doc.text('_'.repeat(40), 120, yPos + 40);
-    doc.text('Assinatura do Farmacêutico', 120, yPos + 45);
-    
-    return doc;
-  };
-
   const generatePrescription = () => {
-    const doc = generatePDF();
-    const prescriptionContent = doc.output('datauristring');
+    const pdfData = {
+      patientData,
+      medications: medications.filter(med => med.name.trim() !== ''),
+      fontSize
+    };
+
+    const doc = generatePictogramPDF(pdfData);
     
-    // Open PDF in new window for preview
-    const newWindow = window.open();
-    if (newWindow) {
-      newWindow.document.write(`<iframe width='100%' height='100%' src='${prescriptionContent}'></iframe>`);
-    }
+    // Open PDF in new window
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
   };
 
   const downloadPrescription = () => {
-    const doc = generatePDF();
+    const pdfData = {
+      patientData,
+      medications: medications.filter(med => med.name.trim() !== ''),
+      fontSize
+    };
+
+    const doc = generatePictogramPDF(pdfData);
     doc.save(`receita_pictograma_${patientData.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const printPrescription = () => {
-    const doc = generatePDF();
+    const pdfData = {
+      patientData,
+      medications: medications.filter(med => med.name.trim() !== ''),
+      fontSize
+    };
+
+    const doc = generatePictogramPDF(pdfData);
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
     
@@ -279,11 +229,39 @@ const PictogramPrescription = () => {
         </CardContent>
       </Card>
 
+      {/* Configurações de Fonte */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="text-purple-600" size={24} />
+            Tamanho da Fonte
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Label>Ajustar tamanho da fonte: {fontSize > 0 ? `+${fontSize}` : fontSize}</Label>
+            <Slider
+              value={[fontSize]}
+              onValueChange={(value) => setFontSize(value[0])}
+              min={-2}
+              max={4}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>Menor</span>
+              <span>Normal</span>
+              <span>Maior</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Medicamentos */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Pill className="text-blue-600" size={24} />
+            <FileText className="text-blue-600" size={24} />
             Medicamentos de Uso Contínuo
           </CardTitle>
         </CardHeader>
@@ -392,15 +370,27 @@ const PictogramPrescription = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button onClick={generatePrescription} className="bg-heal-green-600 hover:bg-heal-green-700">
+            <Button 
+              onClick={generatePrescription} 
+              className="bg-heal-green-600 hover:bg-heal-green-700"
+              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
+            >
               <FileText size={16} className="mr-2" />
               Gerar Receita PDF
             </Button>
-            <Button onClick={downloadPrescription} variant="outline">
+            <Button 
+              onClick={downloadPrescription} 
+              variant="outline"
+              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
+            >
               <Download size={16} className="mr-2" />
               Baixar PDF
             </Button>
-            <Button onClick={printPrescription} variant="outline">
+            <Button 
+              onClick={printPrescription} 
+              variant="outline"
+              disabled={!patientData.name || medications.filter(med => med.name.trim() !== '').length === 0}
+            >
               <Printer size={16} className="mr-2" />
               Imprimir PDF
             </Button>

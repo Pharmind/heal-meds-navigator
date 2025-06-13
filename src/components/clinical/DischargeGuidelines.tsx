@@ -7,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Download, Printer, ClipboardCheck, Heart, Activity, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { usePathologies } from '@/hooks/usePathologies';
+import PathologyForm from './PathologyForm';
+import { generateDischargeGuidelinesPDF } from '@/utils/pdfGenerator';
 
 interface PatientInfo {
   name: string;
@@ -16,16 +19,6 @@ interface PatientInfo {
 interface PharmacistInfo {
   name: string;
   crf: string;
-}
-
-interface Pathology {
-  id: string;
-  name: string;
-  description: string;
-  basicInfo: string;
-  curiosity: string;
-  therapeutic: string;
-  icon: any;
 }
 
 const DischargeGuidelines = () => {
@@ -40,63 +33,16 @@ const DischargeGuidelines = () => {
   });
 
   const [selectedPathologies, setSelectedPathologies] = useState<string[]>([]);
+  const { data: pathologies = [], refetch } = usePathologies();
 
-  const pathologies: Pathology[] = [
-    {
-      id: 'hypertension',
-      name: 'Hipertensão Arterial',
-      description: 'Pressão arterial elevada de forma persistente',
-      basicInfo: 'A hipertensão arterial é uma condição crônica caracterizada pela elevação persistente da pressão arterial acima de 140/90 mmHg. É conhecida como "assassina silenciosa" pois geralmente não apresenta sintomas nas fases iniciais.',
-      curiosity: '💡 Curiosidade: O coração de uma pessoa hipertensa trabalha até 2 vezes mais para bombear sangue, sendo equivalente a carregar uma mochila de 10kg durante todo o dia!',
-      therapeutic: 'O controle adequado da pressão arterial através dos medicamentos prescritos reduz em até 40% o risco de AVC e 25% o risco de infarto. Nunca interrompa os medicamentos sem orientação médica, mesmo que se sinta bem.',
-      icon: Heart
-    },
-    {
-      id: 'diabetes',
-      name: 'Diabetes Mellitus',
-      description: 'Elevação dos níveis de glicose no sangue',
-      basicInfo: 'O diabetes é uma doença crônica que afeta a forma como o corpo processa a glicose (açúcar) no sangue. Pode ser tipo 1 (falta de insulina) ou tipo 2 (resistência à insulina).',
-      curiosity: '💡 Curiosidade: Uma pessoa com diabetes pode ter uma vida completamente normal! Muitos atletas olímpicos são diabéticos e mantêm excelente controle da doença.',
-      therapeutic: 'O uso correto dos medicamentos para diabetes previne complicações graves como cegueira, problemas renais e amputações. O controle rigoroso da glicemia pode adicionar anos de vida saudável.',
-      icon: Activity
-    },
-    {
-      id: 'cardiac',
-      name: 'Problemas Cardíacos',
-      description: 'Doenças que afetam o coração e circulação',
-      basicInfo: 'As doenças cardíacas incluem condições como insuficiência cardíaca, arritmias e doença coronariana. Afetam a capacidade do coração de bombear sangue eficientemente.',
-      curiosity: '💡 Curiosidade: O coração bate aproximadamente 100.000 vezes por dia! Cuidar bem dele significa garantir que continue trabalhando perfeitamente por muitos anos.',
-      therapeutic: 'Os medicamentos cardíacos ajudam o coração a trabalhar de forma mais eficiente e previnem eventos graves como infartos. A adesão ao tratamento pode melhorar significativamente a qualidade de vida.',
-      icon: Zap
-    },
-    {
-      id: 'respiratory',
-      name: 'Problemas Respiratórios',
-      description: 'Condições que afetam pulmões e vias respiratórias',
-      basicInfo: 'Incluem asma, DPOC (doença pulmonar obstrutiva crônica) e outras condições que dificultam a respiração e reduzem a capacidade pulmonar.',
-      curiosity: '💡 Curiosidade: Em repouso, respiramos cerca de 20.000 vezes por dia! Cuidar dos pulmões garante que cada respiração seja eficiente.',
-      therapeutic: 'Os medicamentos respiratórios ajudam a manter as vias aéreas abertas e reduzem a inflamação. O uso correto previne crises graves e hospitalizações.',
-      icon: Activity
-    },
-    {
-      id: 'thyroid',
-      name: 'Problemas da Tireoide',
-      description: 'Alterações no funcionamento da glândula tireoide',
-      basicInfo: 'A tireoide regula o metabolismo do corpo. Pode funcionar demais (hipertireoidismo) ou de menos (hipotireoidismo), afetando energia, peso e humor.',
-      curiosity: '💡 Curiosidade: A tireoide, apesar de pequena, controla o metabolismo de todas as células do corpo! É como o "termostato" do organismo.',
-      therapeutic: 'Os medicamentos para tireoide normalizam o metabolismo e previnem complicações cardíacas e ósseas. É importante tomar sempre no mesmo horário e em jejum.',
-      icon: Zap
-    },
-    {
-      id: 'mental-health',
-      name: 'Saúde Mental',
-      description: 'Condições que afetam humor, pensamento e comportamento',
-      basicInfo: 'Incluem depressão, ansiedade e outras condições que afetam o bem-estar emocional e mental. São tão importantes quanto as doenças físicas.',
-      curiosity: '💡 Curiosidade: O cérebro consome 20% de toda a energia do corpo! Cuidar da saúde mental é cuidar do órgão mais importante do organismo.',
-      therapeutic: 'Os medicamentos psiquiátricos ajudam a reequilibrar substâncias químicas do cérebro. A continuidade do tratamento é fundamental para manter a estabilidade emocional.',
-      icon: Heart
+  const getIconComponent = (iconName: string) => {
+    switch (iconName) {
+      case 'Heart': return Heart;
+      case 'Activity': return Activity;
+      case 'Zap': return Zap;
+      default: return Heart;
     }
-  ];
+  };
 
   const handlePathologyToggle = (pathologyId: string) => {
     if (selectedPathologies.includes(pathologyId)) {
@@ -107,15 +53,79 @@ const DischargeGuidelines = () => {
   };
 
   const generateGuidelines = () => {
-    console.log('Gerando orientações:', { patientInfo, selectedPathologies, pharmacistInfo });
+    const selectedPathologyData = pathologies
+      .filter(p => selectedPathologies.includes(p.id))
+      .map(p => ({
+        name: p.name,
+        basicInfo: p.basicInfo,
+        curiosity: p.curiosity,
+        therapeutic: p.therapeutic
+      }));
+
+    const pdfData = {
+      patientInfo,
+      pharmacistInfo,
+      pathologies: selectedPathologyData
+    };
+
+    const doc = generateDischargeGuidelinesPDF(pdfData);
+    
+    // Open PDF in new window
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
   };
 
   const downloadGuidelines = () => {
-    console.log('Download das orientações');
+    const selectedPathologyData = pathologies
+      .filter(p => selectedPathologies.includes(p.id))
+      .map(p => ({
+        name: p.name,
+        basicInfo: p.basicInfo,
+        curiosity: p.curiosity,
+        therapeutic: p.therapeutic
+      }));
+
+    const pdfData = {
+      patientInfo,
+      pharmacistInfo,
+      pathologies: selectedPathologyData
+    };
+
+    const doc = generateDischargeGuidelinesPDF(pdfData);
+    doc.save(`orientacoes_alta_${patientInfo.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const printGuidelines = () => {
-    window.print();
+    const selectedPathologyData = pathologies
+      .filter(p => selectedPathologies.includes(p.id))
+      .map(p => ({
+        name: p.name,
+        basicInfo: p.basicInfo,
+        curiosity: p.curiosity,
+        therapeutic: p.therapeutic
+      }));
+
+    const pdfData = {
+      patientInfo,
+      pharmacistInfo,
+      pathologies: selectedPathologyData
+    };
+
+    const doc = generateDischargeGuidelinesPDF(pdfData);
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    const printWindow = window.open(pdfUrl);
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
+
+  const handlePathologyFormSuccess = () => {
+    refetch();
   };
 
   return (
@@ -157,6 +167,9 @@ const DischargeGuidelines = () => {
         </CardContent>
       </Card>
 
+      {/* Formulário para nova patologia */}
+      <PathologyForm onSuccess={handlePathologyFormSuccess} />
+
       {/* Seleção de Patologias */}
       <Card>
         <CardHeader>
@@ -176,7 +189,7 @@ const DischargeGuidelines = () => {
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pathologies.map((pathology) => {
-              const Icon = pathology.icon;
+              const Icon = getIconComponent(pathology.iconName);
               const isSelected = selectedPathologies.includes(pathology.id);
               const isDisabled = !isSelected && selectedPathologies.length >= 3;
               
@@ -284,6 +297,7 @@ const DischargeGuidelines = () => {
           variant="outline"
           size="lg"
           className="border-heal-green-600 text-heal-green-600 hover:bg-heal-green-50"
+          disabled={!patientInfo.name || selectedPathologies.length === 0 || !pharmacistInfo.name || !pharmacistInfo.crf}
         >
           <Download size={20} className="mr-2" />
           Baixar PDF
@@ -293,6 +307,7 @@ const DischargeGuidelines = () => {
           variant="outline"
           size="lg"
           className="border-heal-green-600 text-heal-green-600 hover:bg-heal-green-50"
+          disabled={!patientInfo.name || selectedPathologies.length === 0 || !pharmacistInfo.name || !pharmacistInfo.crf}
         >
           <Printer size={20} className="mr-2" />
           Imprimir

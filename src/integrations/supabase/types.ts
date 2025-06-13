@@ -189,6 +189,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pathologies: {
+        Row: {
+          basic_info: string
+          created_at: string
+          curiosity: string
+          description: string
+          icon_name: string
+          id: string
+          name: string
+          therapeutic: string
+          updated_at: string
+        }
+        Insert: {
+          basic_info: string
+          created_at?: string
+          curiosity: string
+          description: string
+          icon_name?: string
+          id?: string
+          name: string
+          therapeutic: string
+          updated_at?: string
+        }
+        Update: {
+          basic_info?: string
+          created_at?: string
+          curiosity?: string
+          description?: string
+          icon_name?: string
+          id?: string
+          name?: string
+          therapeutic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

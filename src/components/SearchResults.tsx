@@ -84,7 +84,7 @@ const SearchResults = ({
                     <Badge variant="secondary">{medication.mvCode}</Badge>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{medication.therapeuticClass}</p>
-                  <p className="text-sm text-gray-500 mb-3">{medication.concentration}</p>
+                  <p className="text-sm text-gray-500 mb-3">{medication.presentation}</p>
                   <Button 
                     onClick={() => onMedicationClick(medication)}
                     size="sm"
@@ -119,8 +119,7 @@ const SearchResults = ({
                     <h4 className="font-medium text-lg">{material.name}</h4>
                     <Badge variant="secondary">{material.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{material.category}</p>
-                  <p className="text-sm text-gray-500">{material.unit}</p>
+                  <p className="text-sm text-gray-500">{material.observation}</p>
                 </div>
               ))}
             </div>
@@ -148,8 +147,7 @@ const SearchResults = ({
                     <h4 className="font-medium text-lg">{diet.name}</h4>
                     <Badge variant="secondary">{diet.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{diet.category}</p>
-                  <p className="text-sm text-gray-500">{diet.description}</p>
+                  <p className="text-sm text-gray-500">{diet.observation}</p>
                 </div>
               ))}
             </div>
