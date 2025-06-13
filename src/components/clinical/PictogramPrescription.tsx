@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -111,7 +110,7 @@ const PictogramPrescription = () => {
             variant="outline" 
             onClick={() => setShowInteractions(false)}
           >
-            Voltar ao Pictograma
+            Voltar à Receita Simplificada
           </Button>
         </div>
         <DrugInteractions 
@@ -124,7 +123,7 @@ const PictogramPrescription = () => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Receita em Pictograma</h2>
+        <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Receita Simplificada</h2>
         <p className="text-gray-600">Prescrição visual para melhor compreensão do tratamento</p>
       </div>
 
@@ -355,7 +354,7 @@ const PictogramPrescription = () => {
             <div>
               <h4 className="font-semibold text-orange-800 mb-1">Importante</h4>
               <p className="text-sm text-orange-700">
-                A receita em pictograma é uma ferramenta auxiliar de comunicação. 
+                A receita simplificada é uma ferramenta auxiliar de comunicação. 
                 Sempre mantenha a prescrição médica original e oriente sobre a importância 
                 do acompanhamento médico regular.
               </p>

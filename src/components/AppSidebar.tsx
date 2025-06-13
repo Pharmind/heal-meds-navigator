@@ -1,5 +1,5 @@
 
-import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/collapsible';
 
 interface AppSidebarProps {
-  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines') => void;
+  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions') => void;
   selectedSection: string;
 }
 
@@ -44,7 +44,8 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
     { id: 'intoxication', label: 'Intoxicação e Antídotos', icon: AlertTriangle },
     { id: 'high-alert', label: 'Alta Vigilância', icon: Eye },
     { id: 'elderly', label: 'Medicamentos p/ Idosos', icon: Users },
-    { id: 'pictogram', label: 'Receita em Pictograma', icon: Image },
+    { id: 'pictogram', label: 'Receita Simplificada', icon: Image },
+    { id: 'drug-interactions', label: 'Interações Medicamentosas', icon: Zap },
     { id: 'discharge-guidelines', label: 'Orientações de Alta', icon: ClipboardCheck },
     { id: 'pharmacovigilance', label: 'Farmacovigilância', icon: Shield },
     { id: 'cft', label: 'CFT', icon: FileText },
