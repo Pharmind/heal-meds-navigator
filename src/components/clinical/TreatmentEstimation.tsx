@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTreatmentEstimations, useSaveTreatmentEstimation } from '@/hooks/useTreatmentEstimations';
 import { useTreatmentCalculations } from './treatment-estimation/hooks/useTreatmentCalculations';
@@ -11,6 +10,7 @@ import DashboardResults from './treatment-estimation/DashboardResults';
 import SavedEstimations from './treatment-estimation/SavedEstimations';
 import EstimationSummary from './treatment-estimation/EstimationSummary';
 import EstimationConsultation from './treatment-estimation/EstimationConsultation';
+import EstimationDashboard from './treatment-estimation/EstimationDashboard';
 
 const TreatmentEstimation = () => {
   const [currentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -21,7 +21,7 @@ const TreatmentEstimation = () => {
   const [estimatedDays, setEstimatedDays] = useState<number>(7);
   const [currentStock, setCurrentStock] = useState<number>(0);
   const [stockUnit, setStockUnit] = useState('mg');
-  const [activeTab, setActiveTab] = useState<'new' | 'consultation' | 'summary'>('new');
+  const [activeTab, setActiveTab] = useState<'new' | 'consultation' | 'summary' | 'dashboard'>('new');
 
   const { data: savedEstimations, isLoading: loadingEstimations, refetch } = useTreatmentEstimations(currentDate, hospitalUnit);
   const saveMutation = useSaveTreatmentEstimation();
@@ -124,6 +124,16 @@ const TreatmentEstimation = () => {
             Consultar/Atualizar
           </button>
           <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'dashboard' 
+                ? 'border-indigo-500 text-indigo-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            📊 Dashboard
+          </button>
+          <button
             onClick={() => setActiveTab('summary')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               activeTab === 'summary' 
@@ -184,6 +194,13 @@ const TreatmentEstimation = () => {
           estimations={savedEstimations || []}
           hospitalUnit={hospitalUnit}
           onEstimationUpdated={() => refetch()}
+        />
+      )}
+
+      {hospitalUnit && activeTab === 'dashboard' && (
+        <EstimationDashboard
+          estimations={savedEstimations || []}
+          selectedUnit={hospitalUnit}
         />
       )}
 
