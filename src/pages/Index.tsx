@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Medication, Material, Diet } from '../types/heal';
 import SearchBox from '@/components/SearchBox';
@@ -13,6 +12,7 @@ import ElderlySection from '@/components/clinical/ElderlySection';
 import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
 import { useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { intelligentSearch, calculateRelevanceScore } from '@/utils/searchUtils';
 
 const Index = () => {
   const [selectedSection, setSelectedSection] = useState<
@@ -29,21 +29,68 @@ const Index = () => {
 
   useEffect(() => {
     const filterData = () => {
-      const filteredMedications = medications.filter((medication) =>
-        medication.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        medication.mvCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        medication.therapeuticClass.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      if (!searchQuery.trim()) {
+        setFilteredMedications([]);
+        setFilteredMaterials([]);
+        setFilteredDiets([]);
+        return;
+      }
 
-      const filteredMaterials = materials.filter((material) =>
-        material.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        material.mvCode.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      // Filtrar medicamentos com busca inteligente
+      const filteredMedications = medications
+        .filter((medication) => {
+          return intelligentSearch(searchQuery, medication.name) ||
+                 intelligentSearch(searchQuery, medication.mvCode) ||
+                 intelligentSearch(searchQuery, medication.therapeuticClass) ||
+                 intelligentSearch(searchQuery, medication.indication);
+        })
+        .map((medication) => ({
+          ...medication,
+          relevanceScore: Math.max(
+            calculateRelevanceScore(searchQuery, medication.name),
+            calculateRelevanceScore(searchQuery, medication.mvCode),
+            calculateRelevanceScore(searchQuery, medication.therapeuticClass),
+            calculateRelevanceScore(searchQuery, medication.indication)
+          )
+        }))
+        .sort((a, b) => (b as any).relevanceScore - (a as any).relevanceScore)
+        .map(({ relevanceScore, ...medication }) => medication as Medication);
 
-      const filteredDiets = diets.filter((diet) =>
-        diet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        diet.mvCode.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      // Filtrar materiais com busca inteligente
+      const filteredMaterials = materials
+        .filter((material) => {
+          return intelligentSearch(searchQuery, material.name) ||
+                 intelligentSearch(searchQuery, material.mvCode) ||
+                 intelligentSearch(searchQuery, material.observation);
+        })
+        .map((material) => ({
+          ...material,
+          relevanceScore: Math.max(
+            calculateRelevanceScore(searchQuery, material.name),
+            calculateRelevanceScore(searchQuery, material.mvCode),
+            calculateRelevanceScore(searchQuery, material.observation)
+          )
+        }))
+        .sort((a, b) => (b as any).relevanceScore - (a as any).relevanceScore)
+        .map(({ relevanceScore, ...material }) => material as Material);
+
+      // Filtrar dietas com busca inteligente
+      const filteredDiets = diets
+        .filter((diet) => {
+          return intelligentSearch(searchQuery, diet.name) ||
+                 intelligentSearch(searchQuery, diet.mvCode) ||
+                 intelligentSearch(searchQuery, diet.observation);
+        })
+        .map((diet) => ({
+          ...diet,
+          relevanceScore: Math.max(
+            calculateRelevanceScore(searchQuery, diet.name),
+            calculateRelevanceScore(searchQuery, diet.mvCode),
+            calculateRelevanceScore(searchQuery, diet.observation)
+          )
+        }))
+        .sort((a, b) => (b as any).relevanceScore - (a as any).relevanceScore)
+        .map(({ relevanceScore, ...diet }) => diet as Diet);
 
       setFilteredMedications(filteredMedications);
       setFilteredMaterials(filteredMaterials);

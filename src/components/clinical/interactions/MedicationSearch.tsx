@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Plus, X } from 'lucide-react';
 import { useMedications } from '@/hooks/useSupabaseData';
 import { useDrugInteractions } from '@/hooks/useDrugInteractions';
+import { intelligentSearch, calculateRelevanceScore } from '@/utils/searchUtils';
 
 interface MedicationSearchProps {
   selectedMedications: string[];
@@ -32,10 +33,17 @@ const MedicationSearch = ({ selectedMedications, onMedicationAdd, onMedicationRe
     ...interactionMedications
   ])).sort();
 
-  const filteredMedications = allMedicationNames.filter(name =>
-    name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !selectedMedications.includes(name)
-  ).slice(0, 15);
+  // Filtrar medicamentos com busca inteligente
+  const filteredMedications = allMedicationNames
+    .filter(name => !selectedMedications.includes(name))
+    .filter(name => intelligentSearch(searchTerm, name))
+    .map(name => ({
+      name,
+      relevanceScore: calculateRelevanceScore(searchTerm, name)
+    }))
+    .sort((a, b) => b.relevanceScore - a.relevanceScore)
+    .slice(0, 15)
+    .map(item => item.name);
 
   const handleMedicationSelect = (medicationName: string) => {
     onMedicationAdd(medicationName);
@@ -53,7 +61,7 @@ const MedicationSearch = ({ selectedMedications, onMedicationAdd, onMedicationRe
         </CardTitle>
         <p className="text-sm text-gray-600">
           Digite o nome do medicamento (de marca ou genérico) no campo de pesquisa. 
-          A lista inclui medicamentos do cadastro geral e da base de interações.
+          A busca ignora acentos e pequenos erros de digitação.
         </p>
         <div className="flex gap-2 text-xs">
           <Badge variant="outline">{medications.length} medicamentos cadastrados</Badge>
