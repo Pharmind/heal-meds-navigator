@@ -3,10 +3,6 @@ import { useState } from 'react';
 import { Database, Heart } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSidebarMenuItems } from '@/hooks/useSidebarMenuItems';
-import {
-  Sidebar,
-  SidebarContent,
-} from '@/components/ui/sidebar';
 import SidebarHeader from '@/components/sidebar/SidebarHeader';
 import SidebarFooter from '@/components/sidebar/SidebarFooter';
 import MenuSection from '@/components/sidebar/MenuSection';
@@ -35,10 +31,10 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   const hasAnyItems = padronizacaoItems.length > 0 || farmaciaClinicaItems.length > 0;
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white min-h-screen">
       <SidebarHeader />
       
-      <div className={`flex-1 ${isMobile ? 'px-3 py-4' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
+      <div className={`flex-1 ${isMobile ? 'px-2 py-3' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
         <MenuSection
           title="Padronizado"
           icon={Database}

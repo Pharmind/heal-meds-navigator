@@ -5,65 +5,108 @@ const MOBILE_BREAKPOINT = 768
 const TABLET_BREAKPOINT = 1024
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < MOBILE_BREAKPOINT;
+  });
 
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
     
     // Set initial value
-    checkMobile()
+    checkMobile();
     
-    // Listen for resize events
-    window.addEventListener("resize", checkMobile)
+    // Listen for resize events with debounce
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheck = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkMobile, 100);
+    };
+    
+    window.addEventListener("resize", debouncedCheck);
+    window.addEventListener("orientationchange", checkMobile);
     
     // Cleanup
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    return () => {
+      window.removeEventListener("resize", debouncedCheck);
+      window.removeEventListener("orientationchange", checkMobile);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
-  return !!isMobile
+  return isMobile;
 }
 
 export function useIsTablet() {
-  const [isTablet, setIsTablet] = React.useState<boolean | undefined>(undefined)
+  const [isTablet, setIsTablet] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const width = window.innerWidth;
+    return width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT;
+  });
 
   React.useEffect(() => {
     const checkTablet = () => {
-      const width = window.innerWidth
-      setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT)
-    }
+      const width = window.innerWidth;
+      setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT);
+    };
     
     // Set initial value
-    checkTablet()
+    checkTablet();
     
-    // Listen for resize events
-    window.addEventListener("resize", checkTablet)
+    // Listen for resize events with debounce
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheck = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkTablet, 100);
+    };
+    
+    window.addEventListener("resize", debouncedCheck);
+    window.addEventListener("orientationchange", checkTablet);
     
     // Cleanup
-    return () => window.removeEventListener("resize", checkTablet)
-  }, [])
+    return () => {
+      window.removeEventListener("resize", debouncedCheck);
+      window.removeEventListener("orientationchange", checkTablet);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
-  return !!isTablet
+  return isTablet;
 }
 
 export function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = React.useState<boolean | undefined>(undefined)
+  const [isDesktop, setIsDesktop] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= TABLET_BREAKPOINT;
+  });
 
   React.useEffect(() => {
     const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= TABLET_BREAKPOINT)
-    }
+      setIsDesktop(window.innerWidth >= TABLET_BREAKPOINT);
+    };
     
     // Set initial value
-    checkDesktop()
+    checkDesktop();
     
-    // Listen for resize events
-    window.addEventListener("resize", checkDesktop)
+    // Listen for resize events with debounce
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheck = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkDesktop, 100);
+    };
+    
+    window.addEventListener("resize", debouncedCheck);
+    window.addEventListener("orientationchange", checkDesktop);
     
     // Cleanup
-    return () => window.removeEventListener("resize", checkDesktop)
-  }, [])
+    return () => {
+      window.removeEventListener("resize", debouncedCheck);
+      window.removeEventListener("orientationchange", checkDesktop);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
-  return !!isDesktop
+  return isDesktop;
 }
