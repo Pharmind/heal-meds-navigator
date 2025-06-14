@@ -261,8 +261,8 @@ const EstimationDashboard = ({ estimations, selectedUnit }: EstimationDashboardP
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Análise Rápida */}
       <Card className="border-l-4 border-l-indigo-500">
