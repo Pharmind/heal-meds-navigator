@@ -27,6 +27,12 @@ const Index = () => {
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
   const [filteredDiets, setFilteredDiets] = useState<Diet[]>([]);
 
+  // Always reset to 'search' section when component mounts or remounts
+  useEffect(() => {
+    setSelectedSection('search');
+    setSearchQuery('');
+  }, []);
+
   useEffect(() => {
     const filterData = () => {
       if (!searchQuery.trim()) {
