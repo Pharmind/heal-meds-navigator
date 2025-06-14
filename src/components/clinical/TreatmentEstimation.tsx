@@ -22,17 +22,29 @@ const TreatmentEstimation = () => {
   const [totalPatientsUsing, setTotalPatientsUsing] = useState<number>(0);
   const [currentStock, setCurrentStock] = useState<number>(0);
   const [stockUnit, setStockUnit] = useState('mg');
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
-  const { data: savedEstimations } = useTreatmentEstimations(currentDate, hospitalUnit);
+  const { data: savedEstimations, isLoading: loadingEstimations } = useTreatmentEstimations(currentDate, hospitalUnit);
   const saveMutation = useSaveTreatmentEstimation();
 
   const { dailyConsumption, treatmentConsumption, stockCoverageDays, isStockSufficient } = 
     useTreatmentCalculations(dailyDosePerPatient, totalPatientsUsing, averageTreatmentDays, currentStock);
 
-  // Auto-save quando os dados mudam
+  // Auto-save with improved validation and debouncing
   useEffect(() => {
-    if (hospitalUnit && antimicrobialName && dailyDosePerPatient > 0 && totalPatientsUsing > 0) {
+    const isValidForSaving = () => {
+      return hospitalUnit && 
+             antimicrobialName && 
+             dailyDosePerPatient > 0 && 
+             totalPatientsUsing > 0 &&
+             averageTreatmentDays > 0 &&
+             frequencyPerDay > 0;
+    };
+
+    if (isValidForSaving() && !saveMutation.isPending) {
       const timeoutId = setTimeout(() => {
+        console.log('🔄 Auto-salvando estimativa...');
+        
         saveMutation.mutate({
           estimationDate: currentDate,
           hospitalUnit,
@@ -47,14 +59,34 @@ const TreatmentEstimation = () => {
           treatmentConsumption,
           stockCoverageDays,
           isStockSufficient,
+        }, {
+          onSuccess: () => {
+            setLastSaveTime(new Date());
+          }
         });
-      }, 2000);
+      }, 1500); // Reduced debounce time for better UX
 
       return () => clearTimeout(timeoutId);
     }
-  }, [hospitalUnit, antimicrobialName, dailyDosePerPatient, averageTreatmentDays, frequencyPerDay, totalPatientsUsing, currentStock, stockUnit]);
+  }, [
+    hospitalUnit, 
+    antimicrobialName, 
+    dailyDosePerPatient, 
+    averageTreatmentDays, 
+    frequencyPerDay, 
+    totalPatientsUsing, 
+    currentStock, 
+    stockUnit,
+    dailyConsumption,
+    treatmentConsumption,
+    stockCoverageDays,
+    isStockSufficient,
+    saveMutation,
+    currentDate
+  ]);
 
   const clearForm = () => {
+    console.log('🧹 Limpando formulário...');
     setAntimicrobialName('');
     setDailyDosePerPatient(0);
     setAverageTreatmentDays(7);
@@ -62,10 +94,21 @@ const TreatmentEstimation = () => {
     setTotalPatientsUsing(0);
     setCurrentStock(0);
     setStockUnit('mg');
+    setLastSaveTime(null);
+  };
+
+  const loadEstimation = (estimation: any) => {
+    console.log('📥 Carregando estimativa salva:', estimation.antimicrobialName);
+    setAntimicrobialName(estimation.antimicrobialName);
+    setDailyDosePerPatient(estimation.dailyDosePerPatient);
+    setAverageTreatmentDays(estimation.averageTreatmentDays);
+    setFrequencyPerDay(estimation.frequencyPerDay);
+    setTotalPatientsUsing(estimation.totalPatientsUsing);
+    setCurrentStock(estimation.currentStock);
+    setStockUnit(estimation.stockUnit);
   };
 
   const stockStatus = getStockStatus(currentStock, stockCoverageDays, isStockSufficient);
-
   const showResults = hospitalUnit && antimicrobialName && dailyDosePerPatient > 0 && totalPatientsUsing > 0;
 
   return (
@@ -98,6 +141,7 @@ const TreatmentEstimation = () => {
         stockUnits={stockUnits}
         clearForm={clearForm}
         isPending={saveMutation.isPending}
+        lastSaveTime={lastSaveTime}
       />
 
       {showResults && (
@@ -115,10 +159,11 @@ const TreatmentEstimation = () => {
         />
       )}
 
-      {savedEstimations && savedEstimations.length > 0 && (
+      {savedEstimations && savedEstimations.length > 0 && !loadingEstimations && (
         <SavedEstimations
           savedEstimations={savedEstimations}
           hospitalUnit={hospitalUnit}
+          onLoadEstimation={loadEstimation}
         />
       )}
 

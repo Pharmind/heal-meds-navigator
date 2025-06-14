@@ -46,15 +46,15 @@ const convertFromSupabase = (data: SupabaseTreatmentEstimation): TreatmentEstima
   estimationDate: data.estimation_date,
   hospitalUnit: data.hospital_unit,
   antimicrobialName: data.antimicrobial_name,
-  dailyDosePerPatient: data.daily_dose_per_patient,
+  dailyDosePerPatient: Number(data.daily_dose_per_patient),
   averageTreatmentDays: data.average_treatment_days,
   frequencyPerDay: data.frequency_per_day,
   totalPatientsUsing: data.total_patients_using,
-  currentStock: data.current_stock,
+  currentStock: Number(data.current_stock),
   stockUnit: data.stock_unit,
-  dailyConsumption: data.daily_consumption,
-  treatmentConsumption: data.treatment_consumption,
-  stockCoverageDays: data.stock_coverage_days,
+  dailyConsumption: Number(data.daily_consumption),
+  treatmentConsumption: Number(data.treatment_consumption),
+  stockCoverageDays: Number(data.stock_coverage_days),
   isStockSufficient: data.is_stock_sufficient,
   createdAt: data.created_at,
   updatedAt: data.updated_at,
@@ -64,11 +64,12 @@ export const useTreatmentEstimations = (date?: string, hospitalUnit?: string) =>
   return useQuery({
     queryKey: ['treatmentEstimations', date, hospitalUnit],
     queryFn: async () => {
-      console.log('Buscando estimativas de tratamento...');
+      console.log('🔍 Buscando estimativas de tratamento...', { date, hospitalUnit });
+      
       let query = supabase
         .from('treatment_estimations')
         .select('*')
-        .order('antimicrobial_name');
+        .order('updated_at', { ascending: false });
 
       if (date) {
         query = query.eq('estimation_date', date);
@@ -80,13 +81,15 @@ export const useTreatmentEstimations = (date?: string, hospitalUnit?: string) =>
       const { data, error } = await query;
 
       if (error) {
-        console.error('Erro ao buscar estimativas:', error);
-        throw error;
+        console.error('❌ Erro ao buscar estimativas:', error);
+        throw new Error(`Erro ao carregar estimativas: ${error.message}`);
       }
 
-      console.log('Estimativas encontradas:', data?.length);
+      console.log(`✅ ${data?.length || 0} estimativas encontradas`);
       return data?.map(convertFromSupabase) || [];
     },
+    staleTime: 30000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -96,23 +99,38 @@ export const useSaveTreatmentEstimation = () => {
 
   return useMutation({
     mutationFn: async (estimation: Omit<TreatmentEstimation, 'id' | 'createdAt' | 'updatedAt'>) => {
-      console.log('Salvando estimativa:', estimation);
+      console.log('💾 Iniciando salvamento da estimativa...', {
+        antimicrobial: estimation.antimicrobialName,
+        unit: estimation.hospitalUnit,
+        date: estimation.estimationDate
+      });
+
+      // Validate required fields
+      if (!estimation.hospitalUnit || !estimation.antimicrobialName) {
+        throw new Error('Unidade hospitalar e antimicrobiano são obrigatórios');
+      }
+
+      if (estimation.dailyDosePerPatient <= 0 || estimation.totalPatientsUsing <= 0) {
+        throw new Error('Dose diária e número de pacientes devem ser maiores que zero');
+      }
 
       const dataToSave = {
         estimation_date: estimation.estimationDate,
         hospital_unit: estimation.hospitalUnit,
         antimicrobial_name: estimation.antimicrobialName,
-        daily_dose_per_patient: estimation.dailyDosePerPatient,
+        daily_dose_per_patient: Number(estimation.dailyDosePerPatient),
         average_treatment_days: estimation.averageTreatmentDays,
         frequency_per_day: estimation.frequencyPerDay,
         total_patients_using: estimation.totalPatientsUsing,
-        current_stock: estimation.currentStock,
+        current_stock: Number(estimation.currentStock),
         stock_unit: estimation.stockUnit,
-        daily_consumption: estimation.dailyConsumption,
-        treatment_consumption: estimation.treatmentConsumption,
-        stock_coverage_days: estimation.stockCoverageDays,
+        daily_consumption: Number(estimation.dailyConsumption),
+        treatment_consumption: Number(estimation.treatmentConsumption),
+        stock_coverage_days: Number(estimation.stockCoverageDays),
         is_stock_sufficient: estimation.isStockSufficient,
       };
+
+      console.log('📝 Dados preparados para salvamento:', dataToSave);
 
       const { data, error } = await supabase
         .from('treatment_estimations')
@@ -124,26 +142,80 @@ export const useSaveTreatmentEstimation = () => {
         .single();
 
       if (error) {
-        console.error('Erro ao salvar estimativa:', error);
-        throw error;
+        console.error('❌ Erro detalhado ao salvar:', error);
+        
+        // Handle specific database constraint errors
+        if (error.code === '23514') {
+          throw new Error('Dados inválidos: verifique se todos os valores são positivos');
+        }
+        if (error.code === '23505') {
+          throw new Error('Estimativa já existe para esta data, unidade e antimicrobiano');
+        }
+        
+        throw new Error(`Erro ao salvar: ${error.message}`);
       }
 
-      console.log('Estimativa salva com sucesso:', data);
+      console.log('✅ Estimativa salva com sucesso:', data?.id);
       return convertFromSupabase(data);
+    },
+    onSuccess: (data) => {
+      // Invalidate and refetch queries
+      queryClient.invalidateQueries({ queryKey: ['treatmentEstimations'] });
+      
+      toast({
+        title: "✅ Salvo com sucesso!",
+        description: `Estimativa para ${data.antimicrobialName} atualizada automaticamente.`,
+        duration: 2000,
+      });
+      
+      console.log('🔄 Cache atualizado para:', data.antimicrobialName);
+    },
+    onError: (error) => {
+      console.error('💥 Erro no salvamento:', error);
+      
+      toast({
+        title: "❌ Erro ao salvar",
+        description: error.message || "Falha ao salvar a estimativa. Tente novamente.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    },
+  });
+};
+
+export const useDeleteTreatmentEstimation = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (estimationId: string) => {
+      console.log('🗑️ Deletando estimativa:', estimationId);
+      
+      const { error } = await supabase
+        .from('treatment_estimations')
+        .delete()
+        .eq('id', estimationId);
+
+      if (error) {
+        console.error('❌ Erro ao deletar:', error);
+        throw new Error(`Erro ao deletar: ${error.message}`);
+      }
+
+      console.log('✅ Estimativa deletada com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['treatmentEstimations'] });
       toast({
-        title: "Sucesso",
-        description: "Estimativa salva automaticamente!",
+        title: "✅ Deletado!",
+        description: "Estimativa removida com sucesso.",
+        duration: 2000,
       });
     },
     onError: (error) => {
-      console.error('Erro ao salvar:', error);
       toast({
-        title: "Erro",
-        description: "Falha ao salvar a estimativa. Tente novamente.",
-        variant: "destructive"
+        title: "❌ Erro ao deletar",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
