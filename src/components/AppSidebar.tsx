@@ -1,5 +1,5 @@
 
-import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft, Stethoscope, Database } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft, Stethoscope, Database, Calculator } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/collapsible';
 
 interface AppSidebarProps {
-  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions') => void;
+  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation') => void;
   selectedSection: string;
 }
 
@@ -48,6 +48,7 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
     { id: 'pictogram', label: 'Receita Simplificada', icon: Image, color: 'text-cyan-600' },
     { id: 'drug-interactions', label: 'Interações Medicamentosas', icon: Zap, color: 'text-yellow-600' },
     { id: 'discharge-guidelines', label: 'Orientações de Alta', icon: ClipboardCheck, color: 'text-teal-600' },
+    { id: 'treatment-estimation', label: 'Estimativa de Tratamento', icon: Calculator, color: 'text-rose-600' },
     { id: 'pharmacovigilance', label: 'Farmacovigilância', icon: Shield, color: 'text-emerald-600' },
     { id: 'cft', label: 'CFT', icon: FileText, color: 'text-slate-600' },
     { id: 'protocols', label: 'Protocolos', icon: Heart, color: 'text-pink-600' },
