@@ -1,15 +1,29 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDrugInteractions, checkDrugInteractions } from '@/hooks/useDrugInteractions';
 import { generateInteractionReportPDF } from '@/utils/pdfGenerator';
 import { toast } from 'sonner';
 import MedicationSearch from './interactions/MedicationSearch';
 import InteractionAnalysis from './interactions/InteractionAnalysis';
 
-const DrugInteractions = () => {
+interface DrugInteractionsProps {
+  importedMedications?: string[];
+}
+
+const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) => {
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   
   const { data: allInteractions = [], isLoading } = useDrugInteractions();
+  
+  // Initialize with imported medications when component mounts
+  useEffect(() => {
+    if (importedMedications.length > 0) {
+      setSelectedMedications(importedMedications);
+      if (importedMedications.length > 1) {
+        toast.success(`${importedMedications.length} medicamentos importados da receita`);
+      }
+    }
+  }, [importedMedications]);
   
   const foundInteractions = checkDrugInteractions(selectedMedications, allInteractions);
 
@@ -70,6 +84,11 @@ const DrugInteractions = () => {
         <p className="text-gray-600">
           Análise de interações medicamento-medicamento e medicamento-nutriente
         </p>
+        {importedMedications.length > 0 && (
+          <p className="text-sm text-blue-600 mt-2">
+            Medicamentos importados da Receita Simplificada
+          </p>
+        )}
       </div>
 
       <MedicationSearch 
