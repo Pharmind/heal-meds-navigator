@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Medication, Material, Diet } from '../types/heal';
 import SearchBox from '@/components/SearchBox';
@@ -6,6 +7,9 @@ import CategoryTable from '@/components/CategoryTable';
 import AppSidebar from '@/components/AppSidebar';
 import { useAllData } from '@/hooks/useSupabaseData';
 import ClinicalPharmacy from '@/components/ClinicalPharmacy';
+import IntoxicationSection from '@/components/clinical/IntoxicationSection';
+import HighAlertSection from '@/components/clinical/HighAlertSection';
+import ElderlySection from '@/components/clinical/ElderlySection';
 import { useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
@@ -132,14 +136,13 @@ const Index = () => {
         );
 
       case 'intoxication':
+        return <IntoxicationSection />;
+
       case 'high-alert':
+        return <HighAlertSection />;
+
       case 'elderly':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-700">Seção em desenvolvimento</h2>
-            <p className="text-gray-500 mt-2">Esta funcionalidade será implementada em breve.</p>
-          </div>
-        );
+        return <ElderlySection />;
 
       case 'pharmacovigilance':
       case 'cft':
