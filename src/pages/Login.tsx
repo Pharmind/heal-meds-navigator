@@ -5,33 +5,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Pill } from 'lucide-react';
 
 const Login = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   // Login form state
   const [loginData, setLoginData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
 
-  // Signup form state
-  const [signupData, setSignupData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    fullName: '',
-  });
+  // Mapear usuários para emails
+  const getUserEmail = (username: string): string => {
+    switch (username.toLowerCase()) {
+      case 'heal123':
+        return 'heal123@heal.com';
+      case 'fa123':
+        return 'fa123@heal.com';
+      default:
+        return username; // Fallback para caso seja um email
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginData.email || !loginData.password) {
+    if (!loginData.username || !loginData.password) {
       toast.error('Por favor, preencha todos os campos');
       return;
     }
@@ -39,11 +42,12 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(loginData.email, loginData.password);
+      const email = getUserEmail(loginData.username);
+      const { error } = await signIn(email, loginData.password);
       
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          toast.error('Email ou senha incorretos');
+          toast.error('Usuário ou senha incorretos');
         } else if (error.message.includes('Email not confirmed')) {
           toast.error('Por favor, confirme seu email antes de fazer login');
         } else {
@@ -55,46 +59,6 @@ const Login = () => {
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Erro inesperado ao fazer login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!signupData.email || !signupData.password || !signupData.fullName) {
-      toast.error('Por favor, preencha todos os campos');
-      return;
-    }
-
-    if (signupData.password !== signupData.confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
-
-    if (signupData.password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
-      
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          toast.error('Este email já está cadastrado');
-        } else {
-          toast.error('Erro ao criar conta: ' + error.message);
-        }
-      } else {
-        toast.success('Conta criada com sucesso! Verifique seu email para confirmação.');
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error('Erro inesperado ao criar conta');
     } finally {
       setIsLoading(false);
     }
@@ -116,131 +80,65 @@ const Login = () => {
           <CardHeader>
             <CardTitle className="text-center">Acesso ao Sistema</CardTitle>
             <CardDescription className="text-center">
-              Faça login ou crie uma nova conta
+              Digite suas credenciais para acessar a plataforma
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Cadastro</TabsTrigger>
-              </TabsList>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Usuário</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Digite seu usuário"
+                  value={loginData.username}
+                  onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
               
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="********"
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                        disabled={isLoading}
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Entrando...' : 'Entrar'}
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Digite sua senha"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                    disabled={isLoading}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
-                </form>
-              </TabsContent>
+                </div>
+              </div>
               
-              <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nome Completo</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={signupData.fullName}
-                      onChange={(e) => setSignupData({...signupData, fullName: e.target.value})}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={signupData.email}
-                      onChange={(e) => setSignupData({...signupData, email: e.target.value})}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Senha</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Mínimo 6 caracteres"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({...signupData, password: e.target.value})}
-                      disabled={isLoading}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-confirm">Confirmar Senha</Label>
-                    <Input
-                      id="signup-confirm"
-                      type="password"
-                      placeholder="Digite a senha novamente"
-                      value={signupData.confirmPassword}
-                      onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Criando conta...' : 'Criar Conta'}
-                  </Button>
-                  
-                  <div className="text-sm text-center text-gray-600 mt-4">
-                    <p>Nota: Novos usuários precisam de aprovação de um farmacêutico para acessar módulos específicos.</p>
-                  </div>
-                </form>
-              </TabsContent>
-            </Tabs>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Entrando...' : 'Entrar'}
+              </Button>
+            </form>
+            
+            <div className="text-sm text-center text-gray-600 mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="font-medium mb-2">Credenciais de acesso:</p>
+              <div className="space-y-1 text-xs">
+                <p><strong>Usuário comum:</strong> heal123 / heal123</p>
+                <p><strong>Farmacêutico:</strong> fa123 / farma123</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
