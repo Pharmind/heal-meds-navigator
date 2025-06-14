@@ -14,7 +14,8 @@ interface MultiprofessionalRound {
   clinical_evolution: string;
   medication_review: string;
   next_steps: string;
-  observations: string;
+  observations: string | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -28,7 +29,7 @@ interface MultiprofessionalRoundData {
   clinical_evolution: string;
   medication_review: string;
   next_steps: string;
-  observations: string;
+  observations?: string;
 }
 
 export const useMultiprofessionalRounds = () => {

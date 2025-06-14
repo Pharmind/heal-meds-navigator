@@ -269,40 +269,49 @@ export type Database = {
       }
       multiprofessional_rounds: {
         Row: {
-          attendance_number: string
-          bed: string
-          birth_date: string
+          clinical_evolution: string
           created_at: string
+          date: string
           id: string
-          patient_initials: string
-          pharmacist_name: string
-          round_date: string
-          sector: string
+          main_issues: string
+          medical_record: string
+          medication_review: string
+          next_steps: string
+          observations: string | null
+          participants: string
+          patient_name: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          attendance_number: string
-          bed: string
-          birth_date: string
+          clinical_evolution: string
           created_at?: string
+          date?: string
           id?: string
-          patient_initials: string
-          pharmacist_name: string
-          round_date?: string
-          sector: string
+          main_issues: string
+          medical_record: string
+          medication_review: string
+          next_steps: string
+          observations?: string | null
+          participants: string
+          patient_name: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          attendance_number?: string
-          bed?: string
-          birth_date?: string
+          clinical_evolution?: string
           created_at?: string
+          date?: string
           id?: string
-          patient_initials?: string
-          pharmacist_name?: string
-          round_date?: string
-          sector?: string
+          main_issues?: string
+          medical_record?: string
+          medication_review?: string
+          next_steps?: string
+          observations?: string | null
+          participants?: string
+          patient_name?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -374,56 +383,6 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
-      }
-      round_checklist_items: {
-        Row: {
-          administration_route_correct: boolean
-          antimicrobial_indication_clear: boolean
-          created_at: string
-          cultures_evaluated: boolean
-          id: string
-          interactions_evaluated: boolean
-          lab_data_updated: boolean
-          medication_dose_adjusted: boolean
-          observations: string | null
-          round_id: string
-          updated_at: string
-        }
-        Insert: {
-          administration_route_correct?: boolean
-          antimicrobial_indication_clear?: boolean
-          created_at?: string
-          cultures_evaluated?: boolean
-          id?: string
-          interactions_evaluated?: boolean
-          lab_data_updated?: boolean
-          medication_dose_adjusted?: boolean
-          observations?: string | null
-          round_id: string
-          updated_at?: string
-        }
-        Update: {
-          administration_route_correct?: boolean
-          antimicrobial_indication_clear?: boolean
-          created_at?: string
-          cultures_evaluated?: boolean
-          id?: string
-          interactions_evaluated?: boolean
-          lab_data_updated?: boolean
-          medication_dose_adjusted?: boolean
-          observations?: string | null
-          round_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "round_checklist_items_round_id_fkey"
-            columns: ["round_id"]
-            isOneToOne: false
-            referencedRelation: "multiprofessional_rounds"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       sequential_therapy_medications: {
         Row: {
