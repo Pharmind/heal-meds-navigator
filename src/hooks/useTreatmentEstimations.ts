@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -96,43 +95,71 @@ export const useSaveTreatmentEstimation = () => {
 
   return useMutation({
     mutationFn: async (estimation: Omit<TreatmentEstimation, 'id' | 'createdAt' | 'updatedAt'>) => {
-      console.log('💾 Salvando estimativa simplificada...', {
+      console.log('💾 Salvando estimativa com cálculos em gramas...', {
         antimicrobial: estimation.antimicrobialName,
         unit: estimation.hospitalUnit,
-        patients: estimation.activePatients
+        patients: estimation.activePatients,
+        doseTotal: estimation.dosePerPatient,
+        unidade: estimation.stockUnit
       });
 
-      // Agora dosePerPatient representa a dose total diária da unidade
-      const dailyTotalConsumption = estimation.dosePerPatient; // Dose total já informada
-      const daysRemaining = estimation.currentStock > 0 ? estimation.currentStock / dailyTotalConsumption : 0;
+      // Função para converter para gramas
+      const convertToGrams = (value: number, unit: string): number => {
+        switch (unit.toLowerCase()) {
+          case 'mg': return value / 1000;
+          case 'g': return value;
+          case 'ui': return value / 1000000;
+          case 'frascos': return value * 1;
+          case 'ampolas': return value * 0.5;
+          case 'comprimidos': return value * 0.25;
+          case 'ml': return value / 1000;
+          case 'l': return value * 1000;
+          default: return value;
+        }
+      };
+
+      // Converter valores para gramas para cálculos
+      const doseInGrams = convertToGrams(estimation.dosePerPatient, estimation.stockUnit);
+      const stockInGrams = convertToGrams(estimation.currentStock, estimation.stockUnit);
+      
+      // Cálculos em gramas
+      const dailyTotalConsumptionInGrams = doseInGrams;
+      const daysRemaining = stockInGrams > 0 ? stockInGrams / dailyTotalConsumptionInGrams : 0;
       const stockCoverageDays = Math.floor(daysRemaining);
       
-      // Determinar nível de alerta
+      // Determinar nível de alerta baseado em gramas
       let alertLevel = 'normal';
       if (daysRemaining <= 0) alertLevel = 'crítico';
       else if (daysRemaining <= 2) alertLevel = 'crítico';
       else if (daysRemaining <= 5) alertLevel = 'baixo';
 
+      console.log('🧮 Cálculos salvos em gramas:', {
+        doseGramas: doseInGrams.toFixed(3),
+        estoqueGramas: stockInGrams.toFixed(3),
+        diasRestantes: daysRemaining.toFixed(2),
+        alerta: alertLevel
+      });
+
       const dataToSave = {
         estimation_date: estimation.estimationDate,
         hospital_unit: estimation.hospitalUnit,
         antimicrobial_name: estimation.antimicrobialName,
-        dose_per_patient: Number(estimation.dosePerPatient), // Agora é dose total da unidade
+        dose_per_patient: Number(estimation.dosePerPatient), // Valor original na unidade selecionada
         active_patients: estimation.activePatients,
         estimated_days: estimation.estimatedDays,
-        current_stock: Number(estimation.currentStock),
+        current_stock: Number(estimation.currentStock), // Valor original na unidade selecionada
         stock_unit: estimation.stockUnit,
-        daily_total_consumption: dailyTotalConsumption,
+        daily_total_consumption: Number(estimation.dosePerPatient), // Igual ao dose_per_patient
         days_remaining: daysRemaining,
         alert_level: alertLevel,
         stock_coverage_days: stockCoverageDays,
-        // Adicionar as colunas antigas obrigatórias com valores padrão
+        // Adicionar as colunas antigas obrigatórias
         dose_per_patient_old: Number(estimation.dosePerPatient),
         active_patients_old: estimation.activePatients,
-        daily_total_consumption_old: dailyTotalConsumption,
+        daily_total_consumption_old: Number(estimation.dosePerPatient),
       };
 
-      console.log('📝 Dados calculados:', dataToSave);
+      console.log('📝 Dados para salvar:', dataToSave);
 
       const { data, error } = await supabase
         .from('treatment_estimations')
@@ -148,7 +175,7 @@ export const useSaveTreatmentEstimation = () => {
         throw new Error(`Erro ao salvar: ${error.message}`);
       }
 
-      console.log('✅ Estimativa salva com sucesso:', data?.id);
+      console.log('✅ Estimativa salva com cálculos em gramas:', data?.id);
       return convertFromSupabase(data);
     },
     onSuccess: (data) => {
