@@ -53,9 +53,6 @@ const DesktopLayout = ({
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-50">
-                  HEAL Platform
-                </h1>
               </div>
               <UserMenu onUserManagementClick={onUserManagementClick} />
             </div>
