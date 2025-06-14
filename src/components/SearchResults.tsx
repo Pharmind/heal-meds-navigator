@@ -3,7 +3,8 @@ import { Medication, Material, Diet } from '../types/heal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pill, Package, UtensilsCrossed, Search, TrendingUp } from 'lucide-react';
+import { Pill, Package, UtensilsCrossed, Search, TrendingUp, ImageIcon } from 'lucide-react';
+import DietImageDialog from './DietImageDialog';
 
 interface SearchResultsProps {
   medications: Medication[];
@@ -178,7 +179,41 @@ const SearchResults = ({
                     <h4 className="font-semibold text-lg text-gray-800 group-hover:text-orange-600 transition-colors">{diet.name}</h4>
                     <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">{diet.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-3">{diet.observation}</p>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-3">{diet.observation}</p>
+                  
+                  {/* Image Section */}
+                  {diet.imageUrl ? (
+                    <div className="mb-4">
+                      <DietImageDialog imageUrl={diet.imageUrl} dietName={diet.name}>
+                        <div className="cursor-pointer group/image">
+                          <img 
+                            src={diet.imageUrl} 
+                            alt={diet.name}
+                            className="w-full h-32 object-cover rounded-md group-hover/image:opacity-80 transition-opacity"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const placeholder = target.nextElementSibling as HTMLElement;
+                              if (placeholder) placeholder.style.display = 'flex';
+                            }}
+                          />
+                          <div 
+                            className="hidden w-full h-32 bg-gray-100 rounded-md items-center justify-center"
+                          >
+                            <ImageIcon className="text-gray-400" size={24} />
+                          </div>
+                          <p className="text-xs text-orange-600 mt-2 text-center">Clique para ampliar</p>
+                        </div>
+                      </DietImageDialog>
+                    </div>
+                  ) : (
+                    <div className="mb-4">
+                      <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                        <ImageIcon className="text-gray-400" size={24} />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2 text-center">Imagem não disponível</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
