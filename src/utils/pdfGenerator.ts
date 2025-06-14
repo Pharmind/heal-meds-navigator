@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 export interface DischargeGuidelinesData {
@@ -280,6 +281,14 @@ export const generateInteractionReportPDF = (data: InteractionReportData) => {
   const margin = 20;
   const maxWidth = pageWidth - (margin * 2);
 
+  // Helper function to check if we need a new page
+  const checkPageBreak = (neededSpace: number) => {
+    if (yPos + neededSpace > 270) {
+      doc.addPage();
+      yPos = 20;
+    }
+  };
+
   // Header
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
@@ -290,16 +299,17 @@ export const generateInteractionReportPDF = (data: InteractionReportData) => {
   doc.setFont('helvetica', 'normal');
   doc.text('Hospital Estadual de Águas Lindas de Goiás - HEAL', pageWidth / 2, yPos, { align: 'center' });
   
-  yPos += 20;
+  yPos += 25;
 
   // Patient Info Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text('DADOS DO PACIENTE', margin, yPos);
-  yPos += 10;
+  yPos += 12;
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
+  
   if (data.patientData.name) {
     doc.text(`Paciente: ${data.patientData.name}`, margin, yPos);
     yPos += 7;
@@ -318,20 +328,23 @@ export const generateInteractionReportPDF = (data: InteractionReportData) => {
   }
 
   // Medications Section
+  checkPageBreak(30);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text('MEDICAMENTOS ANALISADOS', margin, yPos);
-  yPos += 10;
+  yPos += 12;
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   data.medications.forEach((med, index) => {
+    checkPageBreak(8);
     doc.text(`${index + 1}. ${med}`, margin + 5, yPos);
-    yPos += 6;
+    yPos += 7;
   });
-  yPos += 10;
+  yPos += 15;
 
   // Interactions Section
+  checkPageBreak(30);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text(`INTERAÇÕES ENCONTRADAS (${data.interactions.length})`, margin, yPos);
@@ -344,101 +357,129 @@ export const generateInteractionReportPDF = (data: InteractionReportData) => {
     yPos += 10;
     doc.setFont('helvetica', 'italic');
     doc.text('Nota: A ausência de interações neste relatório não garante ausência', margin, yPos);
-    yPos += 5;
+    yPos += 6;
     doc.text('total de interações. Sempre consulte literatura atualizada.', margin, yPos);
+    yPos += 15;
   } else {
     data.interactions.forEach((interaction, index) => {
-      // Check if we need a new page
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
+      // Check if we need space for the full interaction block
+      checkPageBreak(60);
 
+      // Interaction title
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text(`${index + 1}. ${interaction.drug1Name} × ${interaction.drug2Name}`, margin, yPos);
-      yPos += 7;
+      yPos += 10;
 
+      // Severity and type
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Gravidade: ${interaction.severityLevel.toUpperCase()} | Tipo: ${interaction.interactionType === 'drug-drug' ? 'Medicamento-Medicamento' : 'Medicamento-Nutriente'}`, margin + 5, yPos);
-      yPos += 8;
+      const severityText = `Gravidade: ${interaction.severityLevel.toUpperCase()}`;
+      const typeText = `Tipo: ${interaction.interactionType === 'drug-drug' ? 'Medicamento-Medicamento' : 'Medicamento-Nutriente'}`;
+      doc.text(`${severityText} | ${typeText}`, margin + 5, yPos);
+      yPos += 12;
 
+      // Clinical Effect
       doc.setFont('helvetica', 'bold');
       doc.text('Efeito Clínico:', margin + 5, yPos);
-      yPos += 5;
+      yPos += 6;
       doc.setFont('helvetica', 'normal');
       const effectLines = doc.splitTextToSize(interaction.clinicalEffect, maxWidth - 10);
-      doc.text(effectLines, margin + 5, yPos);
-      yPos += effectLines.length * 5 + 3;
+      effectLines.forEach((line: string) => {
+        checkPageBreak(6);
+        doc.text(line, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 5;
 
+      // Mechanism
+      checkPageBreak(15);
       doc.setFont('helvetica', 'bold');
       doc.text('Mecanismo:', margin + 5, yPos);
-      yPos += 5;
+      yPos += 6;
       doc.setFont('helvetica', 'normal');
       const mechanismLines = doc.splitTextToSize(interaction.mechanism, maxWidth - 10);
-      doc.text(mechanismLines, margin + 5, yPos);
-      yPos += mechanismLines.length * 5 + 3;
+      mechanismLines.forEach((line: string) => {
+        checkPageBreak(6);
+        doc.text(line, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 5;
 
+      // Management
+      checkPageBreak(15);
       doc.setFont('helvetica', 'bold');
       doc.text('Conduta Recomendada:', margin + 5, yPos);
-      yPos += 5;
+      yPos += 6;
       doc.setFont('helvetica', 'normal');
       const managementLines = doc.splitTextToSize(interaction.management, maxWidth - 10);
-      doc.text(managementLines, margin + 5, yPos);
-      yPos += managementLines.length * 5 + 5;
+      managementLines.forEach((line: string) => {
+        checkPageBreak(6);
+        doc.text(line, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 8;
 
+      // Bibliography if exists
       if (interaction.bibliography) {
+        checkPageBreak(10);
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(9);
-        doc.text(`Bibliografia: ${interaction.bibliography}`, margin + 5, yPos);
-        yPos += 8;
+        const bibLines = doc.splitTextToSize(`Bibliografia: ${interaction.bibliography}`, maxWidth - 10);
+        bibLines.forEach((line: string) => {
+          checkPageBreak(6);
+          doc.text(line, margin + 5, yPos);
+          yPos += 5;
+        });
+        yPos += 5;
       }
 
-      yPos += 5;
+      yPos += 10; // Space between interactions
     });
   }
 
   // Recommendations
-  if (yPos > 220) {
-    doc.addPage();
-    yPos = 20;
-  }
-
+  checkPageBreak(50);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text('RECOMENDAÇÕES GERAIS:', margin, yPos);
-  yPos += 10;
+  yPos += 12;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   const recommendations = [
-    '• Este relatório deve ser utilizado como ferramenta de apoio clínico',
-    '• Sempre considere o contexto clínico individual do paciente',
-    '• Consulte literatura científica atualizada para informações adicionais',
-    '• Monitore o paciente conforme as condutas recomendadas',
-    '• Em caso de dúvidas, consulte o farmacêutico clínico ou médico especialista'
+    'Este relatório deve ser utilizado como ferramenta de apoio clínico',
+    'Sempre considere o contexto clínico individual do paciente',
+    'Consulte literatura científica atualizada para informações adicionais',
+    'Monitore o paciente conforme as condutas recomendadas',
+    'Em caso de dúvidas, consulte o farmacêutico clínico ou médico especialista'
   ];
 
-  recommendations.forEach(rec => {
-    doc.text(rec, margin, yPos);
-    yPos += 6;
+  recommendations.forEach((rec, index) => {
+    checkPageBreak(8);
+    doc.text(`• ${rec}`, margin, yPos);
+    yPos += 7;
   });
 
   // Notes
   if (data.patientData.notes) {
-    yPos += 10;
+    yPos += 12;
+    checkPageBreak(20);
     doc.setFont('helvetica', 'bold');
     doc.text('OBSERVAÇÕES:', margin, yPos);
     yPos += 8;
     doc.setFont('helvetica', 'normal');
     const notesLines = doc.splitTextToSize(data.patientData.notes, maxWidth);
-    doc.text(notesLines, margin, yPos);
-    yPos += notesLines.length * 5;
+    notesLines.forEach((line: string) => {
+      checkPageBreak(6);
+      doc.text(line, margin, yPos);
+      yPos += 5;
+    });
   }
 
   // Footer
   yPos += 20;
+  checkPageBreak(30);
   doc.setFontSize(9);
   doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, margin, yPos);
   
