@@ -81,7 +81,7 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         @keyframes breathe {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
