@@ -27,6 +27,7 @@ interface AntimicrobialFormProps {
   stockUnits: string[];
   clearForm: () => void;
   isPending: boolean;
+  lastSaveTime: Date | null;
 }
 
 const AntimicrobialForm = ({
@@ -47,7 +48,8 @@ const AntimicrobialForm = ({
   commonAntimicrobials,
   stockUnits,
   clearForm,
-  isPending
+  isPending,
+  lastSaveTime
 }: AntimicrobialFormProps) => {
   const isFormValid = antimicrobialName && totalPatientsUsing > 0 && dailyDosePerPatient > 0;
   const dailyConsumption = dailyDosePerPatient * totalPatientsUsing;
@@ -66,7 +68,10 @@ const AntimicrobialForm = ({
               <span className="text-blue-600">Salvando automaticamente...</span>
             </>
           )}
-          {!isPending && isFormValid && (
+          {!isPending && isFormValid && lastSaveTime && (
+            <span className="text-green-600">✓ Salvo às {lastSaveTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+          )}
+          {!isPending && isFormValid && !lastSaveTime && (
             <span className="text-green-600">✓ Dados válidos - Pronto para cálculo</span>
           )}
         </CardDescription>
