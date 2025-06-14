@@ -9,6 +9,8 @@ import BasicInfoCard from './treatment-estimation/BasicInfoCard';
 import SimplifiedForm from './treatment-estimation/SimplifiedForm';
 import DashboardResults from './treatment-estimation/DashboardResults';
 import SavedEstimations from './treatment-estimation/SavedEstimations';
+import EstimationSummary from './treatment-estimation/EstimationSummary';
+import EstimationConsultation from './treatment-estimation/EstimationConsultation';
 
 const TreatmentEstimation = () => {
   const [currentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -19,8 +21,9 @@ const TreatmentEstimation = () => {
   const [estimatedDays, setEstimatedDays] = useState<number>(7);
   const [currentStock, setCurrentStock] = useState<number>(0);
   const [stockUnit, setStockUnit] = useState('mg');
+  const [activeTab, setActiveTab] = useState<'new' | 'consultation' | 'summary'>('new');
 
-  const { data: savedEstimations, isLoading: loadingEstimations } = useTreatmentEstimations(currentDate, hospitalUnit);
+  const { data: savedEstimations, isLoading: loadingEstimations, refetch } = useTreatmentEstimations(currentDate, hospitalUnit);
   const saveMutation = useSaveTreatmentEstimation();
 
   const { 
@@ -54,6 +57,10 @@ const TreatmentEstimation = () => {
         daysRemaining,
         alertLevel,
         stockCoverageDays,
+      }, {
+        onSuccess: () => {
+          refetch();
+        }
       });
     }
   };
@@ -76,6 +83,7 @@ const TreatmentEstimation = () => {
     setEstimatedDays(estimation.estimatedDays);
     setCurrentStock(estimation.currentStock);
     setStockUnit(estimation.stockUnit);
+    setActiveTab('new');
   };
 
   const showResults = hospitalUnit && antimicrobialName && dosePerPatient > 0 && activePatients > 0;
@@ -92,45 +100,101 @@ const TreatmentEstimation = () => {
         hospitalUnits={hospitalUnits}
       />
 
-      <SimplifiedForm
-        antimicrobialName={antimicrobialName}
-        setAntimicrobialName={setAntimicrobialName}
-        dosePerPatient={dosePerPatient}
-        setDosePerPatient={setDosePerPatient}
-        activePatients={activePatients}
-        setActivePatients={setActivePatients}
-        estimatedDays={estimatedDays}
-        setEstimatedDays={setEstimatedDays}
-        currentStock={currentStock}
-        setCurrentStock={setCurrentStock}
-        stockUnit={stockUnit}
-        setStockUnit={setStockUnit}
-        commonAntimicrobials={commonAntimicrobials}
-        stockUnits={stockUnits}
-        clearForm={clearForm}
-        onSave={handleSaveEstimation}
-        canSave={canSave}
-        isSaving={saveMutation.isPending}
-        dailyTotalConsumption={dosePerPatient}
-        daysRemaining={daysRemaining}
-        alertLevel={alertLevel}
-      />
+      {/* Navegação por Abas */}
+      {hospitalUnit && (
+        <div className="flex gap-2 border-b">
+          <button
+            onClick={() => setActiveTab('new')}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'new' 
+                ? 'border-blue-500 text-blue-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Nova Estimativa
+          </button>
+          <button
+            onClick={() => setActiveTab('consultation')}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'consultation' 
+                ? 'border-purple-500 text-purple-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Consultar/Atualizar
+          </button>
+          <button
+            onClick={() => setActiveTab('summary')}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'summary' 
+                ? 'border-green-500 text-green-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Resumo Consolidado
+          </button>
+        </div>
+      )}
 
-      {showResults && (
-        <DashboardResults
-          dailyTotalConsumption={dosePerPatient}
-          daysRemaining={daysRemaining}
-          stockCoverageDays={stockCoverageDays}
-          stockUnit={stockUnit}
-          activePatients={activePatients}
-          dosePerPatient={activePatients > 0 ? dosePerPatient / activePatients : 0}
-          currentStock={currentStock}
-          estimatedDays={estimatedDays}
-          alertLevel={alertLevel}
+      {/* Conteúdo das Abas */}
+      {hospitalUnit && activeTab === 'new' && (
+        <>
+          <SimplifiedForm
+            antimicrobialName={antimicrobialName}
+            setAntimicrobialName={setAntimicrobialName}
+            dosePerPatient={dosePerPatient}
+            setDosePerPatient={setDosePerPatient}
+            activePatients={activePatients}
+            setActivePatients={setActivePatients}
+            estimatedDays={estimatedDays}
+            setEstimatedDays={setEstimatedDays}
+            currentStock={currentStock}
+            setCurrentStock={setCurrentStock}
+            stockUnit={stockUnit}
+            setStockUnit={setStockUnit}
+            commonAntimicrobials={commonAntimicrobials}
+            stockUnits={stockUnits}
+            clearForm={clearForm}
+            onSave={handleSaveEstimation}
+            canSave={canSave}
+            isSaving={saveMutation.isPending}
+            dailyTotalConsumption={dosePerPatient}
+            daysRemaining={daysRemaining}
+            alertLevel={alertLevel}
+          />
+
+          {showResults && (
+            <DashboardResults
+              dailyTotalConsumption={dosePerPatient}
+              daysRemaining={daysRemaining}
+              stockCoverageDays={stockCoverageDays}
+              stockUnit={stockUnit}
+              activePatients={activePatients}
+              dosePerPatient={activePatients > 0 ? dosePerPatient / activePatients : 0}
+              currentStock={currentStock}
+              estimatedDays={estimatedDays}
+              alertLevel={alertLevel}
+            />
+          )}
+        </>
+      )}
+
+      {hospitalUnit && activeTab === 'consultation' && (
+        <EstimationConsultation
+          estimations={savedEstimations || []}
+          hospitalUnit={hospitalUnit}
+          onEstimationUpdated={() => refetch()}
         />
       )}
 
-      {savedEstimations && savedEstimations.length > 0 && !loadingEstimations && (
+      {hospitalUnit && activeTab === 'summary' && (
+        <EstimationSummary
+          estimations={savedEstimations || []}
+          selectedUnit={hospitalUnit}
+        />
+      )}
+
+      {savedEstimations && savedEstimations.length > 0 && !loadingEstimations && activeTab === 'new' && (
         <SavedEstimations
           savedEstimations={savedEstimations}
           hospitalUnit={hospitalUnit}
