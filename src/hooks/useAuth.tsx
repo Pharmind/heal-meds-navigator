@@ -33,6 +33,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Função para limpar estado de autenticação
+const cleanupAuthState = () => {
+  // Remover todas as chaves relacionadas ao Supabase
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -41,37 +57,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+    // Verificar sessão existente
+    const getSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          cleanupAuthState();
+          setLoading(false);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error in getSession:', error);
+        cleanupAuthState();
+        setLoading(false);
+      }
+    };
+
+    getSession();
+
+    // Configurar listener de mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Defer para evitar deadlocks
           setTimeout(() => {
             fetchUserProfile(session.user.id);
-          }, 0);
-        } else {
+          }, 100);
+        } else if (event === 'SIGNED_OUT') {
           setProfile(null);
           setPermissions([]);
+          cleanupAuthState();
         }
         
         setLoading(false);
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -80,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Fetching profile for user:', userId);
       
-      // Fetch user profile
+      // Buscar perfil do usuário
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -89,6 +124,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
+        toast.error('Erro ao carregar perfil do usuário');
+        return;
+      }
+
+      if (!profileData) {
+        console.error('No profile found for user:', userId);
+        toast.error('Perfil não encontrado');
         return;
       }
 
@@ -101,7 +143,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfile(profileData);
       console.log('Profile loaded:', profileData);
 
-      // Fetch user permissions
+      // Buscar permissões do usuário
       const { data: permissionsData, error: permissionsError } = await supabase
         .from('user_module_permissions')
         .select('module_name, has_access')
@@ -109,19 +151,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (permissionsError) {
         console.error('Error fetching permissions:', permissionsError);
-        return;
+        // Não bloquear o login por erro de permissões
+      } else {
+        setPermissions(permissionsData || []);
+        console.log('Permissions loaded:', permissionsData);
       }
-
-      setPermissions(permissionsData || []);
-      console.log('Permissions loaded:', permissionsData);
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
+      toast.error('Erro inesperado ao carregar dados do usuário');
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Limpar estado antes de fazer login
+      cleanupAuthState();
+      
+      // Tentar fazer logout global primeiro
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        console.log('Ignoring signOut error:', err);
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -129,6 +182,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         console.error('Sign in error:', error);
         return { error };
+      }
+
+      if (data.user && data.session) {
+        console.log('Sign in successful:', data.user.email);
+        // Forçar refresh da página para garantir estado limpo
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       }
 
       return {};
@@ -166,11 +227,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setPermissions([]);
+    try {
+      cleanupAuthState();
+      
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setPermissions([]);
+      
+      // Forçar refresh para estado limpo
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Forçar refresh mesmo com erro
+      window.location.href = '/login';
+    }
   };
 
   const hasPermission = (module: string): boolean => {

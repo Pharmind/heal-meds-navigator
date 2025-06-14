@@ -489,6 +489,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_farmaceutico: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       item_type: "medication" | "material" | "diet"

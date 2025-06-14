@@ -43,6 +43,8 @@ const Login = () => {
     
     try {
       const email = getUserEmail(loginData.username);
+      console.log('Attempting login with email:', email);
+      
       const { error } = await signIn(email, loginData.password);
       
       if (error) {
@@ -55,6 +57,7 @@ const Login = () => {
         }
       } else {
         toast.success('Login realizado com sucesso!');
+        // O redirecionamento será feito pelo useAuth
       }
     } catch (error) {
       console.error('Login error:', error);
