@@ -72,7 +72,7 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
     return (
       <div className="text-center py-8">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-        <p className="mt-4 text-gray-600">Carregando base de interações...</p>
+        <p className="mt-4 text-gray-600">Carregando base de interações medicamentosas...</p>
       </div>
     );
   }
@@ -84,8 +84,11 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
         <p className="text-gray-600">
           Análise de interações medicamento-medicamento e medicamento-nutriente
         </p>
+        <p className="text-sm text-blue-600 mt-2">
+          Base de dados: {allInteractions.length} interações catalogadas
+        </p>
         {importedMedications.length > 0 && (
-          <p className="text-sm text-blue-600 mt-2">
+          <p className="text-sm text-green-600 mt-1">
             Medicamentos importados da Receita Simplificada
           </p>
         )}

@@ -84,18 +84,18 @@ export const useDrugInteractions = () => {
   return useQuery({
     queryKey: ['drugInteractions'],
     queryFn: async () => {
-      console.log('Buscando interações medicamentosas...');
+      console.log('Buscando interações medicamentosas do Supabase...');
       const { data, error } = await supabase
         .from('drug_interactions')
         .select('*')
         .order('drug1_name');
 
       if (error) {
-        console.error('Erro ao buscar interações:', error);
+        console.error('Erro ao buscar interações do Supabase:', error);
         throw error;
       }
 
-      console.log('Interações encontradas:', data?.length);
+      console.log(`Interações encontradas no Supabase: ${data?.length || 0}`);
       return data?.map(convertDrugInteraction) || [];
     },
   });
@@ -113,6 +113,7 @@ export const useCreateInteractionCheck = () => {
       interactionsFound?: any[];
       notes?: string;
     }) => {
+      console.log('Salvando verificação de interação no Supabase...');
       const { data, error } = await supabase
         .from('interaction_checks')
         .insert({
@@ -127,10 +128,11 @@ export const useCreateInteractionCheck = () => {
         .single();
 
       if (error) {
-        console.error('Erro ao salvar verificação:', error);
+        console.error('Erro ao salvar verificação no Supabase:', error);
         throw error;
       }
 
+      console.log('Verificação salva com sucesso no Supabase');
       return convertInteractionCheck(data);
     },
     onSuccess: () => {
@@ -143,7 +145,7 @@ export const useInteractionChecks = () => {
   return useQuery({
     queryKey: ['interactionChecks'],
     queryFn: async () => {
-      console.log('Buscando verificações de interação...');
+      console.log('Buscando histórico de verificações do Supabase...');
       const { data, error } = await supabase
         .from('interaction_checks')
         .select('*')
@@ -151,38 +153,51 @@ export const useInteractionChecks = () => {
         .limit(50);
 
       if (error) {
-        console.error('Erro ao buscar verificações:', error);
+        console.error('Erro ao buscar verificações do Supabase:', error);
         throw error;
       }
 
-      console.log('Verificações encontradas:', data?.length);
+      console.log(`Verificações encontradas no Supabase: ${data?.length || 0}`);
       return data?.map(convertInteractionCheck) || [];
     },
   });
 };
 
-// Função para verificar interações entre medicamentos
+// Função melhorada para verificar interações entre medicamentos usando base do Supabase
 export const checkDrugInteractions = (medications: string[], allInteractions: DrugInteraction[]) => {
   const foundInteractions: DrugInteraction[] = [];
   
+  console.log(`Verificando interações para ${medications.length} medicamentos na base de ${allInteractions.length} interações`);
+  
   for (let i = 0; i < medications.length; i++) {
     for (let j = i + 1; j < medications.length; j++) {
-      const med1 = medications[i].toLowerCase();
-      const med2 = medications[j].toLowerCase();
+      const med1 = medications[i].toLowerCase().trim();
+      const med2 = medications[j].toLowerCase().trim();
       
-      // Busca interações em ambas as direções
-      const interaction = allInteractions.find(int => 
-        (int.drug1Name.toLowerCase().includes(med1) && int.drug2Name.toLowerCase().includes(med2)) ||
-        (int.drug1Name.toLowerCase().includes(med2) && int.drug2Name.toLowerCase().includes(med1)) ||
-        (med1.includes(int.drug1Name.toLowerCase()) && med2.includes(int.drug2Name.toLowerCase())) ||
-        (med2.includes(int.drug1Name.toLowerCase()) && med1.includes(int.drug2Name.toLowerCase()))
-      );
+      // Busca interações em ambas as direções com comparação mais flexível
+      const interaction = allInteractions.find(int => {
+        const drug1 = int.drug1Name.toLowerCase().trim();
+        const drug2 = int.drug2Name.toLowerCase().trim();
+        
+        return (
+          // Correspondência exata
+          (drug1 === med1 && drug2 === med2) ||
+          (drug1 === med2 && drug2 === med1) ||
+          // Correspondência por inclusão (medicamento contém o princípio ativo)
+          (med1.includes(drug1) && med2.includes(drug2)) ||
+          (med2.includes(drug1) && med1.includes(drug2)) ||
+          (drug1.includes(med1) && drug2.includes(med2)) ||
+          (drug2.includes(med1) && drug1.includes(med2))
+        );
+      });
       
       if (interaction) {
+        console.log(`Interação encontrada: ${med1} × ${med2}`);
         foundInteractions.push(interaction);
       }
     }
   }
   
+  console.log(`Total de interações encontradas: ${foundInteractions.length}`);
   return foundInteractions;
 };
