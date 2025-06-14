@@ -3,7 +3,7 @@ import { Medication, Material, Diet } from '../types/heal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pill, Package, UtensilsCrossed } from 'lucide-react';
+import { Pill, Package, UtensilsCrossed, Search, TrendingUp } from 'lucide-react';
 
 interface SearchResultsProps {
   medications: Medication[];
@@ -23,15 +23,32 @@ const SearchResults = ({
   // Only show results if there's an active search query
   if (!searchQuery.trim()) {
     return (
-      <div className="text-center py-12">
-        <div className="max-w-md mx-auto">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Pesquisar item Padronizado
+      <div className="text-center py-16">
+        <div className="max-w-lg mx-auto">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-heal-green-400/20 to-emerald-400/20 rounded-full blur-3xl"></div>
+            <div className="relative text-8xl mb-6">🔍</div>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800 mb-3">
+            Pesquisar Item Padronizado
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-600 text-lg leading-relaxed">
             Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas
           </p>
+          <div className="mt-8 flex justify-center space-x-4">
+            <div className="flex items-center text-sm text-heal-green-600 bg-heal-green-50 px-3 py-1 rounded-full">
+              <Pill size={16} className="mr-1" />
+              Medicamentos
+            </div>
+            <div className="flex items-center text-sm text-heal-green-600 bg-heal-green-50 px-3 py-1 rounded-full">
+              <Package size={16} className="mr-1" />
+              Materiais
+            </div>
+            <div className="flex items-center text-sm text-heal-green-600 bg-heal-green-50 px-3 py-1 rounded-full">
+              <UtensilsCrossed size={16} className="mr-1" />
+              Dietas
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -41,13 +58,16 @@ const SearchResults = ({
 
   if (totalResults === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="max-w-md mx-auto">
-          <div className="text-6xl mb-4">😔</div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+      <div className="text-center py-16">
+        <div className="max-w-lg mx-auto">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 to-orange-400/20 rounded-full blur-3xl"></div>
+            <div className="relative text-8xl mb-6">😔</div>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800 mb-3">
             ITEM NÃO PADRONIZADO
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-600 text-lg leading-relaxed">
             Tente pesquisar com outros termos ou verifique a ortografia
           </p>
         </div>
@@ -56,39 +76,46 @@ const SearchResults = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
+      {/* Results Summary */}
       <div className="text-center">
-        <p className="text-gray-600">
-          Encontrados <span className="font-semibold">{totalResults}</span> resultados para "{searchQuery}"
-        </p>
+        <div className="inline-flex items-center bg-white rounded-full px-6 py-3 shadow-lg border border-heal-green-100">
+          <TrendingUp className="text-heal-green-600 mr-2" size={20} />
+          <p className="text-gray-700 font-medium">
+            Encontrados <span className="font-bold text-heal-green-600">{totalResults}</span> resultados para 
+            <span className="font-semibold text-gray-800"> "{searchQuery}"</span>
+          </p>
+        </div>
       </div>
 
       {/* Medications */}
       {medications.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Pill className="text-blue-600" size={24} />
+        <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Pill size={24} />
+              </div>
               Medicamentos ({medications.length})
             </CardTitle>
-            <CardDescription>
-              Medicamentos encontrados na pesquisa
+            <CardDescription className="text-blue-100">
+              Medicamentos padronizados encontrados na pesquisa
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {medications.map((medication) => (
-                <div key={medication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-lg">{medication.name}</h4>
-                    <Badge variant="secondary">{medication.mvCode}</Badge>
+                <div key={medication.id} className="group border border-blue-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 bg-white hover:border-blue-300 hover:-translate-y-1">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-lg text-gray-800 group-hover:text-blue-600 transition-colors">{medication.name}</h4>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">{medication.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{medication.therapeuticClass}</p>
-                  <p className="text-sm text-gray-500 mb-3">{medication.presentation}</p>
+                  <p className="text-sm text-blue-600 font-medium mb-2">{medication.therapeuticClass}</p>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{medication.presentation}</p>
                   <Button 
                     onClick={() => onMedicationClick(medication)}
                     size="sm"
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300"
                   >
                     Ver Detalhes
                   </Button>
@@ -101,25 +128,27 @@ const SearchResults = ({
 
       {/* Materials */}
       {materials.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="text-green-600" size={24} />
+        <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Package size={24} />
+              </div>
               Materiais ({materials.length})
             </CardTitle>
-            <CardDescription>
-              Materiais médicos encontrados na pesquisa
+            <CardDescription className="text-green-100">
+              Materiais médicos padronizados encontrados na pesquisa
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {materials.map((material) => (
-                <div key={material.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-lg">{material.name}</h4>
-                    <Badge variant="secondary">{material.mvCode}</Badge>
+                <div key={material.id} className="group border border-green-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 bg-white hover:border-green-300 hover:-translate-y-1">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-lg text-gray-800 group-hover:text-green-600 transition-colors">{material.name}</h4>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">{material.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-500">{material.observation}</p>
+                  <p className="text-sm text-gray-600 line-clamp-3">{material.observation}</p>
                 </div>
               ))}
             </div>
@@ -129,25 +158,27 @@ const SearchResults = ({
 
       {/* Diets */}
       {diets.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UtensilsCrossed className="text-orange-600" size={24} />
+        <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-orange-50 to-amber-50">
+          <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <UtensilsCrossed size={24} />
+              </div>
               Dietas ({diets.length})
             </CardTitle>
-            <CardDescription>
-              Dietas encontradas na pesquisa
+            <CardDescription className="text-orange-100">
+              Dietas padronizadas encontradas na pesquisa
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {diets.map((diet) => (
-                <div key={diet.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-lg">{diet.name}</h4>
-                    <Badge variant="secondary">{diet.mvCode}</Badge>
+                <div key={diet.id} className="group border border-orange-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 bg-white hover:border-orange-300 hover:-translate-y-1">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-lg text-gray-800 group-hover:text-orange-600 transition-colors">{diet.name}</h4>
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">{diet.mvCode}</Badge>
                   </div>
-                  <p className="text-sm text-gray-500">{diet.observation}</p>
+                  <p className="text-sm text-gray-600 line-clamp-3">{diet.observation}</p>
                 </div>
               ))}
             </div>

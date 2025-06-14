@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SearchBoxProps {
@@ -28,26 +28,33 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
+    <div className="relative w-full max-w-4xl mx-auto">
       <div
         className={cn(
-          "relative flex items-center bg-white rounded-full shadow-lg border-2 transition-all duration-300",
+          "relative flex items-center bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border transition-all duration-500 ease-out",
           isFocused 
-            ? "border-heal-green-400 shadow-xl ring-4 ring-heal-green-100" 
-            : "border-heal-green-200 hover:border-heal-green-300"
+            ? "border-white/50 shadow-[0_0_40px_rgba(34,197,94,0.3)] ring-4 ring-white/20 scale-[1.02]" 
+            : "border-white/30 hover:border-white/50 hover:shadow-[0_0_30px_rgba(34,197,94,0.2)]"
         )}
       >
-        <Search 
-          className={cn(
-            "absolute left-4 transition-all duration-200",
-            isFocused || query 
-              ? "text-heal-green-600" 
-              : "text-heal-green-400 animate-[breathe_3s_ease-in-out_infinite]",
-            query && "animate-spin"
-          )} 
-          size={20} 
-        />
+        {/* Search Icon */}
+        <div className="absolute left-6 flex items-center">
+          <Search 
+            className={cn(
+              "transition-all duration-300",
+              isFocused || query 
+                ? "text-heal-green-600 scale-110" 
+                : "text-heal-green-400",
+              query && "animate-pulse"
+            )} 
+            size={24} 
+          />
+          {isFocused && !query && (
+            <Sparkles className="text-heal-green-300 ml-2 animate-pulse" size={16} />
+          )}
+        </div>
         
+        {/* Input Field */}
         <input
           ref={inputRef}
           type="text"
@@ -56,37 +63,50 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="w-full pl-12 pr-12 py-4 text-lg bg-transparent border-none outline-none text-gray-700 placeholder-heal-green-400"
+          className="w-full pl-16 pr-16 py-6 text-lg bg-transparent border-none outline-none text-gray-700 placeholder-heal-green-400/70 font-medium"
         />
         
+        {/* Clear Button */}
         {query && (
           <button
             onClick={handleClear}
-            className="absolute right-4 p-1 rounded-full hover:bg-heal-green-100 transition-colors duration-200"
+            className="absolute right-6 p-2 rounded-full hover:bg-heal-green-100 transition-all duration-200 hover:scale-110"
           >
-            <X className="text-heal-green-500" size={18} />
+            <X className="text-heal-green-500" size={20} />
           </button>
         )}
+
+        {/* Glow Effect */}
+        <div className={cn(
+          "absolute inset-0 rounded-2xl transition-opacity duration-500 pointer-events-none",
+          isFocused ? "opacity-100" : "opacity-0",
+          "bg-gradient-to-r from-heal-green-400/10 via-emerald-400/10 to-heal-green-400/10"
+        )} />
       </div>
       
       {/* Search suggestions hint */}
       {isFocused && !query && (
-        <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white rounded-lg shadow-lg border border-heal-green-200 z-10">
-          <p className="text-sm text-heal-green-600 mb-2 font-medium">Dicas de pesquisa:</p>
-          <ul className="text-xs text-heal-green-500 space-y-1">
-            <li>• Digite o nome do medicamento, material ou dieta</li>
-            <li>• Use o código MV para busca exata</li>
-            <li>• Busque por classe terapêutica</li>
+        <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 z-10 animate-fade-in">
+          <div className="flex items-center mb-3">
+            <Sparkles className="text-heal-green-500 mr-2" size={16} />
+            <p className="text-sm text-heal-green-700 font-semibold">Dicas de pesquisa:</p>
+          </div>
+          <ul className="text-sm text-heal-green-600 space-y-2">
+            <li className="flex items-center">
+              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
+              Digite o nome do medicamento, material ou dieta
+            </li>
+            <li className="flex items-center">
+              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
+              Use o código MV para busca exata
+            </li>
+            <li className="flex items-center">
+              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
+              Busque por classe terapêutica
+            </li>
           </ul>
         </div>
       )}
-      
-      <style>{`
-        @keyframes breathe {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-      `}</style>
     </div>
   );
 };

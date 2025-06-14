@@ -1,5 +1,5 @@
 
-import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft, Stethoscope, Database } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar,
@@ -34,48 +34,60 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   };
 
   const padronizacaoItems = [
-    { id: 'search', label: 'Busca Geral', icon: Search },
-    { id: 'medications', label: 'Medicamentos', icon: Pill },
-    { id: 'materials', label: 'Materiais', icon: Package },
-    { id: 'diets', label: 'Dietas', icon: UtensilsCrossed },
+    { id: 'search', label: 'Busca Geral', icon: Search, color: 'text-blue-600' },
+    { id: 'medications', label: 'Medicamentos', icon: Pill, color: 'text-blue-500' },
+    { id: 'materials', label: 'Materiais', icon: Package, color: 'text-green-600' },
+    { id: 'diets', label: 'Dietas', icon: UtensilsCrossed, color: 'text-orange-600' },
   ];
 
   const farmaciaClinicaItems = [
-    { id: 'intoxication', label: 'Intoxicação e Antídotos', icon: AlertTriangle },
-    { id: 'high-alert', label: 'Alta Vigilância', icon: Eye },
-    { id: 'elderly', label: 'Medicamentos p/ Idosos', icon: Users },
-    { id: 'sequential-therapy', label: 'Terapia Sequencial', icon: ArrowRightLeft },
-    { id: 'pictogram', label: 'Receita Simplificada', icon: Image },
-    { id: 'drug-interactions', label: 'Interações Medicamentosas', icon: Zap },
-    { id: 'discharge-guidelines', label: 'Orientações de Alta', icon: ClipboardCheck },
-    { id: 'pharmacovigilance', label: 'Farmacovigilância', icon: Shield },
-    { id: 'cft', label: 'CFT', icon: FileText },
-    { id: 'protocols', label: 'Protocolos', icon: Heart },
+    { id: 'intoxication', label: 'Intoxicação e Antídotos', icon: AlertTriangle, color: 'text-red-600' },
+    { id: 'high-alert', label: 'Alta Vigilância', icon: Eye, color: 'text-amber-600' },
+    { id: 'elderly', label: 'Medicamentos p/ Idosos', icon: Users, color: 'text-purple-600' },
+    { id: 'sequential-therapy', label: 'Terapia Sequencial', icon: ArrowRightLeft, color: 'text-indigo-600' },
+    { id: 'pictogram', label: 'Receita Simplificada', icon: Image, color: 'text-cyan-600' },
+    { id: 'drug-interactions', label: 'Interações Medicamentosas', icon: Zap, color: 'text-yellow-600' },
+    { id: 'discharge-guidelines', label: 'Orientações de Alta', icon: ClipboardCheck, color: 'text-teal-600' },
+    { id: 'pharmacovigilance', label: 'Farmacovigilância', icon: Shield, color: 'text-emerald-600' },
+    { id: 'cft', label: 'CFT', icon: FileText, color: 'text-slate-600' },
+    { id: 'protocols', label: 'Protocolos', icon: Heart, color: 'text-pink-600' },
   ];
 
   return (
-    <Sidebar className="border-r border-heal-green-200 bg-gradient-to-b from-heal-green-50 to-white">
-      <SidebarHeader className="p-6 border-b border-heal-green-200 bg-gradient-to-r from-heal-green-100 to-heal-green-50">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold text-heal-green-800">Guia Farmacêutico</h1>
-          <p className="text-sm text-heal-green-600">HEAL</p>
-          <p className="text-xs text-heal-green-500">Hospital Estadual de Águas Lindas - GO</p>
+    <Sidebar className="border-r-0 shadow-xl bg-white">
+      <SidebarHeader className="p-6 border-b border-gray-100 bg-gradient-to-br from-heal-green-600 to-emerald-600 text-white">
+        <div className="space-y-2">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Stethoscope size={24} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Guia Farmacêutico</h1>
+              <p className="text-sm text-heal-green-100">HEAL</p>
+            </div>
+          </div>
+          <p className="text-xs text-heal-green-100 pl-14">
+            Hospital Estadual de Águas Lindas - GO
+          </p>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4 py-6">
+      <SidebarContent className="px-4 py-6 bg-gradient-to-b from-gray-50 to-white">
         {/* Seção Padronização */}
         <Collapsible 
           open={openSections.padronizacao} 
           onOpenChange={() => toggleSection('padronizacao')}
           className="mb-6"
         >
-          <CollapsibleTrigger className="w-full">
-            <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-heal-green-100 transition-colors">
-              <h3 className="text-sm font-semibold text-heal-green-700">Padronizado</h3>
+          <CollapsibleTrigger className="w-full group">
+            <div className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-heal-green-50 transition-all duration-200 group">
+              <div className="flex items-center space-x-3">
+                <Database className="text-heal-green-600" size={20} />
+                <h3 className="text-sm font-bold text-heal-green-800">Padronizado</h3>
+              </div>
               <ChevronDown 
                 size={16} 
-                className={`text-heal-green-600 transition-transform duration-200 ${
+                className={`text-heal-green-600 transition-transform duration-300 ${
                   openSections.padronizacao ? 'rotate-180' : ''
                 }`} 
               />
@@ -92,14 +104,14 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
                       onClick={() => onSectionChange(item.id as any)}
                       isActive={isActive}
                       className={`
-                        w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
+                        w-full justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left group
                         ${isActive 
-                          ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
-                          : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
+                          ? 'bg-gradient-to-r from-heal-green-600 to-emerald-600 text-white shadow-lg hover:from-heal-green-700 hover:to-emerald-700 scale-[0.98]' 
+                          : 'text-gray-700 hover:bg-heal-green-50 hover:text-heal-green-800 hover:scale-[1.02]'
                         }
                       `}
                     >
-                      <Icon size={20} className="shrink-0" />
+                      <Icon size={20} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
                       <span className="font-medium">{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -115,12 +127,15 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
           onOpenChange={() => toggleSection('farmaciaClinica')}
           className="mb-4"
         >
-          <CollapsibleTrigger className="w-full">
-            <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-heal-green-100 transition-colors">
-              <h3 className="text-sm font-semibold text-heal-green-700">Farmácia Clínica</h3>
+          <CollapsibleTrigger className="w-full group">
+            <div className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-heal-green-50 transition-all duration-200">
+              <div className="flex items-center space-x-3">
+                <Heart className="text-heal-green-600" size={20} />
+                <h3 className="text-sm font-bold text-heal-green-800">Farmácia Clínica</h3>
+              </div>
               <ChevronDown 
                 size={16} 
-                className={`text-heal-green-600 transition-transform duration-200 ${
+                className={`text-heal-green-600 transition-transform duration-300 ${
                   openSections.farmaciaClinica ? 'rotate-180' : ''
                 }`} 
               />
@@ -137,14 +152,14 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
                       onClick={() => onSectionChange(item.id as any)}
                       isActive={isActive}
                       className={`
-                        w-full justify-start gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left
+                        w-full justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left group
                         ${isActive 
-                          ? 'bg-heal-green-600 text-white shadow-lg hover:bg-heal-green-700' 
-                          : 'text-heal-green-700 hover:bg-heal-green-100 hover:text-heal-green-800'
+                          ? 'bg-gradient-to-r from-heal-green-600 to-emerald-600 text-white shadow-lg hover:from-heal-green-700 hover:to-emerald-700 scale-[0.98]' 
+                          : 'text-gray-700 hover:bg-heal-green-50 hover:text-heal-green-800 hover:scale-[1.02]'
                         }
                       `}
                     >
-                      <Icon size={18} className="shrink-0" />
+                      <Icon size={18} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
                       <span className="font-medium text-sm">{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -156,9 +171,13 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
       </SidebarContent>
       
       {/* Footer da sidebar */}
-      <div className="mt-auto p-4 border-t border-heal-green-200 bg-heal-green-50">
-        <div className="text-xs text-heal-green-600 text-center">
-          <p className="font-medium">Versão 1.0.0</p>
+      <div className="mt-auto p-4 border-t border-gray-100 bg-gradient-to-r from-heal-green-50 to-emerald-50">
+        <div className="text-xs text-heal-green-700 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-1">
+            <div className="w-2 h-2 bg-heal-green-500 rounded-full animate-pulse"></div>
+            <p className="font-semibold">Sistema Ativo</p>
+          </div>
+          <p className="text-heal-green-600">Versão 1.0.0</p>
         </div>
       </div>
     </Sidebar>

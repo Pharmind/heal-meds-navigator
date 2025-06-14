@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Medication, Material, Diet } from '../types/heal';
 import SearchBox from '@/components/SearchBox';
@@ -137,70 +138,97 @@ const Index = () => {
     switch (selectedSection) {
       case 'search':
         return (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <h1 className="text-4xl font-bold text-heal-green-800 mb-4">
-                Guia Farmacêutico HEAL
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Hospital Estadual de Águas Lindas de Goiás
-              </p>
-              <SearchBox onSearch={handleSearch} />
+          <div className="space-y-8 animate-fade-in">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-heal-green-600 via-heal-green-500 to-emerald-600 text-white">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <div className="relative px-8 py-16 text-center">
+                <div className="mx-auto max-w-4xl">
+                  <div className="mb-6 inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm font-medium">
+                    <span className="mr-2">🏥</span>
+                    Sistema Integrado de Farmácia
+                  </div>
+                  <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-heal-green-100 bg-clip-text text-transparent">
+                    Guia Farmacêutico HEAL
+                  </h1>
+                  <p className="text-xl text-heal-green-50 mb-8 max-w-2xl mx-auto leading-relaxed">
+                    Hospital Estadual de Águas Lindas de Goiás
+                    <br />
+                    <span className="text-lg">Sistema completo para consulta de medicamentos, materiais e dietas padronizados</span>
+                  </p>
+                  
+                  {/* Search Section */}
+                  <div className="max-w-3xl mx-auto">
+                    <SearchBox onSearch={handleSearch} />
+                  </div>
+                </div>
+              </div>
             </div>
-            <SearchResults
-              medications={filteredMedications}
-              materials={filteredMaterials}
-              diets={filteredDiets}
-              onMedicationClick={handleMedicationClick}
-              searchQuery={searchQuery}
-            />
+
+            {/* Results Section */}
+            <div className="transition-all duration-500 ease-in-out">
+              <SearchResults
+                medications={filteredMedications}
+                materials={filteredMaterials}
+                diets={filteredDiets}
+                onMedicationClick={handleMedicationClick}
+                searchQuery={searchQuery}
+              />
+            </div>
           </div>
         );
 
       case 'medications':
         return (
-          <CategoryTable
-            category="medications"
-            medications={medications}
-            materials={materials}
-            diets={diets}
-            onMedicationClick={handleMedicationClick}
-          />
+          <div className="animate-fade-in">
+            <CategoryTable
+              category="medications"
+              medications={medications}
+              materials={materials}
+              diets={diets}
+              onMedicationClick={handleMedicationClick}
+            />
+          </div>
         );
 
       case 'materials':
         return (
-          <CategoryTable
-            category="materials"
-            medications={medications}
-            materials={materials}
-            diets={diets}
-            onMedicationClick={handleMedicationClick}
-          />
+          <div className="animate-fade-in">
+            <CategoryTable
+              category="materials"
+              medications={medications}
+              materials={materials}
+              diets={diets}
+              onMedicationClick={handleMedicationClick}
+            />
+          </div>
         );
 
       case 'diets':
         return (
-          <CategoryTable
-            category="diets"
-            medications={medications}
-            materials={materials}
-            diets={diets}
-            onMedicationClick={handleMedicationClick}
-          />
+          <div className="animate-fade-in">
+            <CategoryTable
+              category="diets"
+              medications={medications}
+              materials={materials}
+              diets={diets}
+              onMedicationClick={handleMedicationClick}
+            />
+          </div>
         );
 
       case 'intoxication':
-        return <IntoxicationSection />;
+        return <div className="animate-fade-in"><IntoxicationSection /></div>;
 
       case 'high-alert':
-        return <HighAlertSection />;
+        return <div className="animate-fade-in"><HighAlertSection /></div>;
 
       case 'elderly':
-        return <ElderlySection />;
+        return <div className="animate-fade-in"><ElderlySection /></div>;
 
       case 'sequential-therapy':
-        return <SequentialTherapySection />;
+        return <div className="animate-fade-in"><SequentialTherapySection /></div>;
 
       case 'pharmacovigilance':
       case 'cft':
@@ -208,7 +236,7 @@ const Index = () => {
       case 'pictogram':
       case 'discharge-guidelines':
       case 'drug-interactions':
-        return <ClinicalPharmacy activeTab={selectedSection} />;
+        return <div className="animate-fade-in"><ClinicalPharmacy activeTab={selectedSection} /></div>;
 
       default:
         return (
@@ -221,11 +249,13 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 to-heal-green-50/50">
         <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
         <SidebarInset>
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
-            {renderContent()}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">
+            <div className="p-8">
+              {renderContent()}
+            </div>
           </main>
         </SidebarInset>
       </div>
