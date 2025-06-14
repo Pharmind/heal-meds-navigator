@@ -10,12 +10,13 @@ import ClinicalPharmacy from '@/components/ClinicalPharmacy';
 import IntoxicationSection from '@/components/clinical/IntoxicationSection';
 import HighAlertSection from '@/components/clinical/HighAlertSection';
 import ElderlySection from '@/components/clinical/ElderlySection';
+import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
 import { useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 const Index = () => {
   const [selectedSection, setSelectedSection] = useState<
-    'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions'
+    'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions'
   >('search');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ const Index = () => {
     'intoxication' |
     'high-alert' |
     'elderly' |
+    'sequential-therapy' |
     'pharmacovigilance' |
     'cft' |
     'protocols' |
@@ -143,6 +145,9 @@ const Index = () => {
 
       case 'elderly':
         return <ElderlySection />;
+
+      case 'sequential-therapy':
+        return <SequentialTherapySection />;
 
       case 'pharmacovigilance':
       case 'cft':

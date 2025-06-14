@@ -327,6 +327,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sequential_therapy_medications: {
+        Row: {
+          created_at: string
+          id: string
+          iv_dosage: string
+          iv_posology: string
+          medication_name: string
+          oral_dosage: string
+          oral_posology: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          iv_dosage: string
+          iv_posology: string
+          medication_name: string
+          oral_dosage: string
+          oral_posology: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          iv_dosage?: string
+          iv_posology?: string
+          medication_name?: string
+          oral_dosage?: string
+          oral_posology?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
