@@ -1,73 +1,49 @@
 
 import { useState } from 'react';
-import { useDrugInteractions, useCreateInteractionCheck, checkDrugInteractions } from '@/hooks/useDrugInteractions';
+import { useDrugInteractions, checkDrugInteractions } from '@/hooks/useDrugInteractions';
 import { generateInteractionReportPDF } from '@/utils/pdfGenerator';
 import { toast } from 'sonner';
-import PatientDataForm from './interactions/PatientDataForm';
-import MedicationsList from './interactions/MedicationsList';
-import InteractionResults from './interactions/InteractionResults';
-import InteractionNotes from './interactions/InteractionNotes';
-import InteractionActions from './interactions/InteractionActions';
+import MedicationSearch from './interactions/MedicationSearch';
+import InteractionAnalysis from './interactions/InteractionAnalysis';
 
-interface DrugInteractionsProps {
-  importedMedications?: string[];
-}
-
-const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) => {
-  const [medications, setMedications] = useState<string[]>(
-    importedMedications.length > 0 ? importedMedications : ['', '']
-  );
-  const [patientData, setPatientData] = useState({
-    name: '',
-    age: '',
-    pharmacist: '',
-    notes: ''
-  });
+const DrugInteractions = () => {
+  const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   
   const { data: allInteractions = [], isLoading } = useDrugInteractions();
-  const createCheck = useCreateInteractionCheck();
   
-  const foundInteractions = checkDrugInteractions(
-    medications.filter(med => med.trim() !== ''), 
-    allInteractions
-  );
+  const foundInteractions = checkDrugInteractions(selectedMedications, allInteractions);
 
-  const handleSaveCheck = async () => {
-    const validMedications = medications.filter(med => med.trim() !== '');
-    
-    if (validMedications.length < 2) {
-      toast.error('Adicione pelo menos 2 medicamentos para verificar interações');
+  const handleMedicationAdd = (medication: string) => {
+    if (selectedMedications.length >= 20) {
+      toast.error('Máximo de 20 medicamentos permitidos');
       return;
     }
-
-    try {
-      await createCheck.mutateAsync({
-        patientName: patientData.name || undefined,
-        patientAge: patientData.age || undefined,
-        pharmacistName: patientData.pharmacist || undefined,
-        medications: validMedications,
-        interactionsFound: foundInteractions,
-        notes: patientData.notes || undefined,
-      });
-      
-      toast.success('Verificação de interações salva com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao salvar verificação');
-      console.error(error);
+    
+    if (!selectedMedications.includes(medication)) {
+      setSelectedMedications(prev => [...prev, medication]);
+      toast.success(`${medication} adicionado à análise`);
     }
   };
 
+  const handleMedicationRemove = (medication: string) => {
+    setSelectedMedications(prev => prev.filter(med => med !== medication));
+    toast.success(`${medication} removido da análise`);
+  };
+
   const generateReport = () => {
-    const validMedications = medications.filter(med => med.trim() !== '');
-    
-    if (validMedications.length < 2) {
-      toast.error('Adicione pelo menos 2 medicamentos para gerar relatório');
+    if (selectedMedications.length < 2) {
+      toast.error('Selecione pelo menos 2 medicamentos para gerar relatório');
       return;
     }
 
     const reportData = {
-      patientData,
-      medications: validMedications,
+      patientData: {
+        name: '',
+        age: '',
+        pharmacist: '',
+        notes: ''
+      },
+      medications: selectedMedications,
       interactions: foundInteractions,
       checkDate: new Date().toLocaleDateString('pt-BR')
     };
@@ -81,7 +57,8 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <p>Carregando base de interações...</p>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <p className="mt-4 text-gray-600">Carregando base de interações...</p>
       </div>
     );
   }
@@ -89,31 +66,22 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Interações Medicamentosas</h2>
-        <p className="text-gray-600">Verificação de interações medicamento-medicamento e medicamento-nutriente</p>
+        <h2 className="text-3xl font-bold text-purple-800 mb-2">Interações Medicamentosas</h2>
+        <p className="text-gray-600">
+          Análise de interações medicamento-medicamento e medicamento-nutriente
+        </p>
       </div>
 
-      <PatientDataForm 
-        patientData={patientData} 
-        onUpdate={setPatientData} 
+      <MedicationSearch 
+        selectedMedications={selectedMedications}
+        onMedicationAdd={handleMedicationAdd}
+        onMedicationRemove={handleMedicationRemove}
       />
 
-      <MedicationsList 
-        medications={medications} 
-        onUpdate={setMedications} 
-      />
-
-      <InteractionResults interactions={foundInteractions} />
-
-      <InteractionNotes 
-        notes={patientData.notes} 
-        onUpdate={(notes) => setPatientData(prev => ({ ...prev, notes }))} 
-      />
-
-      <InteractionActions 
-        onSave={handleSaveCheck}
+      <InteractionAnalysis 
+        interactions={foundInteractions}
+        medicationCount={selectedMedications.length}
         onGenerateReport={generateReport}
-        isSaving={createCheck.isPending}
       />
     </div>
   );
