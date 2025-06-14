@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, X } from 'lucide-react';
 import { useMedications } from '@/hooks/useSupabaseData';
+import { useDrugInteractions } from '@/hooks/useDrugInteractions';
 
 interface MedicationSearchProps {
   selectedMedications: string[];
@@ -16,18 +17,33 @@ interface MedicationSearchProps {
 const MedicationSearch = ({ selectedMedications, onMedicationAdd, onMedicationRemove }: MedicationSearchProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const { data: medications = [], isLoading } = useMedications();
+  const { data: medications = [], isLoading: isMedicationsLoading } = useMedications();
+  const { data: drugInteractions = [], isLoading: isInteractionsLoading } = useDrugInteractions();
 
-  const filteredMedications = medications.filter(med =>
-    med.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !selectedMedications.includes(med.name)
-  ).slice(0, 10);
+  // Extrair medicamentos únicos das interações cadastradas
+  const interactionMedications = Array.from(new Set([
+    ...drugInteractions.map(interaction => interaction.drug1Name),
+    ...drugInteractions.map(interaction => interaction.drug2Name)
+  ])).sort();
+
+  // Combinar medicamentos da tabela medications com medicamentos das interações
+  const allMedicationNames = Array.from(new Set([
+    ...medications.map(med => med.name),
+    ...interactionMedications
+  ])).sort();
+
+  const filteredMedications = allMedicationNames.filter(name =>
+    name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !selectedMedications.includes(name)
+  ).slice(0, 15);
 
   const handleMedicationSelect = (medicationName: string) => {
     onMedicationAdd(medicationName);
     setSearchTerm('');
     setShowSuggestions(false);
   };
+
+  const isLoading = isMedicationsLoading || isInteractionsLoading;
 
   return (
     <Card>
@@ -37,8 +53,12 @@ const MedicationSearch = ({ selectedMedications, onMedicationAdd, onMedicationRe
         </CardTitle>
         <p className="text-sm text-gray-600">
           Digite o nome do medicamento (de marca ou genérico) no campo de pesquisa. 
-          Selecione o medicamento e clique no botão Adicionar.
+          A lista inclui medicamentos do cadastro geral e da base de interações.
         </p>
+        <div className="flex gap-2 text-xs">
+          <Badge variant="outline">{medications.length} medicamentos cadastrados</Badge>
+          <Badge variant="outline">{interactionMedications.length} medicamentos com interações</Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
@@ -63,16 +83,36 @@ const MedicationSearch = ({ selectedMedications, onMedicationAdd, onMedicationRe
               {isLoading ? (
                 <div className="p-3 text-center text-gray-500">Carregando...</div>
               ) : filteredMedications.length > 0 ? (
-                filteredMedications.map((medication) => (
-                  <div
-                    key={medication.id}
-                    className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                    onClick={() => handleMedicationSelect(medication.name)}
-                  >
-                    <div className="font-medium">{medication.name}</div>
-                    <div className="text-sm text-gray-600">{medication.presentation}</div>
-                  </div>
-                ))
+                filteredMedications.map((medicationName) => {
+                  const isFromGeneralDb = medications.some(med => med.name === medicationName);
+                  const isFromInteractions = interactionMedications.includes(medicationName);
+                  const medication = medications.find(med => med.name === medicationName);
+                  
+                  return (
+                    <div
+                      key={medicationName}
+                      className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => handleMedicationSelect(medicationName)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium">{medicationName}</div>
+                          {medication?.presentation && (
+                            <div className="text-sm text-gray-600">{medication.presentation}</div>
+                          )}
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          {isFromGeneralDb && (
+                            <Badge variant="secondary" className="text-xs">Cadastro</Badge>
+                          )}
+                          {isFromInteractions && (
+                            <Badge variant="outline" className="text-xs text-purple-600">Interações</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="p-3 text-center text-gray-500">
                   Nenhum medicamento encontrado
