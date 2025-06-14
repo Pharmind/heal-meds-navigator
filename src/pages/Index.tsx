@@ -12,15 +12,16 @@ import HighAlertSection from '@/components/clinical/HighAlertSection';
 import ElderlySection from '@/components/clinical/ElderlySection';
 import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
 import UserMenu from '@/components/UserMenu';
+import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useNavigate } from 'react-router-dom';
 import { Medication } from '@/types/heal';
 
-type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation';
+type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'user-management';
 
 const Index = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, isFarmaceutico } = useAuth();
   const [selectedSection, setSelectedSection] = useState<Section>('search');
   const [searchQuery, setSearchQuery] = useState('');
   const { medications, materials, diets } = useSupabaseData(searchQuery);
@@ -32,9 +33,17 @@ const Index = () => {
 
   const handleSectionChange = (section: Section) => {
     // Verificar se o usuário tem permissão para acessar a seção
-    if (hasPermission(section)) {
+    if (section === 'user-management') {
+      if (isFarmaceutico) {
+        setSelectedSection(section);
+      }
+    } else if (hasPermission(section)) {
       setSelectedSection(section);
     }
+  };
+
+  const handleUserManagementClick = () => {
+    setSelectedSection('user-management');
   };
 
   const handleMedicationClick = (medication: Medication) => {
@@ -92,13 +101,27 @@ const Index = () => {
       'pictogram': <ClinicalPharmacy activeTab="pictogram" />,
       'discharge-guidelines': <ClinicalPharmacy activeTab="discharge-guidelines" />,
       'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
-      'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />
+      'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />,
+      'user-management': <UserManagement />
     };
 
     const component = sectionComponents[selectedSection];
     
     if (!component) {
       return <div>Seção não implementada ainda.</div>;
+    }
+
+    // Se a seção é gerenciamento de usuários, só farmacêuticos podem acessar
+    if (selectedSection === 'user-management') {
+      if (!isFarmaceutico) {
+        return (
+          <div className="text-center py-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Acesso Negado</h2>
+            <p className="text-gray-600">Apenas farmacêuticos podem gerenciar usuários.</p>
+          </div>
+        );
+      }
+      return component;
     }
 
     // Se a seção requer permissão específica, envolver com ProtectedRoute
@@ -126,7 +149,7 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
                 HEAL Platform
               </h1>
-              <UserMenu />
+              <UserMenu onUserManagementClick={handleUserManagementClick} />
             </div>
           </header>
           

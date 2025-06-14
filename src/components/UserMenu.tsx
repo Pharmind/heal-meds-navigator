@@ -9,16 +9,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-const UserMenu = () => {
+interface UserMenuProps {
+  onUserManagementClick?: () => void;
+}
+
+const UserMenu = ({ onUserManagementClick }: UserMenuProps) => {
   const { profile, signOut } = useAuth();
 
   if (!profile) return null;
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleUserManagement = () => {
+    if (onUserManagementClick) {
+      onUserManagementClick();
+    }
   };
 
   return (
@@ -45,8 +55,8 @@ const UserMenu = () => {
         <DropdownMenuSeparator />
         {profile.user_type === 'farmaceutico' && (
           <>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={handleUserManagement}>
+              <Users className="mr-2 h-4 w-4" />
               Gerenciar Usuários
             </DropdownMenuItem>
             <DropdownMenuSeparator />
