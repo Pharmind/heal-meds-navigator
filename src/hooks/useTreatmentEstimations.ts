@@ -126,6 +126,10 @@ export const useSaveTreatmentEstimation = () => {
         days_remaining: daysRemaining,
         alert_level: alertLevel,
         stock_coverage_days: stockCoverageDays,
+        // Adicionar as colunas antigas obrigatórias com valores padrão
+        dose_per_patient_old: Number(estimation.dosePerPatient),
+        active_patients_old: estimation.activePatients,
+        daily_total_consumption_old: dailyTotalConsumption,
       };
 
       console.log('📝 Dados calculados:', dataToSave);

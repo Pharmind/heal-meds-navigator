@@ -28,6 +28,10 @@ const SavedEstimations = ({ savedEstimations, hospitalUnit, onLoadEstimation }: 
     });
   };
 
+  const isStockSufficient = (estimation: TreatmentEstimation) => {
+    return estimation.daysRemaining > 0 && estimation.alertLevel !== 'crítico';
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -48,8 +52,8 @@ const SavedEstimations = ({ savedEstimations, hospitalUnit, onLoadEstimation }: 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-semibold text-lg text-gray-800">{estimation.antimicrobialName}</h4>
-                    <Badge className={estimation.isStockSufficient ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}>
-                      {estimation.isStockSufficient ? '✅ Suficiente' : '⚠️ Insuficiente'}
+                    <Badge className={isStockSufficient(estimation) ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}>
+                      {isStockSufficient(estimation) ? '✅ Suficiente' : '⚠️ Insuficiente'}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
@@ -86,15 +90,15 @@ const SavedEstimations = ({ savedEstimations, hospitalUnit, onLoadEstimation }: 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                 <div className="bg-white p-2 rounded border border-blue-100">
                   <span className="text-gray-600 block text-xs">Pacientes</span>
-                  <span className="font-semibold text-blue-700">{estimation.totalPatientsUsing}</span>
+                  <span className="font-semibold text-blue-700">{estimation.activePatients}</span>
                 </div>
                 <div className="bg-white p-2 rounded border border-purple-100">
                   <span className="text-gray-600 block text-xs">Consumo diário</span>
-                  <span className="font-semibold text-purple-700">{estimation.dailyConsumption.toLocaleString('pt-BR')} {estimation.stockUnit}</span>
+                  <span className="font-semibold text-purple-700">{estimation.dailyTotalConsumption.toLocaleString('pt-BR')} {estimation.stockUnit}</span>
                 </div>
                 <div className="bg-white p-2 rounded border border-green-100">
                   <span className="text-gray-600 block text-xs">Cobertura</span>
-                  <span className={`font-semibold ${estimation.isStockSufficient ? 'text-green-700' : 'text-red-700'}`}>
+                  <span className={`font-semibold ${isStockSufficient(estimation) ? 'text-green-700' : 'text-red-700'}`}>
                     {estimation.stockCoverageDays} dias
                   </span>
                 </div>
