@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, LucideIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Collapsible,
@@ -15,13 +15,13 @@ import {
 
 interface MenuSectionProps {
   title: string;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: LucideIcon;
   isOpen: boolean;
   onToggle: () => void;
   items: {
     id: string;
     label: string;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
+    icon: LucideIcon;
     color: string;
   }[];
   selectedSection: string;

@@ -1,5 +1,5 @@
 
-import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, Image, ClipboardCheck, Zap, ArrowRightLeft, Calculator } from 'lucide-react';
+import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, Image, ClipboardCheck, Zap, ArrowRightLeft, Calculator, LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export const useSidebarMenuItems = () => {
