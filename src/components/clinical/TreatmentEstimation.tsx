@@ -1,41 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Plus, Trash2, Download, Calendar, AlertTriangle, CheckCircle, Hospital } from 'lucide-react';
+import { Calculator, Save, AlertTriangle, CheckCircle, Hospital, Calendar, Clock } from 'lucide-react';
+import { useTreatmentEstimations, useSaveTreatmentEstimation } from '@/hooks/useTreatmentEstimations';
 import { useToast } from '@/hooks/use-toast';
-
-interface AntimicrobialData {
-  id: string;
-  name: string;
-  dailyDose: number;
-  frequency: number;
-  treatmentDays: number;
-  patientsCount: number;
-  currentStock: number;
-  stockUnit: string;
-}
 
 const TreatmentEstimation = () => {
   const { toast } = useToast();
-  const [currentDate] = useState(new Date().toLocaleDateString('pt-BR'));
+  const [currentDate] = useState(new Date().toISOString().split('T')[0]);
   const [hospitalUnit, setHospitalUnit] = useState('');
-  const [totalPatients, setTotalPatients] = useState<number>(0);
-  const [antimicrobials, setAntimicrobials] = useState<AntimicrobialData[]>([]);
-  const [newAntimicrobial, setNewAntimicrobial] = useState<Partial<AntimicrobialData>>({
-    name: '',
-    dailyDose: 0,
-    frequency: 1,
-    treatmentDays: 7,
-    patientsCount: 1,
-    currentStock: 0,
-    stockUnit: 'mg'
-  });
+  const [antimicrobialName, setAntimicrobialName] = useState('');
+  const [dailyDosePerPatient, setDailyDosePerPatient] = useState<number>(0);
+  const [averageTreatmentDays, setAverageTreatmentDays] = useState<number>(7);
+  const [frequencyPerDay, setFrequencyPerDay] = useState<number>(1);
+  const [totalPatientsUsing, setTotalPatientsUsing] = useState<number>(0);
+  const [currentStock, setCurrentStock] = useState<number>(0);
+  const [stockUnit, setStockUnit] = useState('mg');
+
+  const { data: savedEstimations } = useTreatmentEstimations(currentDate, hospitalUnit);
+  const saveMutation = useSaveTreatmentEstimation();
 
   const hospitalUnits = [
     'UTI Adulto',
@@ -48,121 +36,103 @@ const TreatmentEstimation = () => {
 
   const stockUnits = ['mg', 'UI', 'frascos', 'ampolas', 'comprimidos'];
 
-  const calculateEstimation = (antimicrobial: AntimicrobialData) => {
-    const totalDailyConsumption = antimicrobial.dailyDose * antimicrobial.patientsCount;
-    const totalTreatmentConsumption = totalDailyConsumption * antimicrobial.treatmentDays;
-    const stockCoverage = antimicrobial.currentStock / totalDailyConsumption;
-    const isStockSufficient = stockCoverage >= antimicrobial.treatmentDays;
+  const commonAntimicrobials = [
+    'Ceftriaxona',
+    'Vancomicina',
+    'Meropenem',
+    'Piperacilina + Tazobactam',
+    'Cefepime',
+    'Amicacina',
+    'Ciprofloxacino',
+    'Clindamicina',
+    'Metronidazol',
+    'Ampicilina',
+    'Oxacilina',
+    'Azitromicina'
+  ];
 
-    return {
-      totalDailyConsumption,
-      totalTreatmentConsumption,
-      stockCoverage: Math.round(stockCoverage * 10) / 10,
-      isStockSufficient
-    };
-  };
+  // Cálculos automáticos
+  const dailyConsumption = dailyDosePerPatient * totalPatientsUsing;
+  const treatmentConsumption = dailyConsumption * averageTreatmentDays;
+  const stockCoverageDays = currentStock > 0 ? Math.round((currentStock / dailyConsumption) * 10) / 10 : 0;
+  const isStockSufficient = stockCoverageDays >= averageTreatmentDays;
 
-  const addAntimicrobial = () => {
-    if (!newAntimicrobial.name || !newAntimicrobial.dailyDose) {
-      toast({
-        title: "Erro",
-        description: "Preencha pelo menos o nome e a dose diária do antimicrobiano.",
-        variant: "destructive"
-      });
-      return;
+  // Auto-save quando os dados mudam
+  useEffect(() => {
+    if (hospitalUnit && antimicrobialName && dailyDosePerPatient > 0 && totalPatientsUsing > 0) {
+      const timeoutId = setTimeout(() => {
+        saveMutation.mutate({
+          estimationDate: currentDate,
+          hospitalUnit,
+          antimicrobialName,
+          dailyDosePerPatient,
+          averageTreatmentDays,
+          frequencyPerDay,
+          totalPatientsUsing,
+          currentStock,
+          stockUnit,
+          dailyConsumption,
+          treatmentConsumption,
+          stockCoverageDays,
+          isStockSufficient,
+        });
+      }, 2000); // Salva 2 segundos após parar de digitar
+
+      return () => clearTimeout(timeoutId);
     }
+  }, [hospitalUnit, antimicrobialName, dailyDosePerPatient, averageTreatmentDays, frequencyPerDay, totalPatientsUsing, currentStock, stockUnit]);
 
-    const antimicrobial: AntimicrobialData = {
-      id: Date.now().toString(),
-      name: newAntimicrobial.name || '',
-      dailyDose: newAntimicrobial.dailyDose || 0,
-      frequency: newAntimicrobial.frequency || 1,
-      treatmentDays: newAntimicrobial.treatmentDays || 7,
-      patientsCount: newAntimicrobial.patientsCount || 1,
-      currentStock: newAntimicrobial.currentStock || 0,
-      stockUnit: newAntimicrobial.stockUnit || 'mg'
-    };
-
-    setAntimicrobials([...antimicrobials, antimicrobial]);
-    setNewAntimicrobial({
-      name: '',
-      dailyDose: 0,
-      frequency: 1,
-      treatmentDays: 7,
-      patientsCount: 1,
-      currentStock: 0,
-      stockUnit: 'mg'
-    });
-
-    toast({
-      title: "Sucesso",
-      description: "Antimicrobiano adicionado com sucesso!",
-    });
+  const clearForm = () => {
+    setAntimicrobialName('');
+    setDailyDosePerPatient(0);
+    setAverageTreatmentDays(7);
+    setFrequencyPerDay(1);
+    setTotalPatientsUsing(0);
+    setCurrentStock(0);
+    setStockUnit('mg');
   };
 
-  const removeAntimicrobial = (id: string) => {
-    setAntimicrobials(antimicrobials.filter(item => item.id !== id));
+  const getStockStatus = () => {
+    if (currentStock === 0) return { color: 'bg-gray-100 text-gray-800', text: 'Sem dados de estoque' };
+    if (stockCoverageDays < 1) return { color: 'bg-red-100 text-red-800', text: 'Estoque crítico' };
+    if (stockCoverageDays < 3) return { color: 'bg-orange-100 text-orange-800', text: 'Estoque baixo' };
+    if (isStockSufficient) return { color: 'bg-green-100 text-green-800', text: 'Estoque suficiente' };
+    return { color: 'bg-yellow-100 text-yellow-800', text: 'Atenção necessária' };
   };
 
-  const exportToExcel = () => {
-    const csvContent = [
-      'Nome,Dose Diária (mg/UI),Frequência,Dias de Tratamento,Pacientes,Estoque Atual,Unidade,Consumo Diário Total,Consumo Total Tratamento,Cobertura (dias),Estoque Suficiente'
-    ];
-
-    antimicrobials.forEach(antimicrobial => {
-      const estimation = calculateEstimation(antimicrobial);
-      csvContent.push([
-        antimicrobial.name,
-        antimicrobial.dailyDose,
-        antimicrobial.frequency,
-        antimicrobial.treatmentDays,
-        antimicrobial.patientsCount,
-        antimicrobial.currentStock,
-        antimicrobial.stockUnit,
-        estimation.totalDailyConsumption,
-        estimation.totalTreatmentConsumption,
-        estimation.stockCoverage,
-        estimation.isStockSufficient ? 'Sim' : 'Não'
-      ].join(','));
-    });
-
-    const blob = new Blob([csvContent.join('\n')], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `estimativa_antimicrobianos_${currentDate.replace(/\//g, '-')}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  const stockStatus = getStockStatus();
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Estimativa de Tratamento</h2>
-        <p className="text-gray-600">Estimativa diária e verificação de estoque de antimicrobianos</p>
+        <h2 className="text-3xl font-bold text-heal-green-800 mb-2">Estimativa Simplificada de Tratamento</h2>
+        <p className="text-gray-600">Cálculo rápido de consumo e verificação de estoque</p>
       </div>
 
-      {/* Header Information */}
+      {/* Informações Básicas */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="text-rose-600" size={24} />
-            Informações Gerais
+            Dados da Estimativa
           </CardTitle>
+          <CardDescription>
+            Preencha os dados básicos para calcular automaticamente o consumo
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label className="flex items-center gap-2">
                 <Calendar size={16} />
                 Data da Estimativa
               </Label>
-              <Input value={currentDate} disabled className="bg-gray-50" />
+              <Input value={new Date(currentDate).toLocaleDateString('pt-BR')} disabled className="bg-gray-50" />
             </div>
             <div>
               <Label className="flex items-center gap-2">
                 <Hospital size={16} />
-                Unidade Hospitalar
+                Unidade Hospitalar *
               </Label>
               <Select value={hospitalUnit} onValueChange={setHospitalUnit}>
                 <SelectTrigger>
@@ -175,90 +145,92 @@ const TreatmentEstimation = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Total de Pacientes em Uso de Antimicrobianos</Label>
-              <Input
-                type="number"
-                value={totalPatients}
-                onChange={(e) => setTotalPatients(Number(e.target.value))}
-                placeholder="0"
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Add New Antimicrobial */}
+      {/* Formulário Principal */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="text-green-600" size={24} />
-            Adicionar Antimicrobiano
-          </CardTitle>
+          <CardTitle>Dados do Antimicrobiano</CardTitle>
+          <CardDescription>
+            {saveMutation.isPending && (
+              <span className="text-blue-600 flex items-center gap-1">
+                <Clock size={14} />
+                Salvando automaticamente...
+              </span>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label>Nome do Antimicrobiano</Label>
-              <Input
-                value={newAntimicrobial.name || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, name: e.target.value})}
-                placeholder="Ex: Ceftriaxona"
-              />
+              <Label>Nome do Antimicrobiano *</Label>
+              <Select value={antimicrobialName} onValueChange={setAntimicrobialName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione ou digite" />
+                </SelectTrigger>
+                <SelectContent>
+                  {commonAntimicrobials.map(name => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <Label>Dose Diária Total por Paciente</Label>
+              <Label>Total de Pacientes Usando *</Label>
               <Input
                 type="number"
-                value={newAntimicrobial.dailyDose || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, dailyDose: Number(e.target.value)})}
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <Label>Frequência Diária</Label>
-              <Input
-                type="number"
-                value={newAntimicrobial.frequency || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, frequency: Number(e.target.value)})}
-                placeholder="1"
-              />
-            </div>
-            <div>
-              <Label>Tempo de Tratamento (dias)</Label>
-              <Input
-                type="number"
-                value={newAntimicrobial.treatmentDays || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, treatmentDays: Number(e.target.value)})}
-                placeholder="7"
+                value={totalPatientsUsing || ''}
+                onChange={(e) => setTotalPatientsUsing(Number(e.target.value))}
+                placeholder="Ex: 5"
               />
             </div>
           </div>
+
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <Label>Número de Pacientes em Uso</Label>
+              <Label>Dose Diária por Paciente *</Label>
               <Input
                 type="number"
-                value={newAntimicrobial.patientsCount || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, patientsCount: Number(e.target.value)})}
-                placeholder="1"
+                value={dailyDosePerPatient || ''}
+                onChange={(e) => setDailyDosePerPatient(Number(e.target.value))}
+                placeholder="Ex: 2000"
               />
             </div>
             <div>
-              <Label>Quantidade Total em Estoque</Label>
+              <Label>Tempo Médio de Tratamento (dias)</Label>
               <Input
                 type="number"
-                value={newAntimicrobial.currentStock || ''}
-                onChange={(e) => setNewAntimicrobial({...newAntimicrobial, currentStock: Number(e.target.value)})}
-                placeholder="0"
+                value={averageTreatmentDays}
+                onChange={(e) => setAverageTreatmentDays(Number(e.target.value))}
+                placeholder="7"
+              />
+            </div>
+            <div>
+              <Label>Frequência por Dia</Label>
+              <Input
+                type="number"
+                value={frequencyPerDay}
+                onChange={(e) => setFrequencyPerDay(Number(e.target.value))}
+                placeholder="1"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label>Estoque Atual Total</Label>
+              <Input
+                type="number"
+                value={currentStock || ''}
+                onChange={(e) => setCurrentStock(Number(e.target.value))}
+                placeholder="Ex: 50000"
               />
             </div>
             <div>
               <Label>Unidade</Label>
-              <Select 
-                value={newAntimicrobial.stockUnit || 'mg'} 
-                onValueChange={(value) => setNewAntimicrobial({...newAntimicrobial, stockUnit: value})}
-              >
+              <Select value={stockUnit} onValueChange={setStockUnit}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -270,104 +242,108 @@ const TreatmentEstimation = () => {
               </Select>
             </div>
           </div>
-          <Button onClick={addAntimicrobial} className="w-full">
-            <Plus size={16} className="mr-2" />
-            Adicionar Antimicrobiano
-          </Button>
+
+          <div className="flex gap-2">
+            <Button onClick={clearForm} variant="outline" className="flex-1">
+              Limpar Formulário
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Antimicrobials List */}
-      {antimicrobials.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Estimativas de Consumo</CardTitle>
-              <CardDescription>{antimicrobials.length} antimicrobiano(s) cadastrado(s)</CardDescription>
-            </div>
-            <Button onClick={exportToExcel} variant="outline">
-              <Download size={16} className="mr-2" />
-              Exportar Excel
-            </Button>
+      {/* Resultados dos Cálculos */}
+      {hospitalUnit && antimicrobialName && dailyDosePerPatient > 0 && totalPatientsUsing > 0 && (
+        <Card className="border-2 border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Resultados Automáticos</span>
+              <Badge className={stockStatus.color}>
+                {isStockSufficient ? <CheckCircle size={14} className="mr-1" /> : <AlertTriangle size={14} className="mr-1" />}
+                {stockStatus.text}
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {antimicrobials.map(antimicrobial => {
-                const estimation = calculateEstimation(antimicrobial);
-                return (
-                  <div key={antimicrobial.id} className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold text-lg">{antimicrobial.name}</h4>
-                      <div className="flex items-center gap-2">
-                        {estimation.isStockSufficient ? (
-                          <Badge className="bg-green-100 text-green-800">
-                            <CheckCircle size={14} className="mr-1" />
-                            Estoque Suficiente
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-red-100 text-red-800">
-                            <AlertTriangle size={14} className="mr-1" />
-                            Estoque Insuficiente
-                          </Badge>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeAntimicrobial(antimicrobial.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-gray-600">Dose Diária/Paciente:</p>
-                        <p className="font-medium">{antimicrobial.dailyDose} {antimicrobial.stockUnit}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Pacientes em Uso:</p>
-                        <p className="font-medium">{antimicrobial.patientsCount}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Consumo Diário Total:</p>
-                        <p className="font-medium text-blue-600">{estimation.totalDailyConsumption} {antimicrobial.stockUnit}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Cobertura do Estoque:</p>
-                        <p className={`font-medium ${estimation.isStockSufficient ? 'text-green-600' : 'text-red-600'}`}>
-                          {estimation.stockCoverage} dias
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-3 p-3 bg-white rounded border">
-                      <p className="text-sm text-gray-600 mb-1">Consumo Total do Tratamento:</p>
-                      <p className="font-semibold text-purple-600">
-                        {estimation.totalTreatmentConsumption} {antimicrobial.stockUnit} 
-                        ({antimicrobial.treatmentDays} dias)
-                      </p>
-                    </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Consumo Diário Total</p>
+                <p className="text-xl font-bold text-blue-600">{dailyConsumption} {stockUnit}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Consumo Total do Tratamento</p>
+                <p className="text-xl font-bold text-purple-600">{treatmentConsumption} {stockUnit}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Cobertura do Estoque</p>
+                <p className={`text-xl font-bold ${isStockSufficient ? 'text-green-600' : 'text-red-600'}`}>
+                  {stockCoverageDays} dias
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Pacientes × Dose</p>
+                <p className="text-lg font-semibold text-gray-700">
+                  {totalPatientsUsing} × {dailyDosePerPatient} {stockUnit}
+                </p>
+              </div>
+            </div>
+
+            {!isStockSufficient && currentStock > 0 && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertTriangle size={16} />
+                  <strong>Atenção: Estoque Insuficiente!</strong>
+                </div>
+                <p className="text-red-700 mt-1">
+                  O estoque atual durará apenas {stockCoverageDays} dias, mas o tratamento requer {averageTreatmentDays} dias.
+                  É necessário repor {Math.ceil(treatmentConsumption - currentStock)} {stockUnit} adicionais.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Estimativas Salvas do Dia */}
+      {savedEstimations && savedEstimations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Estimativas Salvas Hoje - {hospitalUnit}</CardTitle>
+            <CardDescription>{savedEstimations.length} antimicrobiano(s) registrado(s)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {savedEstimations.map((estimation) => (
+                <div key={estimation.id} className="border rounded-lg p-3 bg-gray-50">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">{estimation.antimicrobialName}</h4>
+                    <Badge className={estimation.isStockSufficient ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                      {estimation.isStockSufficient ? 'Suficiente' : 'Insuficiente'}
+                    </Badge>
                   </div>
-                );
-              })}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
+                    <span>Pacientes: {estimation.totalPatientsUsing}</span>
+                    <span>Consumo diário: {estimation.dailyConsumption} {estimation.stockUnit}</span>
+                    <span>Cobertura: {estimation.stockCoverageDays} dias</span>
+                    <span>Estoque: {estimation.currentStock} {estimation.stockUnit}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Instructions */}
-      <Card className="bg-blue-50 border-blue-200">
+      {/* Instruções */}
+      <Card className="bg-green-50 border-green-200">
         <CardHeader>
-          <CardTitle className="text-blue-800">Como Funciona o Cálculo</CardTitle>
+          <CardTitle className="text-green-800">Como Usar</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm text-blue-700">
-            <p><strong>Consumo Diário Total:</strong> Dose diária × Número de pacientes</p>
-            <p><strong>Consumo Total do Tratamento:</strong> Consumo diário × Dias de tratamento</p>
-            <p><strong>Cobertura do Estoque:</strong> Estoque atual ÷ Consumo diário total</p>
-            <p><strong>Estoque Suficiente:</strong> ✅ Se cobertura ≥ tempo de tratamento | ❌ Se cobertura &lt; tempo de tratamento</p>
+          <div className="space-y-2 text-sm text-green-700">
+            <p>• <strong>Preenchimento obrigatório:</strong> Unidade, antimicrobiano, dose diária e número de pacientes</p>
+            <p>• <strong>Salvamento automático:</strong> Os dados são salvos automaticamente 2 segundos após parar de digitar</p>
+            <p>• <strong>Cálculos automáticos:</strong> Consumo e cobertura são calculados em tempo real</p>
+            <p>• <strong>Alertas:</strong> Sistema indica quando o estoque é insuficiente para o tratamento completo</p>
           </div>
         </CardContent>
       </Card>

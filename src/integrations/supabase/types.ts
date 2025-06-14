@@ -360,6 +360,63 @@ export type Database = {
         }
         Relationships: []
       }
+      treatment_estimations: {
+        Row: {
+          antimicrobial_name: string
+          average_treatment_days: number
+          created_at: string
+          current_stock: number
+          daily_consumption: number
+          daily_dose_per_patient: number
+          estimation_date: string
+          frequency_per_day: number
+          hospital_unit: string
+          id: string
+          is_stock_sufficient: boolean
+          stock_coverage_days: number
+          stock_unit: string
+          total_patients_using: number
+          treatment_consumption: number
+          updated_at: string
+        }
+        Insert: {
+          antimicrobial_name: string
+          average_treatment_days: number
+          created_at?: string
+          current_stock: number
+          daily_consumption: number
+          daily_dose_per_patient: number
+          estimation_date: string
+          frequency_per_day: number
+          hospital_unit: string
+          id?: string
+          is_stock_sufficient: boolean
+          stock_coverage_days: number
+          stock_unit?: string
+          total_patients_using: number
+          treatment_consumption: number
+          updated_at?: string
+        }
+        Update: {
+          antimicrobial_name?: string
+          average_treatment_days?: number
+          created_at?: string
+          current_stock?: number
+          daily_consumption?: number
+          daily_dose_per_patient?: number
+          estimation_date?: string
+          frequency_per_day?: number
+          hospital_unit?: string
+          id?: string
+          is_stock_sufficient?: boolean
+          stock_coverage_days?: number
+          stock_unit?: string
+          total_patients_using?: number
+          treatment_consumption?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
