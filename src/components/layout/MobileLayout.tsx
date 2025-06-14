@@ -23,6 +23,11 @@ const MobileLayout = ({
   onSectionChange,
   onUserManagementClick
 }: MobileLayoutProps) => {
+  const handleSectionChange = (section: any) => {
+    onSectionChange(section);
+    setSidebarOpen(false); // Fechar o menu após selecionar uma opção
+  };
+
   return (
     <div className="min-h-screen flex flex-col antialiased bg-gray-50 text-gray-900">
       {/* Header móvel */}
@@ -31,13 +36,23 @@ const MobileLayout = ({
           <div className="flex items-center space-x-3">
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="p-2 hover:bg-heal-green-50">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-2 hover:bg-heal-green-50"
+                  onClick={() => setSidebarOpen(true)}
+                >
                   <Menu className="h-5 w-5 text-heal-green-600" />
                   <span className="sr-only">Abrir menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-80 max-w-[85vw]">
-                <AppSidebar onSectionChange={onSectionChange} selectedSection={selectedSection} />
+              <SheetContent side="left" className="p-0 w-80 max-w-[85vw] z-[100]">
+                <div className="h-full overflow-y-auto">
+                  <AppSidebar 
+                    onSectionChange={handleSectionChange} 
+                    selectedSection={selectedSection} 
+                  />
+                </div>
               </SheetContent>
             </Sheet>
             <div className="flex flex-col">
