@@ -1,3 +1,4 @@
+
 import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -156,9 +157,8 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
       
       {/* Footer da sidebar */}
       <div className="mt-auto p-4 border-t border-heal-green-200 bg-heal-green-50">
-        <div className="text-xs text-heal-green-600 text-center space-y-1">
-          <p className="font-medium">Versão 1.0</p>
-          <p>Última atualização: Dez/2024</p>
+        <div className="text-xs text-heal-green-600 text-center">
+          <p className="font-medium">Versão 1.0.0</p>
         </div>
       </div>
     </Sidebar>
