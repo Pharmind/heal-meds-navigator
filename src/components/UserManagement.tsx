@@ -35,7 +35,9 @@ interface UserPermission {
   has_access: boolean;
 }
 
-const MODULES = [
+type ModuleName = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation';
+
+const MODULES: { id: ModuleName; name: string }[] = [
   { id: 'search', name: 'Busca Geral' },
   { id: 'medications', name: 'Medicamentos' },
   { id: 'materials', name: 'Materiais' },
@@ -104,13 +106,13 @@ const UserManagement = () => {
     return permissions.filter(p => p.user_id === userId);
   };
 
-  const hasPermission = (userId: string, moduleId: string) => {
+  const hasPermission = (userId: string, moduleId: ModuleName) => {
     const userPerms = getUserPermissions(userId);
     const perm = userPerms.find(p => p.module_name === moduleId);
     return perm?.has_access || false;
   };
 
-  const togglePermission = async (userId: string, moduleId: string, hasAccess: boolean) => {
+  const togglePermission = async (userId: string, moduleId: ModuleName, hasAccess: boolean) => {
     if (!profile) return;
 
     try {
