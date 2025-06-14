@@ -71,7 +71,7 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
         >
           <CollapsibleTrigger className="w-full">
             <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-heal-green-100 transition-colors">
-              <h3 className="text-sm font-semibold text-heal-green-700">Padronização</h3>
+              <h3 className="text-sm font-semibold text-heal-green-700">Padronizado</h3>
               <ChevronDown 
                 size={16} 
                 className={`text-heal-green-600 transition-transform duration-200 ${
