@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +11,7 @@ import IntoxicationSection from '@/components/clinical/IntoxicationSection';
 import HighAlertSection from '@/components/clinical/HighAlertSection';
 import ElderlySection from '@/components/clinical/ElderlySection';
 import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
+import MultiprofessionalRound from '@/components/clinical/MultiprofessionalRound';
 import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -90,7 +92,7 @@ const ContentRenderer = ({
     'discharge-guidelines': <ClinicalPharmacy activeTab="discharge-guidelines" />,
     'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
     'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />,
-    'multiprofessional-round': <ClinicalPharmacy activeTab="multiprofessional-round" />,
+    'multiprofessional-round': <MultiprofessionalRound />,
     'user-management': <UserManagement />
   };
 
