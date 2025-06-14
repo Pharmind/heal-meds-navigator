@@ -45,7 +45,7 @@ const SearchResults = ({
         <div className="max-w-md mx-auto">
           <div className="text-6xl mb-4">😔</div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Nenhum resultado encontrado
+            ITEM NÃO PADRONIZADO
           </h3>
           <p className="text-gray-500">
             Tente pesquisar com outros termos ou verifique a ortografia
