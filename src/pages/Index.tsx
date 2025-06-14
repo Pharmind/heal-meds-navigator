@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/useAuth';
 import AppSidebar from '@/components/AppSidebar';
 import SearchBox from '@/components/SearchBox';
 import SearchResults from '@/components/SearchResults';
@@ -9,6 +11,8 @@ import IntoxicationSection from '@/components/clinical/IntoxicationSection';
 import HighAlertSection from '@/components/clinical/HighAlertSection';
 import ElderlySection from '@/components/clinical/ElderlySection';
 import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
+import UserMenu from '@/components/UserMenu';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useNavigate } from 'react-router-dom';
 import { Medication } from '@/types/heal';
@@ -16,6 +20,7 @@ import { Medication } from '@/types/heal';
 type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation';
 
 const Index = () => {
+  const { hasPermission } = useAuth();
   const [selectedSection, setSelectedSection] = useState<Section>('search');
   const [searchQuery, setSearchQuery] = useState('');
   const { medications, materials, diets } = useSupabaseData(searchQuery);
@@ -26,7 +31,10 @@ const Index = () => {
   };
 
   const handleSectionChange = (section: Section) => {
-    setSelectedSection(section);
+    // Verificar se o usuário tem permissão para acessar a seção
+    if (hasPermission(section)) {
+      setSelectedSection(section);
+    }
   };
 
   const handleMedicationClick = (medication: Medication) => {
@@ -34,70 +42,75 @@ const Index = () => {
   };
 
   const renderContent = () => {
-    switch (selectedSection) {
-      case 'treatment-estimation':
-        return <ClinicalPharmacy activeTab="treatment-estimation" />;
-      
-      case 'search':
-        return (
-          <>
-            <SearchBox onSearch={handleSearch} />
-            <SearchResults
-              medications={medications}
-              materials={materials}
-              diets={diets}
-              onMedicationClick={handleMedicationClick}
-              searchQuery={searchQuery}
-            />
-          </>
-        );
-      case 'medications':
-        return <CategoryTable 
+    const sectionComponents = {
+      'search': (
+        <>
+          <SearchBox onSearch={handleSearch} />
+          <SearchResults
+            medications={medications}
+            materials={materials}
+            diets={diets}
+            onMedicationClick={handleMedicationClick}
+            searchQuery={searchQuery}
+          />
+        </>
+      ),
+      'medications': (
+        <CategoryTable 
           category="medications" 
           medications={medications}
           materials={materials}
           diets={diets}
           onMedicationClick={handleMedicationClick} 
-        />;
-      case 'materials':
-        return <CategoryTable 
+        />
+      ),
+      'materials': (
+        <CategoryTable 
           category="materials" 
           medications={medications}
           materials={materials}
           diets={diets}
           onMedicationClick={handleMedicationClick}
-        />;
-      case 'diets':
-        return <CategoryTable 
+        />
+      ),
+      'diets': (
+        <CategoryTable 
           category="diets" 
           medications={medications}
           materials={materials}
           diets={diets}
           onMedicationClick={handleMedicationClick}
-        />;
-      case 'intoxication':
-        return <IntoxicationSection />;
-      case 'high-alert':
-        return <HighAlertSection />;
-      case 'elderly':
-        return <ElderlySection />;
-      case 'sequential-therapy':
-        return <SequentialTherapySection />;
-      case 'pharmacovigilance':
-        return <ClinicalPharmacy activeTab="pharmacovigilance" />;
-      case 'cft':
-        return <ClinicalPharmacy activeTab="cft" />;
-      case 'protocols':
-        return <ClinicalPharmacy activeTab="protocols" />;
-      case 'pictogram':
-        return <ClinicalPharmacy activeTab="pictogram" />;
-      case 'discharge-guidelines':
-        return <ClinicalPharmacy activeTab="discharge-guidelines" />;
-      case 'drug-interactions':
-        return <ClinicalPharmacy activeTab="drug-interactions" />;
-      default:
-        return <div>Section not implemented yet.</div>;
+        />
+      ),
+      'intoxication': <IntoxicationSection />,
+      'high-alert': <HighAlertSection />,
+      'elderly': <ElderlySection />,
+      'sequential-therapy': <SequentialTherapySection />,
+      'pharmacovigilance': <ClinicalPharmacy activeTab="pharmacovigilance" />,
+      'cft': <ClinicalPharmacy activeTab="cft" />,
+      'protocols': <ClinicalPharmacy activeTab="protocols" />,
+      'pictogram': <ClinicalPharmacy activeTab="pictogram" />,
+      'discharge-guidelines': <ClinicalPharmacy activeTab="discharge-guidelines" />,
+      'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
+      'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />
+    };
+
+    const component = sectionComponents[selectedSection];
+    
+    if (!component) {
+      return <div>Seção não implementada ainda.</div>;
     }
+
+    // Se a seção requer permissão específica, envolver com ProtectedRoute
+    if (selectedSection !== 'search') {
+      return (
+        <ProtectedRoute requiredModule={selectedSection}>
+          {component}
+        </ProtectedRoute>
+      );
+    }
+
+    return component;
   };
 
   return (
@@ -106,8 +119,21 @@ const Index = () => {
         <aside className="w-72 shrink-0 border-r bg-white dark:border-gray-700 dark:bg-gray-800">
           <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
         </aside>
-        <main className="flex-1 py-12 px-6 md:px-8 lg:px-10 xl:px-12">
-          {renderContent()}
+        <main className="flex-1 flex flex-col">
+          {/* Header com menu do usuário */}
+          <header className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 px-6 py-4">
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+                HEAL Platform
+              </h1>
+              <UserMenu />
+            </div>
+          </header>
+          
+          {/* Conteúdo principal */}
+          <div className="flex-1 py-12 px-6 md:px-8 lg:px-10 xl:px-12">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </SidebarProvider>

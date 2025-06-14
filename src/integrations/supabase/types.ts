@@ -307,23 +307,32 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          full_name: string | null
           id: string
+          is_active: boolean
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
         }
         Insert: {
           created_at?: string
           email?: string | null
+          full_name?: string | null
           id: string
+          is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Update: {
           created_at?: string
           email?: string | null
+          full_name?: string | null
           id?: string
+          is_active?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
       }
@@ -423,6 +432,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_module_permissions: {
+        Row: {
+          created_at: string
+          granted_at: string | null
+          granted_by: string | null
+          has_access: boolean
+          id: string
+          module_name: Database["public"]["Enums"]["module_name"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_at?: string | null
+          granted_by?: string | null
+          has_access?: boolean
+          id?: string
+          module_name: Database["public"]["Enums"]["module_name"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_at?: string | null
+          granted_by?: string | null
+          has_access?: boolean
+          id?: string
+          module_name?: Database["public"]["Enums"]["module_name"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_module_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_module_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -435,7 +492,24 @@ export type Database = {
     }
     Enums: {
       item_type: "medication" | "material" | "diet"
+      module_name:
+        | "search"
+        | "medications"
+        | "materials"
+        | "diets"
+        | "intoxication"
+        | "high-alert"
+        | "elderly"
+        | "sequential-therapy"
+        | "pharmacovigilance"
+        | "cft"
+        | "protocols"
+        | "pictogram"
+        | "discharge-guidelines"
+        | "drug-interactions"
+        | "treatment-estimation"
       user_role: "admin" | "user"
+      user_type: "farmaceutico" | "usuario"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -552,7 +626,25 @@ export const Constants = {
   public: {
     Enums: {
       item_type: ["medication", "material", "diet"],
+      module_name: [
+        "search",
+        "medications",
+        "materials",
+        "diets",
+        "intoxication",
+        "high-alert",
+        "elderly",
+        "sequential-therapy",
+        "pharmacovigilance",
+        "cft",
+        "protocols",
+        "pictogram",
+        "discharge-guidelines",
+        "drug-interactions",
+        "treatment-estimation",
+      ],
       user_role: ["admin", "user"],
+      user_type: ["farmaceutico", "usuario"],
     },
   },
 } as const
