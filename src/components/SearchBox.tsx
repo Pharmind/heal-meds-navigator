@@ -39,8 +39,11 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
       >
         <Search 
           className={cn(
-            "absolute left-4 transition-colors duration-200",
-            isFocused ? "text-heal-green-600" : "text-heal-green-400"
+            "absolute left-4 transition-all duration-200",
+            isFocused || query 
+              ? "text-heal-green-600 animate-pulse" 
+              : "text-heal-green-400",
+            query && "animate-spin"
           )} 
           size={20} 
         />

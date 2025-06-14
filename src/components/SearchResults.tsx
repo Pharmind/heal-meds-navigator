@@ -27,7 +27,7 @@ const SearchResults = ({
         <div className="max-w-md mx-auto">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Digite para pesquisar
+            Pesquisar item Padronizado
           </h3>
           <p className="text-gray-500">
             Use a barra de pesquisa acima para encontrar medicamentos, materiais e dietas
