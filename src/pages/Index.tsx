@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import AppSidebar from '@/components/AppSidebar';
 import SearchBox from '@/components/SearchBox';
 import SearchResults from '@/components/SearchResults';
@@ -17,13 +18,18 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useNavigate } from 'react-router-dom';
 import { Medication } from '@/types/heal';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'user-management';
 
 const Index = () => {
   const { hasPermission, isFarmaceutico } = useAuth();
+  const isMobile = useIsMobile();
   const [selectedSection, setSelectedSection] = useState<Section>('search');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { medications, materials, diets } = useSupabaseData(searchQuery);
   const navigate = useNavigate();
 
@@ -39,6 +45,11 @@ const Index = () => {
       }
     } else if (hasPermission(section)) {
       setSelectedSection(section);
+    }
+    
+    // Fechar sidebar no mobile após seleção
+    if (isMobile) {
+      setSidebarOpen(false);
     }
   };
 
@@ -136,25 +147,78 @@ const Index = () => {
     return component;
   };
 
+  if (isMobile) {
+    return (
+      <div className="min-h-screen flex flex-col antialiased bg-gray-50 text-gray-900">
+        {/* Header móvel */}
+        <header className="sticky top-0 z-40 border-b bg-white px-4 py-3 shadow-sm">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0 w-80">
+                  <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
+                </SheetContent>
+              </Sheet>
+              <h1 className="text-lg font-bold text-gray-900 truncate">
+                HEAL Platform
+              </h1>
+            </div>
+            <UserMenu onUserManagementClick={handleUserManagementClick} />
+          </div>
+        </header>
+        
+        {/* Conteúdo principal */}
+        <main className="flex-1 p-4 pb-safe">
+          {renderContent()}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex antialiased bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-50">
-        <aside className="w-72 shrink-0 border-r bg-white dark:border-gray-700 dark:bg-gray-800">
+        <aside className="w-72 shrink-0 border-r bg-white dark:border-gray-700 dark:bg-gray-800 hidden lg:block">
           <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
         </aside>
-        <main className="flex-1 flex flex-col">
-          {/* Header com menu do usuário */}
-          <header className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 px-6 py-4">
+        
+        {/* Sidebar para tablet */}
+        <div className="lg:hidden">
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetContent side="left" className="p-0 w-80">
+              <AppSidebar onSectionChange={handleSectionChange} selectedSection={selectedSection} />
+            </SheetContent>
+          </Sheet>
+        </div>
+        
+        <main className="flex-1 flex flex-col min-w-0">
+          {/* Header desktop */}
+          <header className="border-b bg-white dark:border-gray-700 dark:bg-gray-800 px-4 lg:px-6 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
-                HEAL Platform
-              </h1>
+              <div className="flex items-center space-x-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="lg:hidden p-2"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-50">
+                  HEAL Platform
+                </h1>
+              </div>
               <UserMenu onUserManagementClick={handleUserManagementClick} />
             </div>
           </header>
           
           {/* Conteúdo principal */}
-          <div className="flex-1 py-12 px-6 md:px-8 lg:px-10 xl:px-12">
+          <div className="flex-1 py-6 lg:py-12 px-4 lg:px-6 xl:px-8 2xl:px-12 overflow-auto">
             {renderContent()}
           </div>
         </main>

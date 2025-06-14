@@ -2,6 +2,7 @@
 import { Search, Pill, Package, UtensilsCrossed, AlertTriangle, Eye, Users, FileText, Shield, Heart, ChevronDown, Image, ClipboardCheck, Zap, ArrowRightLeft, Stethoscope, Database, Calculator } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +24,7 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   const { hasPermission, isFarmaceutico } = useAuth();
+  const isMobile = useIsMobile();
   const [openSections, setOpenSections] = useState({
     padronizacao: true,
     farmaciaClinica: false
@@ -66,25 +68,25 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   );
 
   return (
-    <Sidebar className="border-r-0 shadow-xl bg-white">
-      <SidebarHeader className="p-6 border-b border-gray-100 bg-gradient-to-br from-heal-green-600 to-emerald-600 text-white">
+    <Sidebar className="border-r-0 shadow-xl bg-white h-full">
+      <SidebarHeader className={`p-4 lg:p-6 border-b border-gray-100 bg-gradient-to-br from-heal-green-600 to-emerald-600 text-white ${isMobile ? 'py-4' : ''}`}>
         <div className="space-y-2">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/20 rounded-lg">
-              <Stethoscope size={24} className="text-white" />
+              <Stethoscope size={isMobile ? 20 : 24} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Guia Farmacêutico</h1>
-              <p className="text-sm text-heal-green-100">HEAL</p>
+              <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-xl'}`}>Guia Farmacêutico</h1>
+              <p className={`text-heal-green-100 ${isMobile ? 'text-xs' : 'text-sm'}`}>HEAL</p>
             </div>
           </div>
-          <p className="text-xs text-heal-green-100 pl-14">
+          <p className={`text-heal-green-100 ${isMobile ? 'pl-12 text-xs' : 'pl-14 text-xs'}`}>
             Hospital Estadual de Águas Lindas - GO
           </p>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4 py-6 bg-gradient-to-b from-gray-50 to-white">
+      <SidebarContent className={`${isMobile ? 'px-3 py-4' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
         {/* Seção Padronização - só mostrar se houver itens */}
         {padronizacaoItems.length > 0 && (
           <Collapsible 
@@ -93,13 +95,13 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
             className="mb-6"
           >
             <CollapsibleTrigger className="w-full group">
-              <div className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-heal-green-50 transition-all duration-200 group">
+              <div className={`flex items-center justify-between w-full ${isMobile ? 'p-2' : 'p-3'} rounded-xl hover:bg-heal-green-50 transition-all duration-200 group`}>
                 <div className="flex items-center space-x-3">
-                  <Database className="text-heal-green-600" size={20} />
-                  <h3 className="text-sm font-bold text-heal-green-800">Padronizado</h3>
+                  <Database className="text-heal-green-600" size={isMobile ? 18 : 20} />
+                  <h3 className={`font-bold text-heal-green-800 ${isMobile ? 'text-xs' : 'text-sm'}`}>Padronizado</h3>
                 </div>
                 <ChevronDown 
-                  size={16} 
+                  size={isMobile ? 14 : 16} 
                   className={`text-heal-green-600 transition-transform duration-300 ${
                     openSections.padronizacao ? 'rotate-180' : ''
                   }`} 
@@ -107,7 +109,7 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3">
-              <SidebarMenu className="space-y-2">
+              <SidebarMenu className={`space-y-${isMobile ? '1' : '2'}`}>
                 {padronizacaoItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = selectedSection === item.id;
@@ -117,15 +119,15 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
                         onClick={() => onSectionChange(item.id as any)}
                         isActive={isActive}
                         className={`
-                          w-full justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left group
+                          w-full justify-start gap-3 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'} rounded-xl transition-all duration-300 text-left group
                           ${isActive 
                             ? 'bg-gradient-to-r from-heal-green-600 to-emerald-600 text-white shadow-lg hover:from-heal-green-700 hover:to-emerald-700 scale-[0.98]' 
                             : 'text-gray-700 hover:bg-heal-green-50 hover:text-heal-green-800 hover:scale-[1.02]'
                           }
                         `}
                       >
-                        <Icon size={20} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
-                        <span className="font-medium">{item.label}</span>
+                        <Icon size={isMobile ? 16 : 20} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
+                        <span className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>{item.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
@@ -143,13 +145,13 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
             className="mb-4"
           >
             <CollapsibleTrigger className="w-full group">
-              <div className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-heal-green-50 transition-all duration-200">
+              <div className={`flex items-center justify-between w-full ${isMobile ? 'p-2' : 'p-3'} rounded-xl hover:bg-heal-green-50 transition-all duration-200`}>
                 <div className="flex items-center space-x-3">
-                  <Heart className="text-heal-green-600" size={20} />
-                  <h3 className="text-sm font-bold text-heal-green-800">Farmácia Clínica</h3>
+                  <Heart className="text-heal-green-600" size={isMobile ? 18 : 20} />
+                  <h3 className={`font-bold text-heal-green-800 ${isMobile ? 'text-xs' : 'text-sm'}`}>Farmácia Clínica</h3>
                 </div>
                 <ChevronDown 
-                  size={16} 
+                  size={isMobile ? 14 : 16} 
                   className={`text-heal-green-600 transition-transform duration-300 ${
                     openSections.farmaciaClinica ? 'rotate-180' : ''
                   }`} 
@@ -157,7 +159,7 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3">
-              <SidebarMenu className="space-y-2">
+              <SidebarMenu className={`space-y-${isMobile ? '1' : '2'}`}>
                 {farmaciaClinicaItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = selectedSection === item.id;
@@ -167,15 +169,15 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
                         onClick={() => onSectionChange(item.id as any)}
                         isActive={isActive}
                         className={`
-                          w-full justify-start gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left group
+                          w-full justify-start gap-3 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'} rounded-xl transition-all duration-300 text-left group
                           ${isActive 
                             ? 'bg-gradient-to-r from-heal-green-600 to-emerald-600 text-white shadow-lg hover:from-heal-green-700 hover:to-emerald-700 scale-[0.98]' 
                             : 'text-gray-700 hover:bg-heal-green-50 hover:text-heal-green-800 hover:scale-[1.02]'
                           }
                         `}
                       >
-                        <Icon size={18} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
-                        <span className="font-medium text-sm">{item.label}</span>
+                        <Icon size={isMobile ? 14 : 18} className={`shrink-0 transition-transform duration-200 ${isActive ? 'text-white' : item.color} group-hover:scale-110`} />
+                        <span className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>{item.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
@@ -189,12 +191,12 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
         {padronizacaoItems.length === 0 && farmaciaClinicaItems.length === 0 && (
           <div className="text-center py-8">
             <div className="text-gray-400 mb-2">
-              <Database size={24} className="mx-auto mb-2" />
+              <Database size={isMobile ? 20 : 24} className="mx-auto mb-2" />
             </div>
-            <p className="text-sm text-gray-500">
+            <p className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               Nenhum módulo disponível.
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className={`text-gray-400 mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>
               Entre em contato com um farmacêutico para solicitar acesso.
             </p>
           </div>
@@ -202,8 +204,8 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
       </SidebarContent>
       
       {/* Footer da sidebar */}
-      <div className="mt-auto p-4 border-t border-gray-100 bg-gradient-to-r from-heal-green-50 to-emerald-50">
-        <div className="text-xs text-heal-green-700 text-center">
+      <div className={`mt-auto ${isMobile ? 'p-3' : 'p-4'} border-t border-gray-100 bg-gradient-to-r from-heal-green-50 to-emerald-50`}>
+        <div className={`text-heal-green-700 text-center ${isMobile ? 'text-xs' : 'text-xs'}`}>
           <div className="flex items-center justify-center space-x-2 mb-1">
             <div className="w-2 h-2 bg-heal-green-500 rounded-full animate-pulse"></div>
             <p className="font-semibold">Sistema Ativo</p>
