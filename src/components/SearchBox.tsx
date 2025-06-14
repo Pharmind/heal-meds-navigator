@@ -86,7 +86,7 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
       
       {/* Search suggestions hint */}
       {isFocused && !query && (
-        <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 z-10 animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 z-50 animate-fade-in">
           <div className="flex items-center mb-3">
             <Sparkles className="text-heal-green-500 mr-2" size={16} />
             <p className="text-sm text-heal-green-700 font-semibold">Dicas de pesquisa:</p>
