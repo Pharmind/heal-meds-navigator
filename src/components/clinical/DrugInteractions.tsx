@@ -1,10 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { useDrugInteractions, checkDrugInteractions } from '@/hooks/useDrugInteractions';
+import { useDrugInteractions, checkDrugInteractions, useCreateInteractionCheck } from '@/hooks/useDrugInteractions';
 import { generateInteractionReportPDF } from '@/utils/pdfGenerator';
 import { toast } from 'sonner';
 import MedicationSearch from './interactions/MedicationSearch';
 import InteractionAnalysis from './interactions/InteractionAnalysis';
+import PatientDataForm from './interactions/PatientDataForm';
+import InteractionNotes from './interactions/InteractionNotes';
 
 interface DrugInteractionsProps {
   importedMedications?: string[];
@@ -12,8 +14,15 @@ interface DrugInteractionsProps {
 
 const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) => {
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
+  const [patientData, setPatientData] = useState({
+    name: '',
+    age: '',
+    pharmacist: '',
+    notes: ''
+  });
   
   const { data: allInteractions = [], isLoading } = useDrugInteractions();
+  const createInteractionCheck = useCreateInteractionCheck();
   
   // Initialize with imported medications when component mounts
   useEffect(() => {
@@ -44,23 +53,35 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
     toast.success(`${medication} removido da análise`);
   };
 
-  const generateReport = () => {
+  const generateReport = async () => {
     if (selectedMedications.length < 2) {
       toast.error('Selecione pelo menos 2 medicamentos para gerar relatório');
       return;
     }
 
     const reportData = {
-      patientData: {
-        name: '',
-        age: '',
-        pharmacist: '',
-        notes: ''
-      },
+      patientData,
       medications: selectedMedications,
       interactions: foundInteractions,
       checkDate: new Date().toLocaleDateString('pt-BR')
     };
+
+    // Salvar verificação no banco de dados
+    try {
+      await createInteractionCheck.mutateAsync({
+        patientName: patientData.name || undefined,
+        patientAge: patientData.age || undefined,
+        pharmacistName: patientData.pharmacist || undefined,
+        medications: selectedMedications,
+        interactionsFound: foundInteractions,
+        notes: patientData.notes || undefined,
+      });
+      
+      console.log('Verificação de interação salva no banco de dados');
+    } catch (error) {
+      console.error('Erro ao salvar verificação:', error);
+      toast.error('Erro ao salvar verificação no banco de dados');
+    }
 
     const pdf = generateInteractionReportPDF(reportData);
     pdf.save(`relatorio-interacoes-${Date.now()}.pdf`);
@@ -94,10 +115,20 @@ const DrugInteractions = ({ importedMedications = [] }: DrugInteractionsProps) =
         )}
       </div>
 
+      <PatientDataForm 
+        patientData={patientData}
+        onUpdate={setPatientData}
+      />
+
       <MedicationSearch 
         selectedMedications={selectedMedications}
         onMedicationAdd={handleMedicationAdd}
         onMedicationRemove={handleMedicationRemove}
+      />
+
+      <InteractionNotes 
+        notes={patientData.notes}
+        onUpdate={(notes) => setPatientData(prev => ({ ...prev, notes }))}
       />
 
       <InteractionAnalysis 
