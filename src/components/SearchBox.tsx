@@ -41,8 +41,8 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
           className={cn(
             "absolute left-4 transition-all duration-200",
             isFocused || query 
-              ? "text-heal-green-600 animate-pulse" 
-              : "text-heal-green-400",
+              ? "text-heal-green-600" 
+              : "text-heal-green-400 animate-[breathe_3s_ease-in-out_infinite]",
             query && "animate-spin"
           )} 
           size={20} 
@@ -80,6 +80,13 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
           </ul>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes breathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };
