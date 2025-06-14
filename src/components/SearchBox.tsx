@@ -83,30 +83,6 @@ const SearchBox = ({ onSearch, placeholder = "Pesquisar medicamentos, materiais 
           "bg-gradient-to-r from-heal-green-400/10 via-emerald-400/10 to-heal-green-400/10"
         )} />
       </div>
-      
-      {/* Search suggestions hint */}
-      {isFocused && !query && (
-        <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 z-50 animate-fade-in">
-          <div className="flex items-center mb-3">
-            <Sparkles className="text-heal-green-500 mr-2" size={16} />
-            <p className="text-sm text-heal-green-700 font-semibold">Dicas de pesquisa:</p>
-          </div>
-          <ul className="text-sm text-heal-green-600 space-y-2">
-            <li className="flex items-center">
-              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
-              Digite o nome do medicamento, material ou dieta
-            </li>
-            <li className="flex items-center">
-              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
-              Use o código MV para busca exata
-            </li>
-            <li className="flex items-center">
-              <div className="w-2 h-2 bg-heal-green-400 rounded-full mr-3"></div>
-              Busque por classe terapêutica
-            </li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
