@@ -338,6 +338,43 @@ export const useDrugInteractionsData = () => {
 };
 
 // Hook combinado para buscar todos os dados
+export const useSupabaseData = (searchQuery: string) => {
+  const medications = useMedications();
+  const materials = useMaterials();
+  const diets = useDiets();
+
+  // Filter data based on search query if provided
+  const filteredMedications = searchQuery 
+    ? (medications.data || []).filter(med => 
+        med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        med.mvCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        med.therapeuticClass.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : medications.data || [];
+
+  const filteredMaterials = searchQuery
+    ? (materials.data || []).filter(mat =>
+        mat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        mat.mvCode.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : materials.data || [];
+
+  const filteredDiets = searchQuery
+    ? (diets.data || []).filter(diet =>
+        diet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        diet.mvCode.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : diets.data || [];
+
+  return {
+    medications: filteredMedications,
+    materials: filteredMaterials,
+    diets: filteredDiets,
+    isLoading: medications.isLoading || materials.isLoading || diets.isLoading,
+    error: medications.error || materials.error || diets.error,
+  };
+};
+
 export const useAllData = () => {
   const medications = useMedications();
   const materials = useMaterials();

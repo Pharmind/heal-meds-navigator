@@ -52,11 +52,29 @@ const Index = () => {
           </>
         );
       case 'medications':
-        return <CategoryTable type="medication" data={medications} onMedicationClick={handleMedicationClick} />;
+        return <CategoryTable 
+          category="medications" 
+          medications={medications}
+          materials={materials}
+          diets={diets}
+          onMedicationClick={handleMedicationClick} 
+        />;
       case 'materials':
-        return <CategoryTable type="material" data={materials} />;
+        return <CategoryTable 
+          category="materials" 
+          medications={medications}
+          materials={materials}
+          diets={diets}
+          onMedicationClick={handleMedicationClick}
+        />;
       case 'diets':
-        return <CategoryTable type="diet" data={diets} />;
+        return <CategoryTable 
+          category="diets" 
+          medications={medications}
+          materials={materials}
+          diets={diets}
+          onMedicationClick={handleMedicationClick}
+        />;
       case 'intoxication':
         return <IntoxicationSection />;
       case 'high-alert':
