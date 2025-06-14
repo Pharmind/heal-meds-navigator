@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Users, Pill, Calendar, Package } from 'lucide-react';
+import { Users, Pill, Calendar, Package, Save } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SimplifiedFormProps {
@@ -25,7 +25,9 @@ interface SimplifiedFormProps {
   commonAntimicrobials: string[];
   stockUnits: string[];
   clearForm: () => void;
-  isPending: boolean;
+  onSave: () => void;
+  canSave: boolean;
+  isSaving: boolean;
   dailyTotalConsumption: number;
   daysRemaining: number;
   alertLevel: string;
@@ -47,7 +49,9 @@ const SimplifiedForm = ({
   commonAntimicrobials,
   stockUnits,
   clearForm,
-  isPending,
+  onSave,
+  canSave,
+  isSaving,
   dailyTotalConsumption,
   daysRemaining,
   alertLevel
@@ -98,11 +102,7 @@ const SimplifiedForm = ({
           )}
         </CardTitle>
         <CardDescription>
-          {isPending ? (
-            <span className="text-blue-600">💾 Salvando automaticamente...</span>
-          ) : (
-            "Sistema com cálculos convertidos automaticamente para gramas"
-          )}
+          Sistema com cálculos convertidos automaticamente para gramas - Salvamento manual
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -281,15 +281,23 @@ const SimplifiedForm = ({
           </Alert>
         )}
 
-        {/* Botão de Limpar */}
-        <div className="flex justify-end">
+        {/* Botões de Ação */}
+        <div className="flex gap-3 pt-2">
+          <Button 
+            onClick={onSave}
+            disabled={!canSave || isSaving}
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {isSaving ? 'Salvando...' : 'Salvar Estimativa'}
+          </Button>
           <Button 
             onClick={clearForm} 
             variant="outline" 
-            disabled={isPending}
+            disabled={isSaving}
             className="px-6"
           >
-            Limpar Formulário
+            Limpar
           </Button>
         </div>
       </CardContent>

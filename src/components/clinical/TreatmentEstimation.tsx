@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTreatmentEstimations, useSaveTreatmentEstimation } from '@/hooks/useTreatmentEstimations';
 import { useTreatmentCalculations } from './treatment-estimation/hooks/useTreatmentCalculations';
 import { hospitalUnits, stockUnits, commonAntimicrobials } from './treatment-estimation/constants';
@@ -28,10 +28,9 @@ const TreatmentEstimation = () => {
     daysRemaining, 
     stockCoverageDays, 
     alertLevel 
-  } = useTreatmentCalculations(dosePerPatient, activePatients, estimatedDays, currentStock);
+  } = useTreatmentCalculations(dosePerPatient, activePatients, estimatedDays, currentStock, stockUnit);
 
-  // Auto-save simplificado
-  useEffect(() => {
+  const handleSaveEstimation = () => {
     const isValidForSaving = () => {
       return hospitalUnit && 
              antimicrobialName && 
@@ -39,42 +38,25 @@ const TreatmentEstimation = () => {
              activePatients > 0;
     };
 
-    if (isValidForSaving() && !saveMutation.isPending) {
-      const timeoutId = setTimeout(() => {
-        console.log('🔄 Auto-salvando estimativa simplificada...');
-        
-        saveMutation.mutate({
-          estimationDate: currentDate,
-          hospitalUnit,
-          antimicrobialName,
-          dosePerPatient, // Agora é dose total da unidade
-          activePatients,
-          estimatedDays,
-          currentStock,
-          stockUnit,
-          dailyTotalConsumption: dosePerPatient, // Dose total diária
-          daysRemaining,
-          alertLevel,
-          stockCoverageDays,
-        });
-      }, 2000); // 2 segundos de debounce
-
-      return () => clearTimeout(timeoutId);
+    if (isValidForSaving()) {
+      console.log('💾 Salvando estimativa manualmente...');
+      
+      saveMutation.mutate({
+        estimationDate: currentDate,
+        hospitalUnit,
+        antimicrobialName,
+        dosePerPatient,
+        activePatients,
+        estimatedDays,
+        currentStock,
+        stockUnit,
+        dailyTotalConsumption: dosePerPatient,
+        daysRemaining,
+        alertLevel,
+        stockCoverageDays,
+      });
     }
-  }, [
-    hospitalUnit, 
-    antimicrobialName, 
-    dosePerPatient, 
-    activePatients, 
-    estimatedDays, 
-    currentStock, 
-    stockUnit,
-    daysRemaining,
-    alertLevel,
-    stockCoverageDays,
-    saveMutation,
-    currentDate
-  ]);
+  };
 
   const clearForm = () => {
     console.log('🧹 Limpando formulário...');
@@ -97,6 +79,7 @@ const TreatmentEstimation = () => {
   };
 
   const showResults = hospitalUnit && antimicrobialName && dosePerPatient > 0 && activePatients > 0;
+  const canSave = hospitalUnit && antimicrobialName && dosePerPatient > 0 && activePatients > 0;
 
   return (
     <div className="space-y-6">
@@ -125,20 +108,22 @@ const TreatmentEstimation = () => {
         commonAntimicrobials={commonAntimicrobials}
         stockUnits={stockUnits}
         clearForm={clearForm}
-        isPending={saveMutation.isPending}
-        dailyTotalConsumption={dosePerPatient} // Agora é igual ao campo dose
+        onSave={handleSaveEstimation}
+        canSave={canSave}
+        isSaving={saveMutation.isPending}
+        dailyTotalConsumption={dosePerPatient}
         daysRemaining={daysRemaining}
         alertLevel={alertLevel}
       />
 
       {showResults && (
         <DashboardResults
-          dailyTotalConsumption={dosePerPatient} // Dose total da unidade
+          dailyTotalConsumption={dosePerPatient}
           daysRemaining={daysRemaining}
           stockCoverageDays={stockCoverageDays}
           stockUnit={stockUnit}
           activePatients={activePatients}
-          dosePerPatient={activePatients > 0 ? dosePerPatient / activePatients : 0} // Dose média por paciente
+          dosePerPatient={activePatients > 0 ? dosePerPatient / activePatients : 0}
           currentStock={currentStock}
           estimatedDays={estimatedDays}
           alertLevel={alertLevel}
