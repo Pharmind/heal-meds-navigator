@@ -122,10 +122,10 @@ const SimplifiedForm = ({
           </div>
         </div>
 
-        {/* Linha 2: Dose e Tempo */}
+        {/* Linha 2: Dose Total e Tempo */}
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">Dose por Paciente/Dia *</Label>
+            <Label className="text-sm font-semibold">Dose Total Diária da Unidade *</Label>
             <div className="relative">
               <Input
                 type="number"
@@ -133,12 +133,12 @@ const SimplifiedForm = ({
                 step="0.1"
                 value={dosePerPatient || ''}
                 onChange={(e) => setDosePerPatient(Number(e.target.value))}
-                placeholder="Ex: 2000"
+                placeholder="Ex: 16000"
                 className={`${dosePerPatient <= 0 ? 'border-orange-300' : 'border-green-300'}`}
               />
               <span className="absolute right-3 top-2.5 text-xs text-gray-500">{stockUnit}</span>
             </div>
-            <p className="text-xs text-gray-500">Dose individual diária</p>
+            <p className="text-xs text-gray-500">Total consumido por todos os pacientes/dia</p>
           </div>
           
           <div className="space-y-2">
@@ -204,7 +204,7 @@ const SimplifiedForm = ({
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <strong>Consumo Diário:</strong><br />
-                  {dailyTotalConsumption.toLocaleString('pt-BR')} {stockUnit}
+                  {dosePerPatient.toLocaleString('pt-BR')} {stockUnit}
                 </div>
                 <div>
                   <strong>Dias Restantes:</strong><br />
@@ -225,6 +225,11 @@ const SimplifiedForm = ({
                   </span>
                 </div>
               </div>
+              {activePatients > 0 && (
+                <div className="mt-2 pt-2 border-t text-xs text-gray-600">
+                  Dose média por paciente: {(dosePerPatient / activePatients).toFixed(1)} {stockUnit}/dia
+                </div>
+              )}
             </AlertDescription>
           </Alert>
         )}

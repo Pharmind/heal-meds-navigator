@@ -2,14 +2,14 @@
 import { useMemo } from 'react';
 
 export const useTreatmentCalculations = (
-  dosePerPatient: number,
+  totalDailyDose: number, // Agora representa a dose total diária da unidade
   activePatients: number,
   estimatedDays: number,
   currentStock: number
 ) => {
   return useMemo(() => {
-    // Cálculo do consumo diário total
-    const dailyTotalConsumption = dosePerPatient * activePatients;
+    // O consumo diário total é agora diretamente a dose total informada
+    const dailyTotalConsumption = totalDailyDose;
     
     // Cálculo do consumo total para o tratamento estimado
     const treatmentConsumption = dailyTotalConsumption * estimatedDays;
@@ -36,5 +36,5 @@ export const useTreatmentCalculations = (
       isStockSufficient,
       alertLevel
     };
-  }, [dosePerPatient, activePatients, estimatedDays, currentStock]);
+  }, [totalDailyDose, activePatients, estimatedDays, currentStock]);
 };

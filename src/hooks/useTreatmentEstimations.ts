@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -102,8 +101,8 @@ export const useSaveTreatmentEstimation = () => {
         patients: estimation.activePatients
       });
 
-      // Calcular valores automaticamente
-      const dailyTotalConsumption = estimation.dosePerPatient * estimation.activePatients;
+      // Agora dosePerPatient representa a dose total diária da unidade
+      const dailyTotalConsumption = estimation.dosePerPatient; // Dose total já informada
       const daysRemaining = estimation.currentStock > 0 ? estimation.currentStock / dailyTotalConsumption : 0;
       const stockCoverageDays = Math.floor(daysRemaining);
       
@@ -117,7 +116,7 @@ export const useSaveTreatmentEstimation = () => {
         estimation_date: estimation.estimationDate,
         hospital_unit: estimation.hospitalUnit,
         antimicrobial_name: estimation.antimicrobialName,
-        dose_per_patient: Number(estimation.dosePerPatient),
+        dose_per_patient: Number(estimation.dosePerPatient), // Agora é dose total da unidade
         active_patients: estimation.activePatients,
         estimated_days: estimation.estimatedDays,
         current_stock: Number(estimation.currentStock),

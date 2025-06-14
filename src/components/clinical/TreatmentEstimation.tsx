@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTreatmentEstimations, useSaveTreatmentEstimation } from '@/hooks/useTreatmentEstimations';
 import { useTreatmentCalculations } from './treatment-estimation/hooks/useTreatmentCalculations';
@@ -47,12 +46,12 @@ const TreatmentEstimation = () => {
           estimationDate: currentDate,
           hospitalUnit,
           antimicrobialName,
-          dosePerPatient,
+          dosePerPatient, // Agora é dose total da unidade
           activePatients,
           estimatedDays,
           currentStock,
           stockUnit,
-          dailyTotalConsumption,
+          dailyTotalConsumption: dosePerPatient, // Dose total diária
           daysRemaining,
           alertLevel,
           stockCoverageDays,
@@ -69,7 +68,6 @@ const TreatmentEstimation = () => {
     estimatedDays, 
     currentStock, 
     stockUnit,
-    dailyTotalConsumption,
     daysRemaining,
     alertLevel,
     stockCoverageDays,
@@ -127,19 +125,19 @@ const TreatmentEstimation = () => {
         stockUnits={stockUnits}
         clearForm={clearForm}
         isPending={saveMutation.isPending}
-        dailyTotalConsumption={dailyTotalConsumption}
+        dailyTotalConsumption={dosePerPatient} // Agora é igual ao campo dose
         daysRemaining={daysRemaining}
         alertLevel={alertLevel}
       />
 
       {showResults && (
         <DashboardResults
-          dailyTotalConsumption={dailyTotalConsumption}
+          dailyTotalConsumption={dosePerPatient} // Dose total da unidade
           daysRemaining={daysRemaining}
           stockCoverageDays={stockCoverageDays}
           stockUnit={stockUnit}
           activePatients={activePatients}
-          dosePerPatient={dosePerPatient}
+          dosePerPatient={activePatients > 0 ? dosePerPatient / activePatients : 0} // Dose média por paciente
           currentStock={currentStock}
           estimatedDays={estimatedDays}
           alertLevel={alertLevel}
