@@ -38,6 +38,9 @@ const Index = () => {
     onUserManagementClick: handleUserManagementClick
   };
 
+  // Debug log para verificar se está detectando mobile corretamente
+  console.log('isMobile:', isMobile, 'window.innerWidth:', typeof window !== 'undefined' ? window.innerWidth : 'undefined');
+
   if (isMobile) {
     return (
       <MobileLayout {...layoutProps}>

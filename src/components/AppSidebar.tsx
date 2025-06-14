@@ -35,10 +35,10 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   const hasAnyItems = padronizacaoItems.length > 0 || farmaciaClinicaItems.length > 0;
 
   return (
-    <Sidebar className="border-r-0 shadow-xl bg-white h-full">
+    <div className="h-full flex flex-col bg-white">
       <SidebarHeader />
       
-      <SidebarContent className={`${isMobile ? 'px-3 py-4' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
+      <div className={`flex-1 ${isMobile ? 'px-3 py-4' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
         <MenuSection
           title="Padronizado"
           icon={Database}
@@ -60,10 +60,10 @@ const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
         />
 
         {!hasAnyItems && <EmptyStateMessage />}
-      </SidebarContent>
+      </div>
       
       <SidebarFooter />
-    </Sidebar>
+    </div>
   );
 };
 

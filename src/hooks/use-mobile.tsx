@@ -8,19 +8,18 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
+    const checkMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
     // Set initial value
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    checkMobile()
     
-    // Listen for changes
-    mql.addEventListener("change", onChange)
+    // Listen for resize events
+    window.addEventListener("resize", checkMobile)
     
     // Cleanup
-    return () => mql.removeEventListener("change", onChange)
+    return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
   return !!isMobile
@@ -30,21 +29,19 @@ export function useIsTablet() {
   const [isTablet, setIsTablet] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(min-width: ${MOBILE_BREAKPOINT}px) and (max-width: ${TABLET_BREAKPOINT - 1}px)`)
-    const onChange = () => {
+    const checkTablet = () => {
       const width = window.innerWidth
       setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT)
     }
     
     // Set initial value
-    const width = window.innerWidth
-    setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT)
+    checkTablet()
     
-    // Listen for changes
-    mql.addEventListener("change", onChange)
+    // Listen for resize events
+    window.addEventListener("resize", checkTablet)
     
     // Cleanup
-    return () => mql.removeEventListener("change", onChange)
+    return () => window.removeEventListener("resize", checkTablet)
   }, [])
 
   return !!isTablet
@@ -54,19 +51,18 @@ export function useIsDesktop() {
   const [isDesktop, setIsDesktop] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(min-width: ${TABLET_BREAKPOINT}px)`)
-    const onChange = () => {
+    const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= TABLET_BREAKPOINT)
     }
     
     // Set initial value
-    setIsDesktop(window.innerWidth >= TABLET_BREAKPOINT)
+    checkDesktop()
     
-    // Listen for changes
-    mql.addEventListener("change", onChange)
+    // Listen for resize events
+    window.addEventListener("resize", checkDesktop)
     
     // Cleanup
-    return () => mql.removeEventListener("change", onChange)
+    return () => window.removeEventListener("resize", checkDesktop)
   }, [])
 
   return !!isDesktop
