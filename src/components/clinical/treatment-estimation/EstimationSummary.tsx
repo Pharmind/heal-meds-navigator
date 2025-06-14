@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TreatmentEstimation, useTreatmentEstimations } from '@/hooks/useTreatmentEstimations';
-import { BarChart3, Users, Package, Calendar } from 'lucide-react';
+import { BarChart3, Users, Package, Calendar, Building2 } from 'lucide-react';
 
 interface EstimationSummaryProps {
   estimations: TreatmentEstimation[];
@@ -21,6 +21,23 @@ interface SummaryData {
   alertLevel: 'normal' | 'baixo' | 'crítico';
   estimationsCount: number;
   sectorsCount: number;
+}
+
+interface SectorSummary {
+  sectorName: string;
+  totalPatients: number;
+  totalEstimations: number;
+  antimicrobials: Array<{
+    name: string;
+    patients: number;
+    dailyConsumption: number;
+    stock: number;
+    daysRemaining: number;
+    alertLevel: string;
+    stockUnit: string;
+  }>;
+  criticalMedications: number;
+  lowStockMedications: number;
 }
 
 const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps) => {
@@ -68,6 +85,40 @@ const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps
         sectorsCount
       };
     }).sort((a, b) => b.totalPatients - a.totalPatients); // Ordenar por total de pacientes
+  }, [consolidatedEstimations]);
+
+  // Resumo por setor
+  const summaryBySector = React.useMemo(() => {
+    const grouped = consolidatedEstimations.reduce((acc, estimation) => {
+      const key = estimation.hospitalUnit;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(estimation);
+      return acc;
+    }, {} as Record<string, TreatmentEstimation[]>);
+
+    return Object.entries(grouped).map(([sectorName, estims]): SectorSummary => {
+      const totalPatients = estims.reduce((sum, e) => sum + e.activePatients, 0);
+      const antimicrobials = estims.map(e => ({
+        name: e.antimicrobialName,
+        patients: e.activePatients,
+        dailyConsumption: e.dailyTotalConsumption,
+        stock: e.currentStock,
+        daysRemaining: e.daysRemaining,
+        alertLevel: e.alertLevel,
+        stockUnit: e.stockUnit
+      }));
+
+      return {
+        sectorName,
+        totalPatients,
+        totalEstimations: estims.length,
+        antimicrobials,
+        criticalMedications: estims.filter(e => e.alertLevel === 'crítico').length,
+        lowStockMedications: estims.filter(e => e.alertLevel === 'baixo').length
+      };
+    }).sort((a, b) => b.totalPatients - a.totalPatients);
   }, [consolidatedEstimations]);
 
   // Totais gerais de TODA a instituição
@@ -264,6 +315,91 @@ const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps
                 ))}
               </TableBody>
             </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Resumo Detalhado por Setor */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="text-indigo-600" size={20} />
+            Resumo Detalhado por Setor
+          </CardTitle>
+          <CardDescription>
+            Detalhamento de cada setor com seus antimicrobianos cadastrados
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {summaryBySector.map((sector) => (
+              <div key={sector.sectorName} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800">{sector.sectorName}</h4>
+                  <div className="flex gap-4 text-sm">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      {sector.totalPatients} pacientes
+                    </span>
+                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                      {sector.totalEstimations} estimativas
+                    </span>
+                    {sector.criticalMedications > 0 && (
+                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                        {sector.criticalMedications} críticos
+                      </span>
+                    )}
+                    {sector.lowStockMedications > 0 && (
+                      <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                        {sector.lowStockMedications} baixo estoque
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Antimicrobiano</TableHead>
+                        <TableHead className="text-center">Pacientes</TableHead>
+                        <TableHead className="text-center">Consumo Diário</TableHead>
+                        <TableHead className="text-center">Estoque</TableHead>
+                        <TableHead className="text-center">Dias Rest.</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sector.antimicrobials.map((antimicrobial, index) => (
+                        <TableRow key={`${sector.sectorName}-${antimicrobial.name}-${index}`}>
+                          <TableCell className="font-medium">{antimicrobial.name}</TableCell>
+                          <TableCell className="text-center">{antimicrobial.patients}</TableCell>
+                          <TableCell className="text-center">
+                            {antimicrobial.dailyConsumption.toLocaleString('pt-BR')} {antimicrobial.stockUnit}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {antimicrobial.stock.toLocaleString('pt-BR')} {antimicrobial.stockUnit}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className={antimicrobial.alertLevel === 'crítico' ? 'text-red-700 font-bold' : 
+                                           antimicrobial.alertLevel === 'baixo' ? 'text-orange-700 font-bold' : 
+                                           'text-green-700'}>
+                              {antimicrobial.daysRemaining.toFixed(1)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge className={getAlertBadgeColor(antimicrobial.alertLevel)} variant="outline">
+                              {antimicrobial.alertLevel === 'crítico' ? 'CRÍTICO' : 
+                               antimicrobial.alertLevel === 'baixo' ? 'BAIXO' : 
+                               'NORMAL'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
