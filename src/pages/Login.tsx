@@ -131,14 +131,6 @@ const Login = () => {
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
-            
-            <div className="text-sm text-center text-gray-600 mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="font-medium mb-2">Credenciais de acesso:</p>
-              <div className="space-y-1 text-xs">
-                <p><strong>Usuário comum:</strong> heal123 / heal123</p>
-                <p><strong>Farmacêutico:</strong> fa123 / farma123</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
