@@ -2,85 +2,77 @@
 import React, { useState, useEffect } from 'react';
 import { useTreatmentEstimations, useSaveTreatmentEstimation } from '@/hooks/useTreatmentEstimations';
 import { useTreatmentCalculations } from './treatment-estimation/hooks/useTreatmentCalculations';
-import { getStockStatus } from './treatment-estimation/utils/stockStatus';
 import { hospitalUnits, stockUnits, commonAntimicrobials } from './treatment-estimation/constants';
 
 import EstimationHeader from './treatment-estimation/EstimationHeader';
 import BasicInfoCard from './treatment-estimation/BasicInfoCard';
-import AntimicrobialForm from './treatment-estimation/AntimicrobialForm';
-import CalculationResults from './treatment-estimation/CalculationResults';
+import SimplifiedForm from './treatment-estimation/SimplifiedForm';
+import DashboardResults from './treatment-estimation/DashboardResults';
 import SavedEstimations from './treatment-estimation/SavedEstimations';
-import InstructionsCard from './treatment-estimation/InstructionsCard';
 
 const TreatmentEstimation = () => {
   const [currentDate] = useState(new Date().toISOString().split('T')[0]);
   const [hospitalUnit, setHospitalUnit] = useState('');
   const [antimicrobialName, setAntimicrobialName] = useState('');
-  const [dailyDosePerPatient, setDailyDosePerPatient] = useState<number>(0);
-  const [averageTreatmentDays, setAverageTreatmentDays] = useState<number>(7);
-  const [frequencyPerDay, setFrequencyPerDay] = useState<number>(1);
-  const [totalPatientsUsing, setTotalPatientsUsing] = useState<number>(0);
+  const [dosePerPatient, setDosePerPatient] = useState<number>(0);
+  const [activePatients, setActivePatients] = useState<number>(0);
+  const [estimatedDays, setEstimatedDays] = useState<number>(7);
   const [currentStock, setCurrentStock] = useState<number>(0);
   const [stockUnit, setStockUnit] = useState('mg');
-  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
   const { data: savedEstimations, isLoading: loadingEstimations } = useTreatmentEstimations(currentDate, hospitalUnit);
   const saveMutation = useSaveTreatmentEstimation();
 
-  const { dailyConsumption, treatmentConsumption, stockCoverageDays, isStockSufficient } = 
-    useTreatmentCalculations(dailyDosePerPatient, totalPatientsUsing, averageTreatmentDays, currentStock);
+  const { 
+    dailyTotalConsumption, 
+    daysRemaining, 
+    stockCoverageDays, 
+    alertLevel 
+  } = useTreatmentCalculations(dosePerPatient, activePatients, estimatedDays, currentStock);
 
-  // Auto-save with improved validation and debouncing
+  // Auto-save simplificado
   useEffect(() => {
     const isValidForSaving = () => {
       return hospitalUnit && 
              antimicrobialName && 
-             dailyDosePerPatient > 0 && 
-             totalPatientsUsing > 0 &&
-             averageTreatmentDays > 0 &&
-             frequencyPerDay > 0;
+             dosePerPatient > 0 && 
+             activePatients > 0;
     };
 
     if (isValidForSaving() && !saveMutation.isPending) {
       const timeoutId = setTimeout(() => {
-        console.log('🔄 Auto-salvando estimativa...');
+        console.log('🔄 Auto-salvando estimativa simplificada...');
         
         saveMutation.mutate({
           estimationDate: currentDate,
           hospitalUnit,
           antimicrobialName,
-          dailyDosePerPatient,
-          averageTreatmentDays,
-          frequencyPerDay,
-          totalPatientsUsing,
+          dosePerPatient,
+          activePatients,
+          estimatedDays,
           currentStock,
           stockUnit,
-          dailyConsumption,
-          treatmentConsumption,
+          dailyTotalConsumption,
+          daysRemaining,
+          alertLevel,
           stockCoverageDays,
-          isStockSufficient,
-        }, {
-          onSuccess: () => {
-            setLastSaveTime(new Date());
-          }
         });
-      }, 1500); // Reduced debounce time for better UX
+      }, 2000); // 2 segundos de debounce
 
       return () => clearTimeout(timeoutId);
     }
   }, [
     hospitalUnit, 
     antimicrobialName, 
-    dailyDosePerPatient, 
-    averageTreatmentDays, 
-    frequencyPerDay, 
-    totalPatientsUsing, 
+    dosePerPatient, 
+    activePatients, 
+    estimatedDays, 
     currentStock, 
     stockUnit,
-    dailyConsumption,
-    treatmentConsumption,
+    dailyTotalConsumption,
+    daysRemaining,
+    alertLevel,
     stockCoverageDays,
-    isStockSufficient,
     saveMutation,
     currentDate
   ]);
@@ -88,28 +80,24 @@ const TreatmentEstimation = () => {
   const clearForm = () => {
     console.log('🧹 Limpando formulário...');
     setAntimicrobialName('');
-    setDailyDosePerPatient(0);
-    setAverageTreatmentDays(7);
-    setFrequencyPerDay(1);
-    setTotalPatientsUsing(0);
+    setDosePerPatient(0);
+    setActivePatients(0);
+    setEstimatedDays(7);
     setCurrentStock(0);
     setStockUnit('mg');
-    setLastSaveTime(null);
   };
 
   const loadEstimation = (estimation: any) => {
-    console.log('📥 Carregando estimativa salva:', estimation.antimicrobialName);
+    console.log('📥 Carregando estimativa:', estimation.antimicrobialName);
     setAntimicrobialName(estimation.antimicrobialName);
-    setDailyDosePerPatient(estimation.dailyDosePerPatient);
-    setAverageTreatmentDays(estimation.averageTreatmentDays);
-    setFrequencyPerDay(estimation.frequencyPerDay);
-    setTotalPatientsUsing(estimation.totalPatientsUsing);
+    setDosePerPatient(estimation.dosePerPatient);
+    setActivePatients(estimation.activePatients);
+    setEstimatedDays(estimation.estimatedDays);
     setCurrentStock(estimation.currentStock);
     setStockUnit(estimation.stockUnit);
   };
 
-  const stockStatus = getStockStatus(currentStock, stockCoverageDays, isStockSufficient);
-  const showResults = hospitalUnit && antimicrobialName && dailyDosePerPatient > 0 && totalPatientsUsing > 0;
+  const showResults = hospitalUnit && antimicrobialName && dosePerPatient > 0 && activePatients > 0;
 
   return (
     <div className="space-y-6">
@@ -122,17 +110,15 @@ const TreatmentEstimation = () => {
         hospitalUnits={hospitalUnits}
       />
 
-      <AntimicrobialForm
+      <SimplifiedForm
         antimicrobialName={antimicrobialName}
         setAntimicrobialName={setAntimicrobialName}
-        totalPatientsUsing={totalPatientsUsing}
-        setTotalPatientsUsing={setTotalPatientsUsing}
-        dailyDosePerPatient={dailyDosePerPatient}
-        setDailyDosePerPatient={setDailyDosePerPatient}
-        averageTreatmentDays={averageTreatmentDays}
-        setAverageTreatmentDays={setAverageTreatmentDays}
-        frequencyPerDay={frequencyPerDay}
-        setFrequencyPerDay={setFrequencyPerDay}
+        dosePerPatient={dosePerPatient}
+        setDosePerPatient={setDosePerPatient}
+        activePatients={activePatients}
+        setActivePatients={setActivePatients}
+        estimatedDays={estimatedDays}
+        setEstimatedDays={setEstimatedDays}
         currentStock={currentStock}
         setCurrentStock={setCurrentStock}
         stockUnit={stockUnit}
@@ -141,21 +127,22 @@ const TreatmentEstimation = () => {
         stockUnits={stockUnits}
         clearForm={clearForm}
         isPending={saveMutation.isPending}
-        lastSaveTime={lastSaveTime}
+        dailyTotalConsumption={dailyTotalConsumption}
+        daysRemaining={daysRemaining}
+        alertLevel={alertLevel}
       />
 
       {showResults && (
-        <CalculationResults
-          dailyConsumption={dailyConsumption}
-          treatmentConsumption={treatmentConsumption}
+        <DashboardResults
+          dailyTotalConsumption={dailyTotalConsumption}
+          daysRemaining={daysRemaining}
           stockCoverageDays={stockCoverageDays}
-          isStockSufficient={isStockSufficient}
           stockUnit={stockUnit}
-          totalPatientsUsing={totalPatientsUsing}
-          dailyDosePerPatient={dailyDosePerPatient}
+          activePatients={activePatients}
+          dosePerPatient={dosePerPatient}
           currentStock={currentStock}
-          averageTreatmentDays={averageTreatmentDays}
-          stockStatus={stockStatus}
+          estimatedDays={estimatedDays}
+          alertLevel={alertLevel}
         />
       )}
 
@@ -166,8 +153,6 @@ const TreatmentEstimation = () => {
           onLoadEstimation={loadEstimation}
         />
       )}
-
-      <InstructionsCard />
     </div>
   );
 };

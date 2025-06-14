@@ -362,57 +362,63 @@ export type Database = {
       }
       treatment_estimations: {
         Row: {
+          active_patients: number
+          active_patients_old: number
+          alert_level: string
           antimicrobial_name: string
-          average_treatment_days: number
           created_at: string
           current_stock: number
-          daily_consumption: number
-          daily_dose_per_patient: number
+          daily_total_consumption: number
+          daily_total_consumption_old: number
+          days_remaining: number
+          dose_per_patient: number
+          dose_per_patient_old: number
+          estimated_days: number
           estimation_date: string
-          frequency_per_day: number
           hospital_unit: string
           id: string
-          is_stock_sufficient: boolean
           stock_coverage_days: number
           stock_unit: string
-          total_patients_using: number
-          treatment_consumption: number
           updated_at: string
         }
         Insert: {
+          active_patients?: number
+          active_patients_old: number
+          alert_level?: string
           antimicrobial_name: string
-          average_treatment_days: number
           created_at?: string
           current_stock: number
-          daily_consumption: number
-          daily_dose_per_patient: number
+          daily_total_consumption?: number
+          daily_total_consumption_old: number
+          days_remaining?: number
+          dose_per_patient?: number
+          dose_per_patient_old: number
+          estimated_days?: number
           estimation_date: string
-          frequency_per_day: number
           hospital_unit: string
           id?: string
-          is_stock_sufficient: boolean
           stock_coverage_days: number
           stock_unit?: string
-          total_patients_using: number
-          treatment_consumption: number
           updated_at?: string
         }
         Update: {
+          active_patients?: number
+          active_patients_old?: number
+          alert_level?: string
           antimicrobial_name?: string
-          average_treatment_days?: number
           created_at?: string
           current_stock?: number
-          daily_consumption?: number
-          daily_dose_per_patient?: number
+          daily_total_consumption?: number
+          daily_total_consumption_old?: number
+          days_remaining?: number
+          dose_per_patient?: number
+          dose_per_patient_old?: number
+          estimated_days?: number
           estimation_date?: string
-          frequency_per_day?: number
           hospital_unit?: string
           id?: string
-          is_stock_sufficient?: boolean
           stock_coverage_days?: number
           stock_unit?: string
-          total_patients_using?: number
-          treatment_consumption?: number
           updated_at?: string
         }
         Relationships: []
