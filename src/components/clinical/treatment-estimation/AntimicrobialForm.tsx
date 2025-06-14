@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -110,7 +109,7 @@ const AntimicrobialForm = ({
         {/* Dosage Information */}
         <div className="grid md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">Dose Diária por Paciente *</Label>
+            <Label className="text-sm font-semibold">Dose Total do Setor em gramas/mg/UI *</Label>
             <div className="relative">
               <Input
                 type="number"
