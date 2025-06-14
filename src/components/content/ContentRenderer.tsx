@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +13,7 @@ import SequentialTherapySection from '@/components/clinical/SequentialTherapySec
 import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'user-management';
+type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round' | 'user-management';
 
 interface ContentRendererProps {
   selectedSection: Section;
@@ -91,6 +90,7 @@ const ContentRenderer = ({
     'discharge-guidelines': <ClinicalPharmacy activeTab="discharge-guidelines" />,
     'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
     'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />,
+    'multiprofessional-round': <ClinicalPharmacy activeTab="multiprofessional-round" />,
     'user-management': <UserManagement />
   };
 
