@@ -1,10 +1,12 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { TreatmentEstimation, useTreatmentEstimations } from '@/hooks/useTreatmentEstimations';
-import { BarChart3, Users, Package, Calendar, Building2 } from 'lucide-react';
+import { BarChart3, Users, Package, Calendar, Building2, FileText } from 'lucide-react';
+import { generateConsolidatedReportPDF } from '@/utils/pdfGenerators/consolidatedReportPDF';
+import { useToast } from '@/hooks/use-toast';
 
 interface EstimationSummaryProps {
   estimations: TreatmentEstimation[];
@@ -41,6 +43,8 @@ interface SectorSummary {
 }
 
 const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps) => {
+  const { toast } = useToast();
+  
   // Buscar estimativas de TODOS os setores para o resumo consolidado
   const { data: allEstimations } = useTreatmentEstimations();
 
@@ -145,6 +149,34 @@ const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps
     };
   }, [estimations]);
 
+  const handleGeneratePDF = () => {
+    try {
+      const reportData = {
+        institutionTotals,
+        summaryByAntimicrobial,
+        summaryBySector,
+        generationDate: new Date().toLocaleString('pt-BR')
+      };
+
+      const pdf = generateConsolidatedReportPDF(reportData);
+      pdf.save(`relatorio-consolidado-antimicrobianos-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast({
+        title: "✅ PDF Gerado!",
+        description: "Relatório consolidado salvo com sucesso.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "❌ Erro ao gerar PDF",
+        description: "Ocorreu um erro ao gerar o relatório.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    }
+  };
+
   if (consolidatedEstimations.length === 0) {
     return (
       <Card>
@@ -167,6 +199,31 @@ const EstimationSummary = ({ estimations, selectedUnit }: EstimationSummaryProps
 
   return (
     <div className="space-y-6">
+      {/* Botão para gerar PDF */}
+      <Card className="border-l-4 border-l-indigo-500">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="text-indigo-600" size={20} />
+                Relatório para Gestão
+              </CardTitle>
+              <CardDescription>
+                Gere um relatório consolidado em PDF para acompanhamento da gestão farmacêutica
+              </CardDescription>
+            </div>
+            <Button 
+              onClick={handleGeneratePDF}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              size="lg"
+            >
+              <FileText className="mr-2" size={16} />
+              Gerar PDF Consolidado
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
       {/* Resumo Institucional */}
       <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
