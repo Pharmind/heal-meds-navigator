@@ -26,7 +26,28 @@ export const useRoundData = () => {
         .order('round_date', { ascending: false });
 
       if (error) throw error;
-      setRounds(data || []);
+      
+      // Type assertion to handle Supabase string types vs our union types
+      const typedRounds = (data || []).map(round => ({
+        ...round,
+        round_type: round.round_type as 'Adulto' | 'Neonatal' | 'Pediátrica',
+        renal_function: round.renal_function as 'Preservada' | 'Alterada' | null,
+        hepatic_function: round.hepatic_function as 'Preservada' | 'Alterada' | null,
+        pulmonary_function: round.pulmonary_function as 'Preservada' | 'Alterada' | null,
+        evacuation: round.evacuation as 'Preservada' | 'Alterada' | null,
+        diuresis: round.diuresis as 'Preservada' | 'Alterada' | null,
+        antibiotic_action: round.antibiotic_action as 'Iniciar' | 'Ajustar' | 'Suspender' | 'Nenhuma' | null,
+        patient: round.patient ? {
+          ...round.patient,
+          sector: round.patient.sector as 'UTI Adulto' | 'UTI Neonatal' | 'UTI Pediátrica'
+        } : undefined,
+        active_problems: round.active_problems?.map((problem: any) => ({
+          ...problem,
+          status: problem.status as 'Atingido' | 'Não atingido' | 'Suspenso' | 'Em andamento' | null
+        })) || []
+      })) as MultiprofessionalRound[];
+      
+      setRounds(typedRounds);
     } catch (error) {
       console.error('Erro ao buscar rounds:', error);
       toast.error('Erro ao carregar rounds');
@@ -45,7 +66,14 @@ export const useRoundData = () => {
         .order('patient_name');
 
       if (error) throw error;
-      setPatients(data || []);
+      
+      // Type assertion for patients
+      const typedPatients = (data || []).map(patient => ({
+        ...patient,
+        sector: patient.sector as 'UTI Adulto' | 'UTI Neonatal' | 'UTI Pediátrica'
+      })) as RoundPatient[];
+      
+      setPatients(typedPatients);
     } catch (error) {
       console.error('Erro ao buscar pacientes:', error);
     }
@@ -55,19 +83,31 @@ export const useRoundData = () => {
     if (!user) return null;
 
     try {
+      const dataToUpsert = {
+        patient_name: patientData.patient_name || '',
+        birth_date: patientData.birth_date || null,
+        sector: patientData.sector || 'UTI Adulto',
+        bed: patientData.bed || '',
+        mother_name: patientData.mother_name || null,
+        hospitalization_days: patientData.hospitalization_days || null,
+        user_id: user.id
+      };
+
       const { data, error } = await supabase
         .from('round_patients')
-        .upsert([{
-          ...patientData,
-          user_id: user.id
-        }])
+        .upsert([dataToUpsert])
         .select()
         .single();
 
       if (error) throw error;
       
+      const typedPatient = {
+        ...data,
+        sector: data.sector as 'UTI Adulto' | 'UTI Neonatal' | 'UTI Pediátrica'
+      } as RoundPatient;
+      
       await fetchPatients();
-      return data;
+      return typedPatient;
     } catch (error) {
       console.error('Erro ao salvar paciente:', error);
       toast.error('Erro ao salvar dados do paciente');
@@ -174,6 +214,18 @@ export const useRoundData = () => {
 
       if (error) throw error;
 
+      // Type assertion for the returned data
+      const typedRound = {
+        ...data,
+        round_type: data.round_type as 'Adulto' | 'Neonatal' | 'Pediátrica',
+        renal_function: data.renal_function as 'Preservada' | 'Alterada' | null,
+        hepatic_function: data.hepatic_function as 'Preservada' | 'Alterada' | null,
+        pulmonary_function: data.pulmonary_function as 'Preservada' | 'Alterada' | null,
+        evacuation: data.evacuation as 'Preservada' | 'Alterada' | null,
+        diuresis: data.diuresis as 'Preservada' | 'Alterada' | null,
+        antibiotic_action: data.antibiotic_action as 'Iniciar' | 'Ajustar' | 'Suspender' | 'Nenhuma' | null
+      } as MultiprofessionalRound;
+
       // Salvar problemas ativos se existirem
       if (formData.active_problems && formData.active_problems.length > 0) {
         const problemsData = formData.active_problems.map((problem: any, index: number) => ({
@@ -196,7 +248,7 @@ export const useRoundData = () => {
 
       await fetchRounds();
       toast.success('Round criado com sucesso');
-      return data;
+      return typedRound;
     } catch (error) {
       console.error('Erro ao criar round:', error);
       toast.error('Erro ao criar round');
@@ -220,9 +272,20 @@ export const useRoundData = () => {
 
       if (error) throw error;
       
+      const typedRound = {
+        ...data,
+        round_type: data.round_type as 'Adulto' | 'Neonatal' | 'Pediátrica',
+        renal_function: data.renal_function as 'Preservada' | 'Alterada' | null,
+        hepatic_function: data.hepatic_function as 'Preservada' | 'Alterada' | null,
+        pulmonary_function: data.pulmonary_function as 'Preservada' | 'Alterada' | null,
+        evacuation: data.evacuation as 'Preservada' | 'Alterada' | null,
+        diuresis: data.diuresis as 'Preservada' | 'Alterada' | null,
+        antibiotic_action: data.antibiotic_action as 'Iniciar' | 'Ajustar' | 'Suspender' | 'Nenhuma' | null
+      } as MultiprofessionalRound;
+      
       await fetchRounds();
       toast.success('Round atualizado com sucesso');
-      return data;
+      return typedRound;
     } catch (error) {
       console.error('Erro ao atualizar round:', error);
       toast.error('Erro ao atualizar round');

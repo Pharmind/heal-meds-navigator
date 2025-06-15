@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Heart, Kidney, Liver, Lungs, Activity } from 'lucide-react';
+import { Heart, Activity, Pill, Lungs, Droplets } from 'lucide-react';
 import { RoundFormData } from '@/types/multiprofessionalRound';
 
 interface FunctionalAssessmentSectionProps {
@@ -17,8 +17,8 @@ export const FunctionalAssessmentSection: React.FC<FunctionalAssessmentSectionPr
   updateFormData
 }) => {
   const functionalItems = [
-    { key: 'renal_function', label: 'Função renal', obsKey: 'renal_function_obs', icon: Kidney },
-    { key: 'hepatic_function', label: 'Função hepática', obsKey: 'hepatic_function_obs', icon: Liver },
+    { key: 'renal_function', label: 'Função renal', obsKey: 'renal_function_obs', icon: Droplets },
+    { key: 'hepatic_function', label: 'Função hepática', obsKey: 'hepatic_function_obs', icon: Pill },
     { key: 'pulmonary_function', label: 'Função pulmonar', obsKey: 'pulmonary_function_obs', icon: Lungs },
     { key: 'evacuation', label: 'Evacuação', obsKey: 'evacuation_obs', icon: Activity },
     { key: 'diuresis', label: 'Diurese', obsKey: 'diuresis_obs', icon: Heart },
