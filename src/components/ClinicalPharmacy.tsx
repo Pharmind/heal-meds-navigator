@@ -6,14 +6,18 @@ import PictogramPrescription from './clinical/PictogramPrescription';
 import DischargeGuidelines from './clinical/DischargeGuidelines';
 import DrugInteractions from './clinical/DrugInteractions';
 import TreatmentEstimation from './clinical/TreatmentEstimation';
+import TherapeuticAlternatives from './clinical/TherapeuticAlternatives';
 
 interface ClinicalPharmacyProps {
-  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation';
+  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'therapeutic-alternatives';
 }
 
 const ClinicalPharmacy = ({ activeTab }: ClinicalPharmacyProps) => {
   const renderContent = () => {
     switch (activeTab) {
+      case 'therapeutic-alternatives':
+        return <TherapeuticAlternatives />;
+        
       case 'treatment-estimation':
         return <TreatmentEstimation />;
         

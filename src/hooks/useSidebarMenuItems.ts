@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import {
   Search,
@@ -17,7 +16,8 @@ import {
   Zap,
   Calculator,
   Stethoscope,
-  FileBarChart
+  FileBarChart,
+  RefreshCw
 } from 'lucide-react';
 
 interface MenuItem {
@@ -39,6 +39,7 @@ interface MenuItem {
     | "discharge-guidelines"
     | "drug-interactions"
     | "treatment-estimation"
+    | "therapeutic-alternatives"
     | "multiprofessional-round"
     | "round-reports"
     | "calculator";
@@ -151,6 +152,12 @@ export const useSidebarMenuItems = () => {
           icon: Calculator,
           section: "treatment-estimation" as const,
           hasAccess: hasPermission("treatment-estimation")
+        },
+        {
+          title: "Alternativas Terapêuticas",
+          icon: RefreshCw,
+          section: "therapeutic-alternatives" as const,
+          hasAccess: hasPermission("therapeutic-alternatives")
         }
       ]
     },
