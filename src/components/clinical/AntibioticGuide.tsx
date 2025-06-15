@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import AntibioticRecommendations from './AntibioticRecommendations';
+import AntibioticFlowchart from './AntibioticFlowchart';
 
 const AntibioticGuide = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -227,13 +228,18 @@ const AntibioticGuide = () => {
       </div>
 
       <Tabs defaultValue="antibiotics" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="antibiotics">Antibióticos</TabsTrigger>
+          <TabsTrigger value="flowchart">Fluxograma</TabsTrigger>
           <TabsTrigger value="antibiogram">Antibiograma</TabsTrigger>
           <TabsTrigger value="protocols">Protocolos</TabsTrigger>
           <TabsTrigger value="pathogens">Patógenos</TabsTrigger>
           <TabsTrigger value="monitoring">Monitorização</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="flowchart" className="space-y-4">
+          <AntibioticFlowchart />
+        </TabsContent>
 
         <TabsContent value="antibiogram" className="space-y-4">
           <Card>
