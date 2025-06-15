@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Tabs, Pill } from 'lucide-react';
+import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Settings, Pill } from 'lucide-react';
 
 interface DrugClass {
   id: string;
@@ -472,7 +471,7 @@ const AntihypertensiveOptimization = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Tabs className="text-blue-600" size={24} />
+            <Settings className="text-blue-600" size={24} />
             Modo de Análise
           </CardTitle>
         </CardHeader>
