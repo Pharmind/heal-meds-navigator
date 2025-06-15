@@ -1,14 +1,14 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Search, Filter, Eye, Edit, Trash2, User, MapPin } from 'lucide-react';
+import { Calendar, Search, Filter, Eye, Edit, Trash2, User, MapPin, FileText } from 'lucide-react';
 import { useRoundData } from '@/hooks/useRoundData';
 import { RoundViewModal } from './components/RoundViewModal';
 import { RoundPrintOptions } from './components/RoundPrintOptions';
+import { RoundReportModal } from './components/RoundReportModal';
 import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -20,6 +20,7 @@ export const RoundTimeline: React.FC = () => {
   const [filterSector, setFilterSector] = useState('all');
   const [selectedRound, setSelectedRound] = useState<MultiprofessionalRound | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const filteredRounds = useMemo(() => {
     return rounds.filter(round => {
@@ -61,10 +62,20 @@ export const RoundTimeline: React.FC = () => {
       {/* Filtros */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter size={20} />
-            Filtros e Busca
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Filter size={20} />
+              Filtros e Busca
+            </CardTitle>
+            <Button 
+              onClick={() => setIsReportModalOpen(true)}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              <FileText size={16} />
+              Relatório de Intervenções
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -236,6 +247,13 @@ export const RoundTimeline: React.FC = () => {
           setIsViewModalOpen(false);
           setSelectedRound(null);
         }}
+      />
+
+      {/* Modal de Relatório */}
+      <RoundReportModal
+        rounds={rounds}
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
       />
     </div>
   );
