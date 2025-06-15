@@ -1,10 +1,10 @@
 
 import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
-import { generatePrintData, PrintData } from './useRoundPrint/utils/dataGenerators';
+import { generatePrintData, type PrintData } from './useRoundPrint/utils/dataGenerators';
 import { generateSectorReportHTML } from './useRoundPrint/generators/sectorReportGenerator';
 import { generatePatientReportHTML } from './useRoundPrint/generators/patientReportGenerator';
 
-export { PrintData };
+export type { PrintData };
 
 export const useRoundPrint = (rounds: MultiprofessionalRound[]) => {
   const printBySector = () => {
