@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   ArrowUp, 
   ArrowDown, 
@@ -90,9 +89,13 @@ const AntibioticRecommendations = () => {
   };
 
   const generateRecommendations = () => {
+    console.log('Gerando recomendações com dados:', { pathogens, currentTherapy, clinicalStatus, infectionSite });
+    
     const newRecommendations: Recommendation[] = [];
 
     pathogens.forEach(pathogen => {
+      console.log('Processando patógeno:', pathogen);
+      
       // Lógica de escalonamento/descalonamento baseada no patógeno e sensibilidade
       if (pathogen.pathogen === 'Staphylococcus aureus') {
         if (pathogen.antibiotic === 'Oxacilina' && pathogen.result === 'S') {
@@ -214,9 +217,53 @@ const AntibioticRecommendations = () => {
           });
         }
       }
+
+      if (pathogen.pathogen === 'Klebsiella pneumoniae') {
+        if (pathogen.antibiotic === 'Ceftriaxone' && pathogen.result === 'R') {
+          newRecommendations.push({
+            type: 'escalation',
+            antibiotic: 'Meropenem',
+            dose: '1g q8h',
+            route: 'IV',
+            reason: 'K. pneumoniae resistente - suspeita ESBL ou KPC',
+            priority: 'high'
+          });
+        } else if (pathogen.antibiotic === 'Meropenem' && pathogen.result === 'R') {
+          newRecommendations.push({
+            type: 'escalation',
+            antibiotic: 'Colistina + Meropenem',
+            dose: 'Colistina 2,5mg/kg q12h + Meropenem 2g q8h',
+            route: 'IV',
+            reason: 'K. pneumoniae KPC - terapia combinada',
+            priority: 'high'
+          });
+        }
+      }
+
+      if (pathogen.pathogen === 'Enterococcus faecalis') {
+        if (pathogen.antibiotic === 'Ampicilina' && pathogen.result === 'S') {
+          newRecommendations.push({
+            type: 'deescalation',
+            antibiotic: 'Ampicilina',
+            dose: '2g q4h',
+            route: 'IV',
+            reason: 'E. faecalis sensível à ampicilina',
+            priority: 'high'
+          });
+        } else if (pathogen.antibiotic === 'Vancomicina' && pathogen.result === 'R') {
+          newRecommendations.push({
+            type: 'escalation',
+            antibiotic: 'Linezolida',
+            dose: '600mg q12h',
+            route: 'IV/VO',
+            reason: 'VRE - Enterococcus resistente à vancomicina',
+            priority: 'high'
+          });
+        }
+      }
     });
 
-    // Se não há patógenos sensíveis e paciente está mal clinicamente
+    // Se não há patógenos ou todos resistentes e paciente está mal clinicamente
     if (clinicalStatus === 'deteriorando' && newRecommendations.length === 0) {
       newRecommendations.push({
         type: 'escalation',
@@ -228,6 +275,24 @@ const AntibioticRecommendations = () => {
       });
     }
 
+    // Se paciente está melhorando e há sensibilidade, considerar descalonamento
+    if (clinicalStatus === 'melhorando' && pathogens.some(p => p.result === 'S')) {
+      const sensiblePathogens = pathogens.filter(p => p.result === 'S');
+      sensiblePathogens.forEach(pathogen => {
+        if (!newRecommendations.some(rec => rec.antibiotic === pathogen.antibiotic)) {
+          newRecommendations.push({
+            type: 'deescalation',
+            antibiotic: pathogen.antibiotic,
+            dose: 'Conforme protocolo institucional',
+            route: 'IV/VO',
+            reason: `Melhora clínica e ${pathogen.pathogen} sensível`,
+            priority: 'medium'
+          });
+        }
+      });
+    }
+
+    console.log('Recomendações geradas:', newRecommendations);
     setRecommendations(newRecommendations);
   };
 
