@@ -269,51 +269,188 @@ export type Database = {
       }
       multiprofessional_rounds: {
         Row: {
-          clinical_evolution: string
+          adequate_administration_route: boolean | null
+          adequate_administration_route_obs: string | null
+          adequate_glycemic_control: boolean | null
+          adequate_glycemic_control_obs: string | null
+          adequate_sedation_level: boolean | null
+          adequate_sedation_level_obs: string | null
+          adequate_spectrum: boolean | null
+          antibiotic_action: string | null
+          antibiotic_therapy: boolean | null
+          antibiotic_therapy_obs: string | null
+          correct_dosage: boolean | null
           created_at: string
-          date: string
+          discharge_criteria_met: boolean | null
+          discharge_estimate: boolean | null
+          discharge_pending_issues: string | null
+          diuresis: string | null
+          diuresis_obs: string | null
+          drug_allergy: boolean | null
+          drug_allergy_obs: string | null
+          dvas_usage: boolean | null
+          dvas_usage_obs: string | null
+          evacuation: string | null
+          evacuation_obs: string | null
+          hepatic_function: string | null
+          hepatic_function_obs: string | null
           id: string
-          main_issues: string
-          medical_record: string
-          medication_review: string
-          next_steps: string
-          observations: string | null
-          participants: string
-          patient_name: string
+          indication_compliance: boolean | null
+          lamg_prophylaxis: boolean | null
+          lamg_prophylaxis_obs: string | null
+          medicine_actions: string | null
+          next_evaluation: string | null
+          nursing_actions: string | null
+          nutrition_actions: string | null
+          patient_id: string | null
+          pharmacy_actions: string | null
+          physiotherapy_actions: string | null
+          present_professionals: string | null
+          pulmonary_function: string | null
+          pulmonary_function_obs: string | null
+          renal_function: string | null
+          renal_function_obs: string | null
+          round_date: string
+          round_type: string
+          sedation_analgesia: boolean | null
+          sedation_analgesia_obs: string | null
+          sedation_can_be_reduced: boolean | null
+          sedation_can_be_reduced_obs: string | null
+          severe_drug_interaction: boolean | null
+          severe_drug_interaction_obs: string | null
+          tev_prophylaxis: boolean | null
+          tev_prophylaxis_obs: string | null
+          treatment_time_defined: boolean | null
           updated_at: string
+          updated_lab_data: boolean | null
+          updated_lab_data_obs: string | null
           user_id: string
         }
         Insert: {
-          clinical_evolution: string
+          adequate_administration_route?: boolean | null
+          adequate_administration_route_obs?: string | null
+          adequate_glycemic_control?: boolean | null
+          adequate_glycemic_control_obs?: string | null
+          adequate_sedation_level?: boolean | null
+          adequate_sedation_level_obs?: string | null
+          adequate_spectrum?: boolean | null
+          antibiotic_action?: string | null
+          antibiotic_therapy?: boolean | null
+          antibiotic_therapy_obs?: string | null
+          correct_dosage?: boolean | null
           created_at?: string
-          date?: string
+          discharge_criteria_met?: boolean | null
+          discharge_estimate?: boolean | null
+          discharge_pending_issues?: string | null
+          diuresis?: string | null
+          diuresis_obs?: string | null
+          drug_allergy?: boolean | null
+          drug_allergy_obs?: string | null
+          dvas_usage?: boolean | null
+          dvas_usage_obs?: string | null
+          evacuation?: string | null
+          evacuation_obs?: string | null
+          hepatic_function?: string | null
+          hepatic_function_obs?: string | null
           id?: string
-          main_issues: string
-          medical_record: string
-          medication_review: string
-          next_steps: string
-          observations?: string | null
-          participants: string
-          patient_name: string
+          indication_compliance?: boolean | null
+          lamg_prophylaxis?: boolean | null
+          lamg_prophylaxis_obs?: string | null
+          medicine_actions?: string | null
+          next_evaluation?: string | null
+          nursing_actions?: string | null
+          nutrition_actions?: string | null
+          patient_id?: string | null
+          pharmacy_actions?: string | null
+          physiotherapy_actions?: string | null
+          present_professionals?: string | null
+          pulmonary_function?: string | null
+          pulmonary_function_obs?: string | null
+          renal_function?: string | null
+          renal_function_obs?: string | null
+          round_date?: string
+          round_type: string
+          sedation_analgesia?: boolean | null
+          sedation_analgesia_obs?: string | null
+          sedation_can_be_reduced?: boolean | null
+          sedation_can_be_reduced_obs?: string | null
+          severe_drug_interaction?: boolean | null
+          severe_drug_interaction_obs?: string | null
+          tev_prophylaxis?: boolean | null
+          tev_prophylaxis_obs?: string | null
+          treatment_time_defined?: boolean | null
           updated_at?: string
+          updated_lab_data?: boolean | null
+          updated_lab_data_obs?: string | null
           user_id: string
         }
         Update: {
-          clinical_evolution?: string
+          adequate_administration_route?: boolean | null
+          adequate_administration_route_obs?: string | null
+          adequate_glycemic_control?: boolean | null
+          adequate_glycemic_control_obs?: string | null
+          adequate_sedation_level?: boolean | null
+          adequate_sedation_level_obs?: string | null
+          adequate_spectrum?: boolean | null
+          antibiotic_action?: string | null
+          antibiotic_therapy?: boolean | null
+          antibiotic_therapy_obs?: string | null
+          correct_dosage?: boolean | null
           created_at?: string
-          date?: string
+          discharge_criteria_met?: boolean | null
+          discharge_estimate?: boolean | null
+          discharge_pending_issues?: string | null
+          diuresis?: string | null
+          diuresis_obs?: string | null
+          drug_allergy?: boolean | null
+          drug_allergy_obs?: string | null
+          dvas_usage?: boolean | null
+          dvas_usage_obs?: string | null
+          evacuation?: string | null
+          evacuation_obs?: string | null
+          hepatic_function?: string | null
+          hepatic_function_obs?: string | null
           id?: string
-          main_issues?: string
-          medical_record?: string
-          medication_review?: string
-          next_steps?: string
-          observations?: string | null
-          participants?: string
-          patient_name?: string
+          indication_compliance?: boolean | null
+          lamg_prophylaxis?: boolean | null
+          lamg_prophylaxis_obs?: string | null
+          medicine_actions?: string | null
+          next_evaluation?: string | null
+          nursing_actions?: string | null
+          nutrition_actions?: string | null
+          patient_id?: string | null
+          pharmacy_actions?: string | null
+          physiotherapy_actions?: string | null
+          present_professionals?: string | null
+          pulmonary_function?: string | null
+          pulmonary_function_obs?: string | null
+          renal_function?: string | null
+          renal_function_obs?: string | null
+          round_date?: string
+          round_type?: string
+          sedation_analgesia?: boolean | null
+          sedation_analgesia_obs?: string | null
+          sedation_can_be_reduced?: boolean | null
+          sedation_can_be_reduced_obs?: string | null
+          severe_drug_interaction?: boolean | null
+          severe_drug_interaction_obs?: string | null
+          tev_prophylaxis?: boolean | null
+          tev_prophylaxis_obs?: string | null
+          treatment_time_defined?: boolean | null
           updated_at?: string
+          updated_lab_data?: boolean | null
+          updated_lab_data_obs?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "multiprofessional_rounds_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "round_patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pathologies: {
         Row: {
@@ -381,6 +518,89 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
+      round_active_problems: {
+        Row: {
+          created_at: string
+          expected_result: string | null
+          id: string
+          observations: string | null
+          problem_description: string
+          problem_order: number
+          round_id: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expected_result?: string | null
+          id?: string
+          observations?: string | null
+          problem_description: string
+          problem_order?: number
+          round_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expected_result?: string | null
+          id?: string
+          observations?: string | null
+          problem_description?: string
+          problem_order?: number
+          round_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_active_problems_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "multiprofessional_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      round_patients: {
+        Row: {
+          bed: string
+          birth_date: string | null
+          created_at: string
+          hospitalization_days: number | null
+          id: string
+          mother_name: string | null
+          patient_name: string
+          sector: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bed: string
+          birth_date?: string | null
+          created_at?: string
+          hospitalization_days?: number | null
+          id?: string
+          mother_name?: string | null
+          patient_name: string
+          sector: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bed?: string
+          birth_date?: string | null
+          created_at?: string
+          hospitalization_days?: number | null
+          id?: string
+          mother_name?: string | null
+          patient_name?: string
+          sector?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
