@@ -337,6 +337,30 @@ export const useDrugInteractionsData = () => {
   });
 };
 
+// Hook para buscar protocolos de antibióticos
+export const useAntibioticProtocols = () => {
+  return useQuery({
+    queryKey: ['antibioticProtocols'],
+    queryFn: async () => {
+      console.log('Buscando protocolos de antibióticos...');
+      const { data, error } = await supabase
+        .from('antibiotic_protocols')
+        .select('*')
+        .eq('is_active', true)
+        .order('pathogen_name')
+        .order('antibiotic_tested');
+
+      if (error) {
+        console.error('Erro ao buscar protocolos de antibióticos:', error);
+        throw error;
+      }
+
+      console.log('Protocolos de antibióticos encontrados:', data?.length);
+      return data || [];
+    },
+  });
+};
+
 // Hook combinado para buscar todos os dados
 export const useSupabaseData = (searchQuery: string) => {
   const medications = useMedications();

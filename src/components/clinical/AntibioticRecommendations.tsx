@@ -16,6 +16,8 @@ import {
   XCircle,
   Clock
 } from 'lucide-react';
+import { useAntibioticProtocols } from '@/hooks/useAntibioticProtocols';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PathogenResult {
   pathogen: string;
@@ -31,6 +33,7 @@ interface Recommendation {
   route: string;
   reason: string;
   priority: 'high' | 'medium' | 'low';
+  clinicalConsiderations?: string;
 }
 
 const AntibioticRecommendations = () => {
@@ -45,6 +48,9 @@ const AntibioticRecommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [clinicalStatus, setClinicalStatus] = useState('');
   const [infectionSite, setInfectionSite] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { data: protocols, isLoading: protocolsLoading } = useAntibioticProtocols();
 
   const commonPathogens = [
     'Staphylococcus aureus',
@@ -64,12 +70,15 @@ const AntibioticRecommendations = () => {
     'Amoxicilina',
     'Ceftriaxone',
     'Cefepime',
+    'Ceftazidima',
     'Meropenem',
+    'Ertapenem',
     'Vancomicina',
     'Ciprofloxacino',
     'Levofloxacino',
     'Clindamicina',
-    'Linezolida'
+    'Linezolida',
+    'Colistina'
   ];
 
   const addPathogenResult = () => {
@@ -88,189 +97,91 @@ const AntibioticRecommendations = () => {
     setPathogens(pathogens.filter((_, i) => i !== index));
   };
 
-  const generateRecommendations = () => {
+  const generateRecommendations = async () => {
+    if (!protocols) {
+      console.error('Protocolos não carregados');
+      return;
+    }
+
+    setIsGenerating(true);
     console.log('Gerando recomendações com dados:', { pathogens, currentTherapy, clinicalStatus, infectionSite });
     
     const newRecommendations: Recommendation[] = [];
 
-    pathogens.forEach(pathogen => {
+    // Buscar recomendações específicas para cada patógeno no banco de dados
+    for (const pathogen of pathogens) {
       console.log('Processando patógeno:', pathogen);
       
-      // Lógica de escalonamento/descalonamento baseada no patógeno e sensibilidade
-      if (pathogen.pathogen === 'Staphylococcus aureus') {
-        if (pathogen.antibiotic === 'Oxacilina' && pathogen.result === 'S') {
-          // MSSA - pode descalonar de vancomicina para oxacilina
-          if (currentTherapy.toLowerCase().includes('vancomicina')) {
-            newRecommendations.push({
-              type: 'deescalation',
-              antibiotic: 'Oxacilina',
-              dose: '1-2g q4h',
-              route: 'IV',
-              reason: 'S. aureus sensível à oxacilina (MSSA) - descalonamento de vancomicina',
-              priority: 'high'
-            });
+      // Buscar protocolos específicos para este patógeno/antibiótico/sensibilidade
+      const specificProtocols = protocols.filter(protocol => 
+        protocol.pathogen_name === pathogen.pathogen &&
+        protocol.antibiotic_tested === pathogen.antibiotic &&
+        protocol.sensitivity_result === pathogen.result
+      );
+
+      console.log('Protocolos encontrados para', pathogen.pathogen, ':', specificProtocols.length);
+
+      // Adicionar recomendações baseadas nos protocolos encontrados
+      specificProtocols.forEach(protocol => {
+        const recommendation: Recommendation = {
+          type: protocol.recommendation_type,
+          antibiotic: protocol.recommended_antibiotic,
+          dose: protocol.dose,
+          route: protocol.route,
+          reason: protocol.reason,
+          priority: protocol.priority,
+          clinicalConsiderations: protocol.clinical_considerations || undefined
+        };
+        
+        // Verificar se já existe uma recomendação similar para evitar duplicatas
+        const exists = newRecommendations.some(rec => 
+          rec.antibiotic === recommendation.antibiotic && 
+          rec.type === recommendation.type
+        );
+        
+        if (!exists) {
+          newRecommendations.push(recommendation);
+        }
+      });
+
+      // Se não encontrou protocolos específicos, buscar por patógeno genérico
+      if (specificProtocols.length === 0) {
+        const genericProtocols = protocols.filter(protocol => 
+          protocol.pathogen_name === pathogen.pathogen &&
+          protocol.sensitivity_result === pathogen.result
+        );
+
+        genericProtocols.forEach(protocol => {
+          const recommendation: Recommendation = {
+            type: protocol.recommendation_type,
+            antibiotic: protocol.recommended_antibiotic,
+            dose: protocol.dose,
+            route: protocol.route,
+            reason: `${protocol.reason} (protocolo genérico para ${pathogen.pathogen})`,
+            priority: protocol.priority,
+            clinicalConsiderations: protocol.clinical_considerations || undefined
+          };
+          
+          const exists = newRecommendations.some(rec => 
+            rec.antibiotic === recommendation.antibiotic && 
+            rec.type === recommendation.type
+          );
+          
+          if (!exists) {
+            newRecommendations.push(recommendation);
           }
-        } else if (pathogen.antibiotic === 'Oxacilina' && pathogen.result === 'R') {
-          // MRSA - necessita vancomicina ou alternativas
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Vancomicina',
-            dose: '15-20mg/kg q8-12h',
-            route: 'IV',
-            reason: 'S. aureus resistente à oxacilina (MRSA)',
-            priority: 'high'
-          });
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Linezolida',
-            dose: '600mg q12h',
-            route: 'IV/VO',
-            reason: 'Alternativa para MRSA (boa penetração pulmonar/SNC)',
-            priority: 'medium'
-          });
-        }
+        });
       }
+    }
 
-      if (pathogen.pathogen === 'Escherichia coli') {
-        if (pathogen.antibiotic === 'Ceftriaxone' && pathogen.result === 'S') {
-          // E. coli sensível - pode descalonar de carbapenêmico
-          if (currentTherapy.toLowerCase().includes('meropenem') || 
-              currentTherapy.toLowerCase().includes('ertapenem')) {
-            newRecommendations.push({
-              type: 'deescalation',
-              antibiotic: 'Ceftriaxone',
-              dose: '1-2g q24h',
-              route: 'IV',
-              reason: 'E. coli sensível à ceftriaxone - descalonamento de carbapenêmico',
-              priority: 'high'
-            });
-          }
-        } else if (pathogen.antibiotic === 'Ceftriaxone' && pathogen.result === 'R') {
-          // Suspeita de ESBL - necessita carbapenêmico
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Meropenem',
-            dose: '1g q8h',
-            route: 'IV',
-            reason: 'E. coli resistente à ceftriaxone - suspeita ESBL',
-            priority: 'high'
-          });
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Ertapenem',
-            dose: '1g q24h',
-            route: 'IV',
-            reason: 'Alternativa para ESBL (sem atividade anti-Pseudomonas)',
-            priority: 'medium'
-          });
-        }
-      }
-
-      if (pathogen.pathogen === 'Pseudomonas aeruginosa') {
-        if (pathogen.result === 'S') {
-          newRecommendations.push({
-            type: 'deescalation',
-            antibiotic: 'Ceftazidima',
-            dose: '2g q8h',
-            route: 'IV',
-            reason: 'P. aeruginosa sensível - terapia dirigida',
-            priority: 'high'
-          });
-          newRecommendations.push({
-            type: 'deescalation',
-            antibiotic: 'Cefepime',
-            dose: '2g q8h',
-            route: 'IV',
-            reason: 'Alternativa para P. aeruginosa sensível',
-            priority: 'medium'
-          });
-        } else if (pathogen.result === 'R') {
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Colistina',
-            dose: '2,5mg/kg q12h',
-            route: 'IV',
-            reason: 'P. aeruginosa multirresistente - colistina + segundo agente',
-            priority: 'high'
-          });
-        }
-      }
-
-      if (pathogen.pathogen === 'Streptococcus pneumoniae') {
-        if (pathogen.antibiotic === 'Penicilina G' && pathogen.result === 'S') {
-          newRecommendations.push({
-            type: 'deescalation',
-            antibiotic: 'Penicilina G',
-            dose: '2-4 milhões UI q4h',
-            route: 'IV',
-            reason: 'S. pneumoniae sensível à penicilina',
-            priority: 'high'
-          });
-        } else if (pathogen.antibiotic === 'Penicilina G' && pathogen.result === 'R') {
-          newRecommendations.push({
-            type: 'maintain',
-            antibiotic: 'Ceftriaxone',
-            dose: '2g q12h',
-            route: 'IV',
-            reason: 'S. pneumoniae resistente à penicilina',
-            priority: 'high'
-          });
-        }
-      }
-
-      if (pathogen.pathogen === 'Klebsiella pneumoniae') {
-        if (pathogen.antibiotic === 'Ceftriaxone' && pathogen.result === 'R') {
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Meropenem',
-            dose: '1g q8h',
-            route: 'IV',
-            reason: 'K. pneumoniae resistente - suspeita ESBL ou KPC',
-            priority: 'high'
-          });
-        } else if (pathogen.antibiotic === 'Meropenem' && pathogen.result === 'R') {
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Colistina + Meropenem',
-            dose: 'Colistina 2,5mg/kg q12h + Meropenem 2g q8h',
-            route: 'IV',
-            reason: 'K. pneumoniae KPC - terapia combinada',
-            priority: 'high'
-          });
-        }
-      }
-
-      if (pathogen.pathogen === 'Enterococcus faecalis') {
-        if (pathogen.antibiotic === 'Ampicilina' && pathogen.result === 'S') {
-          newRecommendations.push({
-            type: 'deescalation',
-            antibiotic: 'Ampicilina',
-            dose: '2g q4h',
-            route: 'IV',
-            reason: 'E. faecalis sensível à ampicilina',
-            priority: 'high'
-          });
-        } else if (pathogen.antibiotic === 'Vancomicina' && pathogen.result === 'R') {
-          newRecommendations.push({
-            type: 'escalation',
-            antibiotic: 'Linezolida',
-            dose: '600mg q12h',
-            route: 'IV/VO',
-            reason: 'VRE - Enterococcus resistente à vancomicina',
-            priority: 'high'
-          });
-        }
-      }
-    });
-
-    // Se não há patógenos ou todos resistentes e paciente está mal clinicamente
+    // Lógica adicional baseada no estado clínico
     if (clinicalStatus === 'deteriorando' && newRecommendations.length === 0) {
       newRecommendations.push({
         type: 'escalation',
         antibiotic: 'Meropenem + Vancomicina',
         dose: 'Meropenem 1g q8h + Vancomicina 15-20mg/kg q8-12h',
         route: 'IV',
-        reason: 'Deterioração clínica sem identificação de patógenos sensíveis',
+        reason: 'Deterioração clínica sem identificação de patógenos sensíveis - terapia empírica ampla',
         priority: 'high'
       });
     }
@@ -292,8 +203,13 @@ const AntibioticRecommendations = () => {
       });
     }
 
+    // Ordenar recomendações por prioridade
+    const priorityOrder = { 'high': 0, 'medium': 1, 'low': 2 };
+    newRecommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
     console.log('Recomendações geradas:', newRecommendations);
     setRecommendations(newRecommendations);
+    setIsGenerating(false);
   };
 
   const getResultIcon = (result: string) => {
@@ -334,6 +250,17 @@ const AntibioticRecommendations = () => {
         return 'bg-gray-50 border-gray-200';
     }
   };
+
+  if (protocolsLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-heal-green-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Carregando protocolos de antibióticos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -498,9 +425,9 @@ const AntibioticRecommendations = () => {
             <Button 
               onClick={generateRecommendations} 
               className="w-full"
-              disabled={pathogens.length === 0}
+              disabled={pathogens.length === 0 || isGenerating}
             >
-              Gerar Recomendações
+              {isGenerating ? 'Gerando...' : 'Gerar Recomendações'}
             </Button>
           </div>
         </CardContent>
@@ -513,6 +440,7 @@ const AntibioticRecommendations = () => {
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle size={20} />
               Recomendações de Antimicrobioterapia
+              <Badge variant="outline">{recommendations.length} recomendação(ões)</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -534,7 +462,12 @@ const AntibioticRecommendations = () => {
                       <p className="text-sm text-gray-700 mb-2">
                         <strong>Dose:</strong> {rec.dose} ({rec.route})
                       </p>
-                      <p className="text-sm text-gray-600">{rec.reason}</p>
+                      <p className="text-sm text-gray-600 mb-2">{rec.reason}</p>
+                      {rec.clinicalConsiderations && (
+                        <p className="text-sm text-blue-600 italic">
+                          <strong>Considerações:</strong> {rec.clinicalConsiderations}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -547,7 +480,8 @@ const AntibioticRecommendations = () => {
                 <AlertDescription>
                   <strong>Lembrete:</strong> Sempre considere o estado clínico do paciente, função renal/hepática, 
                   alergias e fatores de risco específicos antes de implementar as recomendações. 
-                  Monitore resposta clínica e laboratorial em 48-72h.
+                  Monitore resposta clínica e laboratorial em 48-72h. Os protocolos são baseados em diretrizes 
+                  clínicas e devem ser adaptados ao contexto individual do paciente.
                 </AlertDescription>
               </Alert>
             )}

@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      antibiotic_protocols: {
+        Row: {
+          antibiotic_tested: string
+          clinical_considerations: string | null
+          created_at: string
+          dose: string
+          id: string
+          is_active: boolean
+          pathogen_name: string
+          priority: string
+          reason: string
+          recommendation_type: string
+          recommended_antibiotic: string
+          route: string
+          sensitivity_result: string
+          updated_at: string
+        }
+        Insert: {
+          antibiotic_tested: string
+          clinical_considerations?: string | null
+          created_at?: string
+          dose: string
+          id?: string
+          is_active?: boolean
+          pathogen_name: string
+          priority: string
+          reason: string
+          recommendation_type: string
+          recommended_antibiotic: string
+          route: string
+          sensitivity_result: string
+          updated_at?: string
+        }
+        Update: {
+          antibiotic_tested?: string
+          clinical_considerations?: string | null
+          created_at?: string
+          dose?: string
+          id?: string
+          is_active?: boolean
+          pathogen_name?: string
+          priority?: string
+          reason?: string
+          recommendation_type?: string
+          recommended_antibiotic?: string
+          route?: string
+          sensitivity_result?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       diets: {
         Row: {
           created_at: string
