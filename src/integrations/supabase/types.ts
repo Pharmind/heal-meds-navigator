@@ -521,6 +521,44 @@ export type Database = {
         }
         Relationships: []
       }
+      reference_medications: {
+        Row: {
+          active_ingredient: string | null
+          created_at: string
+          id: string
+          name: string
+          therapeutic_class: string | null
+          therapeutic_group_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_ingredient?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          therapeutic_class?: string | null
+          therapeutic_group_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_ingredient?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          therapeutic_class?: string | null
+          therapeutic_group_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reference_medications_therapeutic_group_id_fkey"
+            columns: ["therapeutic_group_id"]
+            isOneToOne: false
+            referencedRelation: "therapeutic_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       round_active_problems: {
         Row: {
           created_at: string
@@ -633,6 +671,83 @@ export type Database = {
           medication_name?: string
           oral_dosage?: string
           oral_posology?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      therapeutic_alternatives: {
+        Row: {
+          active_ingredient: string | null
+          administration_route: string
+          alternative_name: string
+          availability: string | null
+          considerations: string | null
+          contraindications: string | null
+          created_at: string
+          dosage: string
+          equivalent_dose: string | null
+          id: string
+          reference_medication_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_ingredient?: string | null
+          administration_route: string
+          alternative_name: string
+          availability?: string | null
+          considerations?: string | null
+          contraindications?: string | null
+          created_at?: string
+          dosage: string
+          equivalent_dose?: string | null
+          id?: string
+          reference_medication_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_ingredient?: string | null
+          administration_route?: string
+          alternative_name?: string
+          availability?: string | null
+          considerations?: string | null
+          contraindications?: string | null
+          created_at?: string
+          dosage?: string
+          equivalent_dose?: string | null
+          id?: string
+          reference_medication_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "therapeutic_alternatives_reference_medication_id_fkey"
+            columns: ["reference_medication_id"]
+            isOneToOne: false
+            referencedRelation: "reference_medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      therapeutic_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
           updated_at?: string
         }
         Relationships: []
