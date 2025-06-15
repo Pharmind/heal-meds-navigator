@@ -2,215 +2,242 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { CalendarIcon, FileBarChart, Download } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { FileText, BarChart3, Download, Calendar, TrendingUp, PieChart, AlertCircle } from 'lucide-react';
+import { useRoundData } from '@/hooks/useRoundData';
+import { useRoundReports } from '@/hooks/useRoundReports';
+import { RoundReportModal } from '@/components/clinical/round/components/RoundReportModal';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { useMultiprofessionalRounds } from '@/hooks/useMultiprofessionalRounds';
-import { useRoundReports } from '@/hooks/useRoundReports';
-import { generateRoundReportPDF } from '@/utils/pdfGenerators/roundReportPDF';
-import { toast } from 'sonner';
 
 const RoundReportsSection = () => {
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
-  const [generating, setGenerating] = useState(false);
-  
-  const { rounds } = useMultiprofessionalRounds();
-  const { generateMetrics } = useRoundReports(rounds);
+  const { rounds, isLoading } = useRoundData();
+  const { metrics } = useRoundReports(rounds);
+  const [showReportModal, setShowReportModal] = useState(false);
 
-  const handleGenerateReport = async () => {
-    if (!startDate || !endDate) {
-      toast.error('Selecione as datas de início e fim do relatório');
-      return;
-    }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2">Carregando dados...</span>
+      </div>
+    );
+  }
 
-    if (startDate > endDate) {
-      toast.error('A data de início deve ser anterior à data de fim');
-      return;
-    }
+  const totalInterventions = Object.values(metrics.interventionsByCategory).reduce((a, b) => a + b, 0);
+  const totalClinicalIndicators = Object.values(metrics.clinicalIndicators).reduce((a, b) => a + b, 0);
 
-    try {
-      setGenerating(true);
-      
-      const metrics = generateMetrics(startDate, endDate);
-      
-      if (metrics.totalRounds === 0) {
-        toast.warning('Nenhum round encontrado no período selecionado');
-        return;
-      }
+  // Dados para período específico (últimos 30 dias)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const last30DaysMetrics = useRoundReports(rounds.filter(round => 
+    new Date(round.round_date) >= thirtyDaysAgo
+  )).metrics;
 
-      await generateRoundReportPDF(metrics, startDate, endDate);
-      toast.success('Relatório gerado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
-      toast.error('Erro ao gerar relatório. Tente novamente.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const totalRounds = rounds.length;
-  const currentMetrics = generateMetrics();
+  // Dados para período específico (últimos 7 dias)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const last7DaysMetrics = useRoundReports(rounds.filter(round => 
+    new Date(round.round_date) >= sevenDaysAgo
+  )).metrics;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Relatórios de Round Multiprofissional</h1>
-          <p className="text-gray-600">Gere relatórios detalhados com análises e métricas dos rounds</p>
+          <h1 className="text-2xl font-bold text-gray-900">Relatórios de Round</h1>
+          <p className="text-gray-600">Análise e métricas dos rounds multiprofissionais</p>
         </div>
-        <FileBarChart className="h-8 w-8 text-blue-600" />
+        <FileText className="h-8 w-8 text-blue-600" />
       </div>
 
-      {/* Métricas Gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+      {rounds.length === 0 ? (
+        <Card className="border-orange-200 bg-orange-50">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalRounds}</div>
-            <p className="text-xs text-muted-foreground">Total de Rounds</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{currentMetrics.interventionsByCategory.pharmacy}</div>
-            <p className="text-xs text-muted-foreground">Intervenções Farmacêuticas</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{currentMetrics.dischargeEstimates}</div>
-            <p className="text-xs text-muted-foreground">Estimativas de Alta</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{currentMetrics.averageRoundsPerDay.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">Média Rounds/Dia</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Geração de Relatórios */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Gerar Relatório Personalizado</CardTitle>
-          <CardDescription>
-            Selecione o período para gerar um relatório detalhado em PDF
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Data de Início</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+            <div className="flex items-center gap-2 text-orange-700">
+              <AlertCircle size={20} />
+              <span>Não há dados de rounds cadastrados para gerar relatórios.</span>
             </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Resumo Geral */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total de Rounds</p>
+                    <p className="text-2xl font-bold text-blue-600">{metrics.totalRounds}</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="space-y-2">
-              <Label>Data de Fim</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total de Intervenções</p>
+                    <p className="text-2xl font-bold text-green-600">{totalInterventions}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Indicadores Clínicos</p>
+                    <p className="text-2xl font-bold text-purple-600">{totalClinicalIndicators}</p>
+                  </div>
+                  <BarChart3 className="h-8 w-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Estimativas de Alta</p>
+                    <p className="text-2xl font-bold text-orange-600">{metrics.dischargeEstimates}</p>
+                  </div>
+                  <PieChart className="h-8 w-8 text-orange-500" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <Button 
-            onClick={handleGenerateReport}
-            disabled={generating || !startDate || !endDate}
-            className="w-full"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {generating ? 'Gerando Relatório...' : 'Gerar Relatório PDF'}
-          </Button>
-        </CardContent>
-      </Card>
+          {/* Análise por Período */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Últimos 7 Dias</CardTitle>
+                <CardDescription>Atividade recente</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Rounds</span>
+                  <Badge variant="outline">{last7DaysMetrics.totalRounds}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Intervenções</span>
+                  <Badge variant="secondary">
+                    {Object.values(last7DaysMetrics.interventionsByCategory).reduce((a, b) => a + b, 0)}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Prévia das Métricas */}
-      {startDate && endDate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Prévia do Período Selecionado</CardTitle>
-            <CardDescription>
-              {format(startDate, "dd/MM/yyyy", { locale: ptBR })} até {format(endDate, "dd/MM/yyyy", { locale: ptBR })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {(() => {
-                const periodMetrics = generateMetrics(startDate, endDate);
-                return (
-                  <>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{periodMetrics.totalRounds}</div>
-                      <p className="text-sm text-muted-foreground">Rounds</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{periodMetrics.interventionsByCategory.pharmacy}</div>
-                      <p className="text-sm text-muted-foreground">Intervenções Farmácia</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{periodMetrics.interventionsByCategory.medicine}</div>
-                      <p className="text-sm text-muted-foreground">Intervenções Medicina</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{periodMetrics.dischargeEstimates}</div>
-                      <p className="text-sm text-muted-foreground">Estimativas Alta</p>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Últimos 30 Dias</CardTitle>
+                <CardDescription>Visão mensal</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Rounds</span>
+                  <Badge variant="outline">{last30DaysMetrics.totalRounds}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Intervenções</span>
+                  <Badge variant="secondary">
+                    {Object.values(last30DaysMetrics.interventionsByCategory).reduce((a, b) => a + b, 0)}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
+                <CardDescription>Gerar relatórios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => setShowReportModal(true)}
+                  className="w-full flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Gerar Relatório PDF
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Distribuição por Categorias */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Intervenções por Área</CardTitle>
+                <CardDescription>Distribuição das intervenções por especialidade</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {Object.entries(metrics.interventionsByCategory).map(([area, count]) => (
+                  <div key={area} className="flex items-center justify-between">
+                    <span className="capitalize">
+                      {area === 'pharmacy' ? 'Farmácia' : 
+                       area === 'medicine' ? 'Medicina' :
+                       area === 'nursing' ? 'Enfermagem' :
+                       area === 'physiotherapy' ? 'Fisioterapia' : 'Nutrição'}
+                    </span>
+                    <Badge variant="outline">{count}</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Indicadores Clínicos</CardTitle>
+                <CardDescription>Monitoramento de indicadores importantes</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {Object.entries(metrics.clinicalIndicators).map(([indicator, count]) => (
+                  <div key={indicator} className="flex items-center justify-between">
+                    <span className="text-sm">
+                      {indicator === 'dvasUsage' ? 'DVAs em uso' :
+                       indicator === 'antibioticTherapy' ? 'Antibioticoterapia' :
+                       indicator === 'sedationAnalgesia' ? 'Sedoanalgesia' :
+                       indicator === 'tevProphylaxis' ? 'Profilaxia TEV' : 'Profilaxia LAMG'}
+                    </span>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tipos de Round */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Distribuição por Tipo de Round</CardTitle>
+              <CardDescription>Análise dos diferentes tipos de rounds realizados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(metrics.roundsByType).map(([type, count]) => (
+                  <Badge key={type} variant="outline" className="px-3 py-1">
+                    {type}: {count}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
+
+      {/* Modal de Relatório */}
+      <RoundReportModal 
+        rounds={rounds}
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
     </div>
   );
 };
