@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Search, Filter, Eye, Edit, Trash2, User, MapPin } from 'lucide-react';
 import { useRoundData } from '@/hooks/useRoundData';
+import { RoundViewModal } from './components/RoundViewModal';
+import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -15,6 +17,8 @@ export const RoundTimeline: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterSector, setFilterSector] = useState('all');
+  const [selectedRound, setSelectedRound] = useState<MultiprofessionalRound | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const filteredRounds = useMemo(() => {
     return rounds.filter(round => {
@@ -33,6 +37,11 @@ export const RoundTimeline: React.FC = () => {
     if (confirm('Tem certeza que deseja excluir este round?')) {
       await deleteRound(id);
     }
+  };
+
+  const handleViewRound = (round: MultiprofessionalRound) => {
+    setSelectedRound(round);
+    setIsViewModalOpen(true);
   };
 
   if (isLoading) {
@@ -166,7 +175,11 @@ export const RoundTimeline: React.FC = () => {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewRound(round)}
+                    >
                       <Eye size={16} className="mr-1" />
                       Visualizar
                     </Button>
@@ -210,6 +223,16 @@ export const RoundTimeline: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Modal de Visualização */}
+      <RoundViewModal
+        round={selectedRound}
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setSelectedRound(null);
+        }}
+      />
     </div>
   );
 };
