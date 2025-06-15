@@ -8,20 +8,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, AlertTriangle, CheckCircle, Info, Pill, ArrowRight, Plus, Database } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, AlertTriangle, CheckCircle, Info, Pill, ArrowRight, Plus, Database, Check, ChevronsUpDown } from 'lucide-react';
 import { useTherapeuticAlternativesByMedication, useReferenceMedications } from '@/hooks/useTherapeuticAlternatives';
 import TherapeuticAlternativesManagement from './TherapeuticAlternativesManagement';
+import { cn } from '@/lib/utils';
 
 const TherapeuticAlternatives = () => {
   const [searchMedication, setSearchMedication] = useState('');
   const [searchReason, setSearchReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [open, setOpen] = useState(false);
 
   const { data: referenceMedications, isLoading: loadingMedications } = useReferenceMedications();
   const { data: searchResult, isLoading: loadingAlternatives } = useTherapeuticAlternativesByMedication(searchQuery);
 
   const handleSearch = () => {
     setSearchQuery(searchMedication);
+  };
+
+  const handleMedicationSelect = (medicationName: string) => {
+    setSearchMedication(medicationName);
+    setOpen(false);
   };
 
   const getAvailabilityBadge = (availability: string) => {
@@ -71,19 +80,69 @@ const TherapeuticAlternatives = () => {
                 Buscar Alternativas
               </CardTitle>
               <CardDescription>
-                Digite o medicamento e o motivo da substituição para encontrar alternativas terapêuticas
+                Selecione ou digite o medicamento e o motivo da substituição para encontrar alternativas terapêuticas
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="medication">Medicamento</Label>
-                  <Input
-                    id="medication"
-                    value={searchMedication}
-                    onChange={(e) => setSearchMedication(e.target.value)}
-                    placeholder="Ex: dipirona, omeprazol..."
-                  />
+                  <div className="flex gap-2">
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-full justify-between"
+                          disabled={loadingMedications}
+                        >
+                          {searchMedication || "Selecione um medicamento..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Buscar medicamento..." 
+                            value={searchMedication}
+                            onValueChange={setSearchMedication}
+                          />
+                          <CommandList>
+                            <CommandEmpty>Nenhum medicamento encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {referenceMedications?.map((medication) => (
+                                <CommandItem
+                                  key={medication.id}
+                                  value={medication.name}
+                                  onSelect={handleMedicationSelect}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      searchMedication === medication.name ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{medication.name}</span>
+                                    {medication.therapeutic_class && (
+                                      <span className="text-xs text-gray-500">{medication.therapeutic_class}</span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      placeholder="Ou digite aqui..."
+                      value={searchMedication}
+                      onChange={(e) => setSearchMedication(e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>Motivo da Substituição</Label>
