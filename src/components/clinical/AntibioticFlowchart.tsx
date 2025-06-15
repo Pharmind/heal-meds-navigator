@@ -33,179 +33,335 @@ const AntibioticFlowchart = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Matriz expandida baseada na imagem e dados clínicos atualizados
+  // Matriz expandida com todos os antibióticos de importância hospitalar
   const antibioticMatrix: AntibioticMatrix = {
     // Cocos Gram Positivos
     'Staphylococcus aureus': {
-      'Penicilina': 'resistant',
-      'Oxacilina': 'variable',
+      // Beta-lactâmicos
+      'Penicilina G': 'resistant',
+      'Penicilina V': 'resistant',
       'Ampicilina': 'resistant',
       'Amoxicilina': 'resistant',
       'Amoxicilina-Clavulanato': 'variable',
+      'Ampicilina-Sulbactam': 'variable',
+      'Oxacilina': 'variable',
+      'Cloxacilina': 'variable',
       'Cefazolina': 'variable',
+      'Cefalexina': 'variable',
       'Cefuroxima': 'variable',
+      'Cefoxitina': 'variable',
       'Ceftriaxone': 'variable',
+      'Cefotaxima': 'variable',
+      'Ceftazidima': 'resistant',
       'Cefepime': 'variable',
+      'Ceftarolina': 'sensitive',
+      'Ceftobiprole': 'sensitive',
+      'Piperacilina-Tazobactam': 'variable',
+      'Ticarcilina-Clavulanato': 'variable',
+      // Carbapenêmicos
       'Meropenem': 'variable',
       'Imipenem': 'variable',
       'Ertapenem': 'variable',
+      'Doripenem': 'variable',
+      // Glicopeptídeos
+      'Vancomicina': 'sensitive',
+      'Teicoplanina': 'sensitive',
+      // Lipopeptídeos
+      'Daptomicina': 'sensitive',
+      // Oxazolidinonas
+      'Linezolida': 'sensitive',
+      'Tedizolida': 'sensitive',
+      // Aminoglicosídeos
+      'Gentamicina': 'variable',
+      'Tobramicina': 'variable',
+      'Amicacina': 'variable',
+      'Netilmicina': 'variable',
+      'Estreptomicina': 'variable',
+      // Quinolonas/Fluoroquinolonas
+      'Ciprofloxacino': 'variable',
+      'Levofloxacino': 'variable',
+      'Moxifloxacino': 'variable',
+      'Gatifloxacino': 'variable',
+      'Ofloxacino': 'variable',
+      // Macrolídeos
+      'Eritromicina': 'variable',
+      'Claritromicina': 'variable',
+      'Azitromicina': 'variable',
+      'Roxitromicina': 'variable',
+      // Lincosaminas
+      'Clindamicina': 'variable',
+      // Tetraciclinas
+      'Tetraciclina': 'variable',
+      'Doxiciclina': 'variable',
+      'Minociclina': 'variable',
+      'Tigeciclina': 'sensitive',
+      // Sulfonamidas
+      'SMX-TMP': 'variable',
+      'Sulfadiazina': 'variable',
+      // Outros
+      'Rifampicina': 'variable',
+      'Cloranfenicol': 'variable',
+      'Fusidato': 'variable',
+      'Mupirocina': 'variable',
+      'Fosfomicina': 'variable',
+      'Nitrofurantoína': 'variable'
+    },
+    'Staphylococcus epidermidis': {
+      'Penicilina G': 'resistant',
+      'Oxacilina': 'variable',
+      'Cefazolina': 'variable',
       'Vancomicina': 'sensitive',
       'Teicoplanina': 'sensitive',
       'Linezolida': 'sensitive',
       'Daptomicina': 'sensitive',
-      'Clindamicina': 'variable',
-      'Eritromicina': 'variable',
-      'Azitromicina': 'variable',
+      'Rifampicina': 'variable',
+      'Gentamicina': 'variable',
       'Ciprofloxacino': 'variable',
+      'SMX-TMP': 'variable',
+      'Clindamicina': 'variable',
+      'Tigeciclina': 'sensitive',
+      'Tedizolida': 'sensitive',
+      'Fusidato': 'variable'
+    },
+    'Staphylococcus haemolyticus': {
+      'Penicilina G': 'resistant',
+      'Oxacilina': 'resistant',
+      'Vancomicina': 'variable',
+      'Teicoplanina': 'variable',
+      'Linezolida': 'sensitive',
+      'Daptomicina': 'sensitive',
+      'Tigeciclina': 'sensitive',
+      'Rifampicina': 'variable'
+    },
+    'Streptococcus pneumoniae': {
+      'Penicilina G': 'variable',
+      'Ampicilina': 'sensitive',
+      'Amoxicilina': 'sensitive',
+      'Amoxicilina-Clavulanato': 'sensitive',
+      'Cefuroxima': 'variable',
+      'Ceftriaxone': 'sensitive',
+      'Cefotaxima': 'sensitive',
+      'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Vancomicina': 'sensitive',
+      'Linezolida': 'sensitive',
       'Levofloxacino': 'variable',
       'Moxifloxacino': 'variable',
+      'Azitromicina': 'variable',
+      'Claritromicina': 'variable',
+      'Eritromicina': 'variable',
+      'Clindamicina': 'variable',
       'SMX-TMP': 'variable',
       'Tetraciclina': 'variable',
       'Doxiciclina': 'variable',
-      'Tigeciclina': 'sensitive',
-      'Rifampicina': 'variable',
-      'Gentamicina': 'variable',
-      'Amicacina': 'variable',
-      'Tobramicina': 'variable'
-    },
-    'Staphylococcus epidermidis': {
-      'Penicilina': 'resistant',
-      'Oxacilina': 'variable',
-      'Vancomicina': 'sensitive',
-      'Linezolida': 'sensitive',
-      'Teicoplanina': 'sensitive',
-      'Rifampicina': 'variable',
-      'Gentamicina': 'variable',
-      'Ciprofloxacino': 'variable',
-      'SMX-TMP': 'variable',
-      'Clindamicina': 'variable'
-    },
-    'Streptococcus pneumoniae': {
-      'Penicilina': 'variable',
-      'Ampicilina': 'sensitive',
-      'Amoxicilina': 'sensitive',
-      'Ceftriaxone': 'sensitive',
-      'Cefotaxima': 'sensitive',
-      'Meropenem': 'sensitive',
-      'Vancomicina': 'sensitive',
-      'Levofloxacino': 'variable',
-      'Moxifloxacino': 'variable',
-      'Azitromicina': 'variable',
-      'Eritromicina': 'variable',
-      'Clindamicina': 'variable',
-      'SMX-TMP': 'variable',
-      'Tetraciclina': 'variable',
       'Cloranfenicol': 'variable',
-      'Linezolida': 'sensitive'
+      'Rifampicina': 'sensitive',
+      'Daptomicina': 'sensitive',
+      'Ceftarolina': 'sensitive'
     },
     'Streptococcus agalactiae': {
-      'Penicilina': 'sensitive',
+      'Penicilina G': 'sensitive',
       'Ampicilina': 'sensitive',
       'Ceftriaxone': 'sensitive',
       'Vancomicina': 'sensitive',
       'Clindamicina': 'variable',
       'Eritromicina': 'variable',
-      'Levofloxacino': 'sensitive'
+      'Levofloxacino': 'sensitive',
+      'Linezolida': 'sensitive'
     },
     'Streptococcus pyogenes': {
-      'Penicilina': 'sensitive',
+      'Penicilina G': 'sensitive',
       'Ampicilina': 'sensitive',
       'Ceftriaxone': 'sensitive',
       'Vancomicina': 'sensitive',
       'Clindamicina': 'variable',
       'Eritromicina': 'variable',
-      'Azitromicina': 'variable'
+      'Azitromicina': 'variable',
+      'Levofloxacino': 'sensitive'
     },
     'Enterococcus faecalis': {
-      'Penicilina': 'resistant',
+      'Penicilina G': 'resistant',
       'Ampicilina': 'sensitive',
+      'Piperacilina': 'sensitive',
       'Vancomicina': 'variable',
       'Teicoplanina': 'variable',
       'Linezolida': 'sensitive',
       'Daptomicina': 'sensitive',
       'Gentamicina': 'resistant',
+      'Estreptomicina': 'variable',
       'Ciprofloxacino': 'resistant',
-      'Nitrofurantoína': 'sensitive'
+      'Nitrofurantoína': 'sensitive',
+      'Tetraciclina': 'variable',
+      'Tigeciclina': 'variable'
     },
     'Enterococcus faecium': {
       'Ampicilina': 'resistant',
+      'Penicilina G': 'resistant',
       'Vancomicina': 'variable',
       'Teicoplanina': 'variable',
       'Linezolida': 'sensitive',
       'Daptomicina': 'sensitive',
-      'Tigeciclina': 'variable'
+      'Tigeciclina': 'variable',
+      'Quinupristina-Dalfopristina': 'sensitive'
     },
+    'Enterococcus gallinarum': {
+      'Ampicilina': 'variable',
+      'Vancomicina': 'resistant',
+      'Teicoplanina': 'sensitive',
+      'Linezolida': 'sensitive',
+      'Daptomicina': 'sensitive'
+    },
+    'Enterococcus casseliflavus': {
+      'Ampicilina': 'variable',
+      'Vancomicina': 'resistant',
+      'Teicoplanina': 'sensitive',
+      'Linezolida': 'sensitive',
+      'Daptomicina': 'sensitive'
+    },
+    
     // Bacilos Gram Positivos
     'Listeria monocytogenes': {
-      'Penicilina': 'sensitive',
+      'Penicilina G': 'sensitive',
       'Ampicilina': 'sensitive',
       'Ceftriaxone': 'resistant',
       'Meropenem': 'sensitive',
       'Vancomicina': 'resistant',
       'SMX-TMP': 'sensitive',
-      'Eritromicina': 'variable'
+      'Eritromicina': 'variable',
+      'Gentamicina': 'variable'
     },
     'Bacillus cereus': {
       'Vancomicina': 'sensitive',
       'Clindamicina': 'variable',
       'Ciprofloxacino': 'variable',
-      'Gentamicina': 'variable'
+      'Gentamicina': 'variable',
+      'Penicilina G': 'resistant'
+    },
+    'Bacillus anthracis': {
+      'Penicilina G': 'sensitive',
+      'Ciprofloxacino': 'sensitive',
+      'Doxiciclina': 'sensitive',
+      'Clindamicina': 'sensitive'
     },
     'Corynebacterium spp.': {
       'Vancomicina': 'sensitive',
-      'Penicilina': 'variable',
+      'Penicilina G': 'variable',
       'Eritromicina': 'variable',
       'Clindamicina': 'variable'
     },
+    
     // BGN Enterobactérias
     'Escherichia coli': {
+      // Beta-lactâmicos
+      'Penicilina G': 'resistant',
       'Ampicilina': 'variable',
+      'Amoxicilina': 'variable',
       'Amoxicilina-Clavulanato': 'variable',
+      'Ampicilina-Sulbactam': 'variable',
+      'Piperacilina': 'variable',
+      'Piperacilina-Tazobactam': 'variable',
+      'Ticarcilina-Clavulanato': 'variable',
       'Cefazolina': 'variable',
+      'Cefalexina': 'variable',
       'Cefuroxima': 'variable',
+      'Cefoxitina': 'variable',
       'Ceftriaxone': 'variable',
       'Cefotaxima': 'variable',
       'Ceftazidima': 'variable',
       'Cefepime': 'variable',
-      'Piperacilina-Tazobactam': 'variable',
+      'Ceftolozano-Tazobactam': 'variable',
+      'Ceftazidima-Avibactam': 'variable',
+      // Carbapenêmicos
       'Meropenem': 'sensitive',
       'Imipenem': 'sensitive',
       'Ertapenem': 'sensitive',
+      'Doripenem': 'sensitive',
+      'Meropenem-Vaborbactam': 'sensitive',
+      'Imipenem-Relebactam': 'sensitive',
+      // Aminoglicosídeos
       'Amicacina': 'variable',
       'Gentamicina': 'variable',
       'Tobramicina': 'variable',
+      'Netilmicina': 'variable',
+      'Plazomicina': 'variable',
+      // Quinolonas
       'Ciprofloxacino': 'variable',
       'Levofloxacino': 'variable',
+      'Norfloxacino': 'variable',
+      'Ofloxacino': 'variable',
+      // Outros
       'SMX-TMP': 'variable',
       'Nitrofurantoína': 'sensitive',
       'Fosfomicina': 'sensitive',
       'Tigeciclina': 'sensitive',
       'Polimixina B': 'sensitive',
-      'Colistina': 'sensitive'
+      'Colistina': 'sensitive',
+      'Tetraciclina': 'variable',
+      'Doxiciclina': 'variable',
+      'Cloranfenicol': 'variable',
+      'Aztreonam': 'variable'
     },
     'Klebsiella pneumoniae': {
       'Ampicilina': 'resistant',
       'Amoxicilina-Clavulanato': 'variable',
+      'Piperacilina-Tazobactam': 'variable',
       'Cefazolina': 'variable',
       'Cefuroxima': 'variable',
       'Ceftriaxone': 'variable',
       'Cefotaxima': 'variable',
       'Ceftazidima': 'variable',
       'Cefepime': 'variable',
-      'Piperacilina-Tazobactam': 'variable',
+      'Ceftolozano-Tazobactam': 'variable',
+      'Ceftazidima-Avibactam': 'variable',
       'Meropenem': 'variable',
       'Imipenem': 'variable',
       'Ertapenem': 'variable',
+      'Meropenem-Vaborbactam': 'variable',
       'Amicacina': 'variable',
       'Gentamicina': 'variable',
+      'Plazomicina': 'variable',
       'Ciprofloxacino': 'variable',
       'Levofloxacino': 'variable',
       'SMX-TMP': 'variable',
       'Tigeciclina': 'sensitive',
       'Polimixina B': 'sensitive',
-      'Colistina': 'sensitive'
+      'Colistina': 'sensitive',
+      'Fosfomicina': 'variable'
+    },
+    'Klebsiella oxytoca': {
+      'Ampicilina': 'resistant',
+      'Cefazolina': 'variable',
+      'Ceftriaxone': 'variable',
+      'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable',
+      'Tigeciclina': 'sensitive'
     },
     'Enterobacter cloacae': {
+      'Ampicilina': 'resistant',
+      'Cefazolina': 'resistant',
+      'Cefuroxima': 'resistant',
+      'Ceftriaxone': 'variable',
+      'Cefepime': 'variable',
+      'Piperacilina-Tazobactam': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Gentamicina': 'variable',
+      'Ciprofloxacino': 'variable',
+      'SMX-TMP': 'variable',
+      'Tigeciclina': 'variable'
+    },
+    'Enterobacter aerogenes': {
+      'Ampicilina': 'resistant',
+      'Cefazolina': 'resistant',
+      'Ceftriaxone': 'variable',
+      'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable'
+    },
+    'Serratia marcescens': {
       'Ampicilina': 'resistant',
       'Cefazolina': 'resistant',
       'Ceftriaxone': 'variable',
@@ -217,22 +373,19 @@ const AntibioticFlowchart = () => {
       'Ciprofloxacino': 'variable',
       'SMX-TMP': 'variable'
     },
-    'Serratia marcescens': {
-      'Ampicilina': 'resistant',
-      'Cefazolina': 'resistant',
-      'Ceftriaxone': 'variable',
-      'Cefepime': 'variable',
-      'Piperacilina-Tazobactam': 'variable',
-      'Meropenem': 'sensitive',
-      'Amicacina': 'variable',
-      'Gentamicina': 'variable',
-      'Ciprofloxacino': 'variable'
-    },
     'Citrobacter freundii': {
       'Ampicilina': 'resistant',
       'Cefazolina': 'resistant',
       'Ceftriaxone': 'variable',
       'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable'
+    },
+    'Citrobacter koseri': {
+      'Ampicilina': 'variable',
+      'Cefazolina': 'variable',
+      'Ceftriaxone': 'sensitive',
       'Meropenem': 'sensitive',
       'Amicacina': 'variable',
       'Ciprofloxacino': 'variable'
@@ -246,12 +399,31 @@ const AntibioticFlowchart = () => {
       'Amicacina': 'sensitive',
       'Gentamicina': 'sensitive',
       'Ciprofloxacino': 'variable',
-      'SMX-TMP': 'variable'
+      'SMX-TMP': 'variable',
+      'Nitrofurantoína': 'resistant'
     },
     'Proteus vulgaris': {
       'Ampicilina': 'resistant',
       'Ceftriaxone': 'variable',
       'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable',
+      'Nitrofurantoína': 'resistant'
+    },
+    'Morganella morganii': {
+      'Ampicilina': 'resistant',
+      'Cefazolina': 'resistant',
+      'Ceftriaxone': 'variable',
+      'Cefepime': 'variable',
+      'Meropenem': 'sensitive',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable',
+      'SMX-TMP': 'variable'
+    },
+    'Providencia rettgeri': {
+      'Ampicilina': 'resistant',
+      'Ceftriaxone': 'variable',
       'Meropenem': 'sensitive',
       'Amicacina': 'variable',
       'Ciprofloxacino': 'variable'
@@ -261,7 +433,8 @@ const AntibioticFlowchart = () => {
       'Ceftriaxone': 'sensitive',
       'Ciprofloxacino': 'variable',
       'SMX-TMP': 'variable',
-      'Azitromicina': 'sensitive'
+      'Azitromicina': 'sensitive',
+      'Cloranfenicol': 'variable'
     },
     'Shigella spp.': {
       'Ampicilina': 'variable',
@@ -270,10 +443,13 @@ const AntibioticFlowchart = () => {
       'SMX-TMP': 'variable',
       'Azitromicina': 'sensitive'
     },
+    
     // BGN não fermentadoras
     'Pseudomonas aeruginosa': {
       'Ceftazidima': 'variable',
       'Cefepime': 'variable',
+      'Ceftolozano-Tazobactam': 'variable',
+      'Ceftazidima-Avibactam': 'variable',
       'Piperacilina-Tazobactam': 'variable',
       'Meropenem': 'variable',
       'Imipenem': 'variable',
@@ -281,11 +457,13 @@ const AntibioticFlowchart = () => {
       'Amicacina': 'variable',
       'Gentamicina': 'variable',
       'Tobramicina': 'variable',
+      'Plazomicina': 'variable',
       'Ciprofloxacino': 'variable',
       'Levofloxacino': 'variable',
       'Colistina': 'sensitive',
       'Polimixina B': 'sensitive',
-      'Aztreonam': 'variable'
+      'Aztreonam': 'variable',
+      'Fosfomicina': 'variable'
     },
     'Acinetobacter baumannii': {
       'Ampicilina-Sulbactam': 'variable',
@@ -296,12 +474,21 @@ const AntibioticFlowchart = () => {
       'Imipenem': 'variable',
       'Amicacina': 'variable',
       'Gentamicina': 'variable',
+      'Tobramicina': 'variable',
       'Ciprofloxacino': 'variable',
       'Levofloxacino': 'variable',
       'Colistina': 'sensitive',
       'Polimixina B': 'sensitive',
       'Doxiciclina': 'variable',
-      'Tigeciclina': 'variable'
+      'Tigeciclina': 'variable',
+      'Minociclina': 'variable'
+    },
+    'Acinetobacter lwoffii': {
+      'Ampicilina-Sulbactam': 'variable',
+      'Meropenem': 'variable',
+      'Amicacina': 'variable',
+      'Ciprofloxacino': 'variable',
+      'Colistina': 'sensitive'
     },
     'Stenotrophomonas maltophilia': {
       'SMX-TMP': 'sensitive',
@@ -309,59 +496,93 @@ const AntibioticFlowchart = () => {
       'Moxifloxacino': 'variable',
       'Doxiciclina': 'variable',
       'Tigeciclina': 'variable',
+      'Minociclina': 'variable',
       'Ceftazidima': 'resistant',
-      'Meropenem': 'resistant'
+      'Meropenem': 'resistant',
+      'Cloranfenicol': 'variable'
     },
     'Burkholderia cepacia': {
       'SMX-TMP': 'sensitive',
       'Levofloxacino': 'variable',
       'Meropenem': 'variable',
       'Ceftazidima': 'variable',
-      'Doxiciclina': 'variable'
+      'Doxiciclina': 'variable',
+      'Minociclina': 'variable'
     },
+    'Chryseobacterium spp.': {
+      'SMX-TMP': 'variable',
+      'Ciprofloxacino': 'variable',
+      'Moxifloxacino': 'variable',
+      'Rifampicina': 'variable'
+    },
+    
     // BGN fastidiosos
     'Haemophilus influenzae': {
       'Ampicilina': 'variable',
       'Amoxicilina-Clavulanato': 'sensitive',
       'Ceftriaxone': 'sensitive',
       'Cefotaxima': 'sensitive',
+      'Cefuroxima': 'sensitive',
       'Azitromicina': 'sensitive',
+      'Claritromicina': 'sensitive',
       'Ciprofloxacino': 'sensitive',
       'Levofloxacino': 'sensitive',
       'SMX-TMP': 'variable',
-      'Doxiciclina': 'variable'
+      'Doxiciclina': 'variable',
+      'Cloranfenicol': 'variable',
+      'Meropenem': 'sensitive'
+    },
+    'Haemophilus parainfluenzae': {
+      'Ampicilina': 'variable',
+      'Amoxicilina-Clavulanato': 'sensitive',
+      'Ceftriaxone': 'sensitive',
+      'Azitromicina': 'sensitive',
+      'Ciprofloxacino': 'sensitive'
     },
     'Moraxella catarrhalis': {
       'Amoxicilina-Clavulanato': 'sensitive',
       'Ceftriaxone': 'sensitive',
       'Azitromicina': 'sensitive',
+      'Claritromicina': 'sensitive',
       'Ciprofloxacino': 'sensitive',
       'SMX-TMP': 'sensitive',
       'Doxiciclina': 'sensitive'
     },
     'Neisseria meningitidis': {
-      'Penicilina': 'variable',
+      'Penicilina G': 'variable',
       'Ampicilina': 'variable',
       'Ceftriaxone': 'sensitive',
       'Cefotaxima': 'sensitive',
       'Meropenem': 'sensitive',
       'Ciprofloxacino': 'sensitive',
-      'Rifampicina': 'sensitive'
+      'Rifampicina': 'sensitive',
+      'Cloranfenicol': 'sensitive'
     },
     'Neisseria gonorrhoeae': {
-      'Penicilina': 'resistant',
+      'Penicilina G': 'resistant',
       'Ceftriaxone': 'variable',
       'Cefixima': 'variable',
       'Azitromicina': 'variable',
       'Ciprofloxacino': 'resistant',
-      'Doxiciclina': 'variable'
+      'Doxiciclina': 'variable',
+      'Espectinomicina': 'sensitive'
     },
+    'Pasteurella multocida': {
+      'Penicilina G': 'sensitive',
+      'Ampicilina': 'sensitive',
+      'Amoxicilina-Clavulanato': 'sensitive',
+      'Ceftriaxone': 'sensitive',
+      'Doxiciclina': 'sensitive',
+      'Ciprofloxacino': 'sensitive'
+    },
+    
     // Atípicos
     'Mycoplasma pneumoniae': {
       'Azitromicina': 'sensitive',
       'Claritromicina': 'sensitive',
       'Eritromicina': 'sensitive',
       'Doxiciclina': 'sensitive',
+      'Tetraciclina': 'sensitive',
       'Levofloxacino': 'sensitive',
       'Moxifloxacino': 'sensitive'
     },
@@ -369,36 +590,140 @@ const AntibioticFlowchart = () => {
       'Azitromicina': 'sensitive',
       'Claritromicina': 'sensitive',
       'Doxiciclina': 'sensitive',
+      'Tetraciclina': 'sensitive',
       'Levofloxacino': 'sensitive',
       'Moxifloxacino': 'sensitive'
+    },
+    'Chlamydia trachomatis': {
+      'Azitromicina': 'sensitive',
+      'Doxiciclina': 'sensitive',
+      'Levofloxacino': 'sensitive',
+      'Ofloxacino': 'sensitive'
     },
     'Legionella pneumophila': {
       'Azitromicina': 'sensitive',
       'Claritromicina': 'sensitive',
+      'Eritromicina': 'sensitive',
       'Levofloxacino': 'sensitive',
       'Moxifloxacino': 'sensitive',
       'Doxiciclina': 'sensitive',
       'Rifampicina': 'sensitive'
     },
+    'Coxiella burnetii': {
+      'Doxiciclina': 'sensitive',
+      'Ciprofloxacino': 'sensitive',
+      'Cloranfenicol': 'sensitive'
+    },
+    'Rickettsia spp.': {
+      'Doxiciclina': 'sensitive',
+      'Tetraciclina': 'sensitive',
+      'Cloranfenicol': 'sensitive',
+      'Ciprofloxacino': 'variable'
+    },
+    
     // Anaeróbios
     'Bacteroides fragilis': {
       'Metronidazol': 'sensitive',
       'Clindamicina': 'variable',
       'Ampicilina-Sulbactam': 'sensitive',
       'Piperacilina-Tazobactam': 'sensitive',
+      'Ticarcilina-Clavulanato': 'sensitive',
+      'Meropenem': 'sensitive',
+      'Imipenem': 'sensitive',
+      'Moxifloxacino': 'variable',
+      'Cloranfenicol': 'variable',
+      'Tigeciclina': 'variable'
+    },
+    'Bacteroides thetaiotaomicron': {
+      'Metronidazol': 'sensitive',
+      'Clindamicina': 'variable',
+      'Ampicilina-Sulbactam': 'sensitive',
       'Meropenem': 'sensitive',
       'Moxifloxacino': 'variable'
     },
     'Clostridium difficile': {
       'Metronidazol': 'sensitive',
       'Vancomicina': 'sensitive',
-      'Fidaxomicina': 'sensitive'
+      'Fidaxomicina': 'sensitive',
+      'Tigeciclina': 'variable'
     },
-    'Peptostreptococcus spp.': {
-      'Penicilina': 'sensitive',
+    'Clostridium perfringens': {
+      'Penicilina G': 'sensitive',
       'Clindamicina': 'sensitive',
       'Metronidazol': 'sensitive',
-      'Vancomicina': 'sensitive'
+      'Vancomicina': 'sensitive',
+      'Meropenem': 'sensitive'
+    },
+    'Peptostreptococcus spp.': {
+      'Penicilina G': 'sensitive',
+      'Clindamicina': 'sensitive',
+      'Metronidazol': 'sensitive',
+      'Vancomicina': 'sensitive',
+      'Meropenem': 'sensitive'
+    },
+    'Prevotella melaninogenica': {
+      'Metronidazol': 'sensitive',
+      'Clindamicina': 'variable',
+      'Ampicilina-Sulbactam': 'sensitive',
+      'Moxifloxacino': 'variable'
+    },
+    'Fusobacterium nucleatum': {
+      'Penicilina G': 'sensitive',
+      'Metronidazol': 'sensitive',
+      'Clindamicina': 'sensitive',
+      'Meropenem': 'sensitive'
+    },
+    
+    // Micobactérias
+    'Mycobacterium tuberculosis': {
+      'Isoniazida': 'variable',
+      'Rifampicina': 'variable',
+      'Etambutol': 'variable',
+      'Pirazinamida': 'variable',
+      'Estreptomicina': 'variable',
+      'Levofloxacino': 'variable',
+      'Moxifloxacino': 'variable',
+      'Amicacina': 'variable',
+      'Capreomicina': 'variable',
+      'Linezolida': 'variable'
+    },
+    'Mycobacterium avium complex': {
+      'Azitromicina': 'variable',
+      'Claritromicina': 'variable',
+      'Rifabutina': 'variable',
+      'Etambutol': 'variable',
+      'Amicacina': 'variable'
+    },
+    
+    // Fungos (adicionados como referência hospitalar)
+    'Candida albicans': {
+      'Fluconazol': 'sensitive',
+      'Itraconazol': 'sensitive',
+      'Voriconazol': 'sensitive',
+      'Anfotericina B': 'sensitive',
+      'Caspofungina': 'sensitive',
+      'Micafungina': 'sensitive',
+      'Anidulafungina': 'sensitive'
+    },
+    'Candida glabrata': {
+      'Fluconazol': 'variable',
+      'Voriconazol': 'variable',
+      'Anfotericina B': 'sensitive',
+      'Caspofungina': 'sensitive',
+      'Micafungina': 'sensitive'
+    },
+    'Candida krusei': {
+      'Fluconazol': 'resistant',
+      'Voriconazol': 'variable',
+      'Anfotericina B': 'sensitive',
+      'Caspofungina': 'sensitive'
+    },
+    'Aspergillus fumigatus': {
+      'Voriconazol': 'sensitive',
+      'Itraconazol': 'variable',
+      'Posaconazol': 'sensitive',
+      'Anfotericina B': 'sensitive',
+      'Caspofungina': 'sensitive'
     }
   };
 
@@ -544,10 +869,10 @@ const AntibioticFlowchart = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="text-heal-green-600" size={24} />
-            Fluxograma Interativo - Matriz de Sensibilidade Expandida
+            Fluxograma Interativo - Matriz de Sensibilidade Hospitalar Expandida
           </CardTitle>
           <CardDescription>
-            Sistema abrangente baseado no espectro de ação dos antimicrobianos com mais de 40 patógenos e 30+ antibióticos
+            Sistema abrangente com mais de 60 patógenos e 80+ antibióticos de importância hospitalar, incluindo antimicrobianos de reserva e controle de infecção
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -582,7 +907,7 @@ const AntibioticFlowchart = () => {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <Info size={16} />
-                Legenda e Categorias
+                Legenda e Categorias Hospitalares
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
@@ -606,23 +931,28 @@ const AntibioticFlowchart = () => {
                   <h5 className="font-medium text-sm">Categorias incluídas:</h5>
                   <div className="text-xs space-y-1">
                     <div>• Cocos Gram-positivos (11 espécies)</div>
-                    <div>• Bacilos Gram-positivos (3 espécies)</div>
-                    <div>• Enterobactérias (10 espécies)</div>
-                    <div>• BGN não-fermentadoras (4 espécies)</div>
-                    <div>• BGN fastidiosos (4 espécies)</div>
-                    <div>• Atípicos (3 espécies)</div>
-                    <div>• Anaeróbios (3 espécies)</div>
+                    <div>• Bacilos Gram-positivos (4 espécies)</div>
+                    <div>• Enterobactérias (16 espécies)</div>
+                    <div>• BGN não-fermentadoras (6 espécies)</div>
+                    <div>• BGN fastidiosos (6 espécies)</div>
+                    <div>• Atípicos (6 espécies)</div>
+                    <div>• Anaeróbios (7 espécies)</div>
+                    <div>• Micobactérias (2 espécies)</div>
+                    <div>• Fungos hospitalares (4 espécies)</div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <h5 className="font-medium text-sm">Classes de antibióticos:</h5>
                   <div className="text-xs space-y-1">
-                    <div>• Beta-lactâmicos (15+ antibióticos)</div>
-                    <div>• Aminoglicosídeos (3 antibióticos)</div>
-                    <div>• Quinolonas (5 antibióticos)</div>
-                    <div>• Macrolídeos (3 antibióticos)</div>
+                    <div>• Beta-lactâmicos (25+ antibióticos)</div>
+                    <div>• Aminoglicosídeos (6 antibióticos)</div>
+                    <div>• Quinolonas (8 antibióticos)</div>
+                    <div>• Macrolídeos (4 antibióticos)</div>
                     <div>• Glicopeptídeos (2 antibióticos)</div>
-                    <div>• Outros (10+ antibióticos)</div>
+                    <div>• Oxazolidinonas (2 antibióticos)</div>
+                    <div>• Antimicrobianos de reserva (10+ antibióticos)</div>
+                    <div>• Antifúngicos (7 antibióticos)</div>
+                    <div>• Outros (15+ antibióticos)</div>
                   </div>
                 </div>
               </div>
