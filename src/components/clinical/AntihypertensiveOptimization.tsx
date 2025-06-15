@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Tabs, Pill } from 'lucide-react';
 
 interface DrugClass {
   id: string;
@@ -24,7 +26,9 @@ interface Interaction {
 
 const AntihypertensiveOptimization = () => {
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   const [currentInteraction, setCurrentInteraction] = useState<Interaction | null>(null);
+  const [viewMode, setViewMode] = useState<'classes' | 'medications'>('classes');
 
   const drugClasses: DrugClass[] = [
     {
@@ -32,7 +36,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Diuréticos tiazídicos',
       shortName: 'Tiazídicos',
       representatives: ['Hidroclorotiazida', 'Clortalidona', 'Indapamida'],
-      position: { x: 50, y: 5 },
+      position: { x: 20, y: 20 },
       color: 'bg-yellow-500'
     },
     {
@@ -40,7 +44,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Diuréticos de alça',
       shortName: 'Alça',
       representatives: ['Furosemida', 'Bumetanida', 'Torasemida'],
-      position: { x: 20, y: 15 },
+      position: { x: 40, y: 20 },
       color: 'bg-yellow-600'
     },
     {
@@ -48,7 +52,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Diuréticos poupadores de K+',
       shortName: 'Poup. K+',
       representatives: ['Espironolactona', 'Amilorida', 'Eplerenona'],
-      position: { x: 80, y: 15 },
+      position: { x: 60, y: 20 },
       color: 'bg-yellow-400'
     },
     {
@@ -56,7 +60,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Betabloqueadores',
       shortName: 'BB',
       representatives: ['Propranolol', 'Metoprolol', 'Atenolol', 'Carvedilol', 'Bisoprolol'],
-      position: { x: 15, y: 40 },
+      position: { x: 80, y: 20 },
       color: 'bg-blue-500'
     },
     {
@@ -64,7 +68,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Bloqueadores dos receptores da angiotensina',
       shortName: 'BRA',
       representatives: ['Losartana', 'Valsartana', 'Telmisartana', 'Irbesartana'],
-      position: { x: 85, y: 35 },
+      position: { x: 20, y: 40 },
       color: 'bg-green-500'
     },
     {
@@ -72,7 +76,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Inibidores da ECA',
       shortName: 'IECA',
       representatives: ['Enalapril', 'Captopril', 'Lisinopril', 'Ramipril'],
-      position: { x: 50, y: 85 },
+      position: { x: 40, y: 40 },
       color: 'bg-purple-500'
     },
     {
@@ -80,7 +84,7 @@ const AntihypertensiveOptimization = () => {
       name: 'BCC Dihidropiridínicos',
       shortName: 'BCC-DHP',
       representatives: ['Amlodipina', 'Nifedipina', 'Felodipina', 'Lercanidipina'],
-      position: { x: 85, y: 65 },
+      position: { x: 60, y: 40 },
       color: 'bg-red-500'
     },
     {
@@ -88,7 +92,7 @@ const AntihypertensiveOptimization = () => {
       name: 'BCC Não-Dihidropiridínicos',
       shortName: 'BCC-NDHP',
       representatives: ['Verapamil', 'Diltiazem'],
-      position: { x: 70, y: 85 },
+      position: { x: 80, y: 40 },
       color: 'bg-red-600'
     },
     {
@@ -96,7 +100,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Alfabloqueadores',
       shortName: 'Alfa-Bloq',
       representatives: ['Doxazosina', 'Prazosina', 'Terazosina'],
-      position: { x: 15, y: 70 },
+      position: { x: 20, y: 60 },
       color: 'bg-orange-500'
     },
     {
@@ -104,7 +108,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Ação Central',
       shortName: 'Centrais',
       representatives: ['Clonidina', 'Metildopa', 'Moxonidina'],
-      position: { x: 30, y: 90 },
+      position: { x: 40, y: 60 },
       color: 'bg-gray-600'
     },
     {
@@ -112,7 +116,7 @@ const AntihypertensiveOptimization = () => {
       name: 'Vasodilatadores diretos',
       shortName: 'Vasodil.',
       representatives: ['Hidralazina', 'Minoxidil'],
-      position: { x: 30, y: 10 },
+      position: { x: 60, y: 60 },
       color: 'bg-pink-500'
     },
     {
@@ -120,10 +124,18 @@ const AntihypertensiveOptimization = () => {
       name: 'Inibidores da renina',
       shortName: 'I-Renina',
       representatives: ['Alisquireno'],
-      position: { x: 70, y: 10 },
+      position: { x: 80, y: 60 },
       color: 'bg-teal-500'
     }
   ];
+
+  // Todos os medicamentos organizados por classe
+  const allMedications = drugClasses.reduce((acc, drugClass) => {
+    drugClass.representatives.forEach(med => {
+      acc[med] = drugClass.id;
+    });
+    return acc;
+  }, {} as Record<string, string>);
 
   const interactions: Interaction[] = [
     // Combinações PREFERENCIAIS (Primeira linha)
@@ -157,8 +169,6 @@ const AntihypertensiveOptimization = () => {
       recommendation: 'Combinação de primeira linha - complementaridade de mecanismos.',
       alternative: 'Boa opção quando IECA/BRA não são tolerados.'
     },
-
-    // Combinações POSSÍVEIS (Segunda linha)
     {
       classes: ['betabloqueadores', 'diureticos-tiazidicos'],
       type: 'possivel',
@@ -195,8 +205,6 @@ const AntihypertensiveOptimization = () => {
       recommendation: 'Combinação para ICC com sobrecarga hídrica.',
       alternative: 'Reservado para insuficiência cardíaca descompensada.'
     },
-
-    // Combinações com CUIDADO
     {
       classes: ['diureticos-tiazidicos', 'diureticos-ansa'],
       type: 'cuidado',
@@ -215,8 +223,6 @@ const AntihypertensiveOptimization = () => {
       recommendation: 'Hidralazina pode causar taquicardia reflexa - BB pode ser protetor.',
       alternative: 'Combinação específica para casos refratários. Inicie BB antes.'
     },
-
-    // Combinações NÃO RECOMENDADAS
     {
       classes: ['ieca', 'bra'],
       type: 'nao-recomendada',
@@ -241,16 +247,12 @@ const AntihypertensiveOptimization = () => {
       recommendation: 'Risco de hipotensão ortostática grave, especialmente em idosos.',
       alternative: 'Evite. Prefira IECA/BRA + diurético ou BCC.'
     },
-
-    // Tripla terapia padrão (simulando seleção de 3)
     {
       classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'],
       type: 'preferencial',
       recommendation: 'TRIPLA TERAPIA IDEAL - Combinação padrão-ouro para casos que não respondem à dupla terapia.',
       alternative: 'Esta é a melhor combinação para tripla terapia. Mantenha as três classes.'
     },
-
-    // Combinações para quádrupla terapia
     {
       classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas', 'diureticos-poupadores'],
       type: 'possivel',
@@ -266,6 +268,8 @@ const AntihypertensiveOptimization = () => {
   ];
 
   const handleClassClick = (classId: string) => {
+    if (viewMode !== 'classes') return;
+    
     let newSelection: string[];
     
     if (selectedClasses.includes(classId)) {
@@ -273,7 +277,6 @@ const AntihypertensiveOptimization = () => {
     } else if (selectedClasses.length < 4) {
       newSelection = [...selectedClasses, classId];
     } else {
-      // Se já tem 4 selecionados, remove o primeiro e adiciona o novo
       newSelection = [...selectedClasses.slice(1), classId];
     }
     
@@ -287,6 +290,53 @@ const AntihypertensiveOptimization = () => {
     }
   };
 
+  const handleMedicationSelect = (medication: string) => {
+    if (selectedMedications.includes(medication)) {
+      return; // Não permitir selecionar o mesmo medicamento
+    }
+    
+    let newSelection: string[];
+    if (selectedMedications.length < 4) {
+      newSelection = [...selectedMedications, medication];
+    } else {
+      newSelection = [...selectedMedications.slice(1), medication];
+    }
+    
+    setSelectedMedications(newSelection);
+    
+    if (newSelection.length >= 2) {
+      // Converter medicamentos para classes e analisar
+      const medicationClasses = newSelection.map(med => allMedications[med]).filter(Boolean);
+      const uniqueClasses = [...new Set(medicationClasses)];
+      
+      if (uniqueClasses.length >= 2) {
+        const interaction = findInteraction(uniqueClasses);
+        setCurrentInteraction(interaction);
+      }
+    } else {
+      setCurrentInteraction(null);
+    }
+  };
+
+  const removeMedication = (medication: string) => {
+    const newSelection = selectedMedications.filter(med => med !== medication);
+    setSelectedMedications(newSelection);
+    
+    if (newSelection.length >= 2) {
+      const medicationClasses = newSelection.map(med => allMedications[med]).filter(Boolean);
+      const uniqueClasses = [...new Set(medicationClasses)];
+      
+      if (uniqueClasses.length >= 2) {
+        const interaction = findInteraction(uniqueClasses);
+        setCurrentInteraction(interaction);
+      } else {
+        setCurrentInteraction(null);
+      }
+    } else {
+      setCurrentInteraction(null);
+    }
+  };
+
   const findInteraction = (classes: string[]): Interaction | null => {
     // Procura por combinação exata
     let interaction = interactions.find(int => 
@@ -294,9 +344,7 @@ const AntihypertensiveOptimization = () => {
       int.classes.every(cls => classes.includes(cls))
     );
 
-    // Se não encontrou combinação exata e tem mais de 2 classes, procura por pares problemáticos
     if (!interaction && classes.length > 2) {
-      // Verifica se há alguma combinação não recomendada entre os pares
       for (let i = 0; i < classes.length; i++) {
         for (let j = i + 1; j < classes.length; j++) {
           const pairInteraction = interactions.find(int =>
@@ -316,7 +364,6 @@ const AntihypertensiveOptimization = () => {
         }
       }
 
-      // Análise específica para múltiplas classes
       if (classes.length === 4) {
         return {
           classes,
@@ -325,7 +372,6 @@ const AntihypertensiveOptimization = () => {
           alternative: 'Confirme adesão, causas secundárias e técnica de medição da PA. Considere consulta com especialista em hipertensão.'
         };
       } else if (classes.length === 3) {
-        // Verifica se é a tripla terapia padrão
         const standardTriple = ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'].every(cls => classes.includes(cls)) ||
                               ['diureticos-tiazidicos', 'bra', 'bcc-dihidropiridinas'].every(cls => classes.includes(cls));
         
@@ -346,7 +392,6 @@ const AntihypertensiveOptimization = () => {
         }
       }
 
-      // Se não há pares problemáticos, considera como possível mas complexa
       return {
         classes,
         type: 'cuidado',
@@ -355,7 +400,6 @@ const AntihypertensiveOptimization = () => {
       };
     }
 
-    // Se não encontrou nada específico para dupla terapia
     if (!interaction && classes.length === 2) {
       return {
         classes,
@@ -374,6 +418,7 @@ const AntihypertensiveOptimization = () => {
 
   const resetSelection = () => {
     setSelectedClasses([]);
+    setSelectedMedications([]);
     setCurrentInteraction(null);
   };
 
@@ -423,137 +468,284 @@ const AntihypertensiveOptimization = () => {
         <p className="text-gray-600">Sistema interativo para otimização de combinações de medicamentos anti-hipertensivos</p>
       </div>
 
+      {/* Seletor de modo */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Heart className="text-red-600" size={24} />
-            Diagrama Interativo de Combinações
+            <Tabs className="text-blue-600" size={24} />
+            Modo de Análise
           </CardTitle>
-          <CardDescription>
-            Clique em até 4 classes de medicamentos para verificar a compatibilidade e receber recomendações
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="relative w-full h-96 border-2 border-gray-200 rounded-lg bg-gray-50 mb-4">
-            {/* Classes de medicamentos */}
-            {drugClasses.map((drugClass) => (
-              <div
-                key={drugClass.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${drugClass.position.x}%`,
-                  top: `${drugClass.position.y}%`
-                }}
-              >
-                <Button
-                  variant={selectedClasses.includes(drugClass.id) ? "default" : "outline"}
-                  size="sm"
-                  className={`
-                    ${selectedClasses.includes(drugClass.id) ? drugClass.color + ' text-white' : 'bg-white'}
-                    hover:scale-105 transition-all duration-200 text-xs min-w-20 h-10 p-1
-                  `}
-                  onClick={() => handleClassClick(drugClass.id)}
-                >
-                  <div className="text-center">
-                    <div className="font-semibold text-[10px] leading-tight">{drugClass.shortName}</div>
-                  </div>
-                </Button>
-              </div>
-            ))}
-
-            {/* Linhas de conexão para classes selecionadas */}
-            {selectedClasses.length >= 2 && (
-              <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                {selectedClasses.map((classId, index) => {
-                  if (index === 0) return null;
-                  
-                  const class1 = drugClasses.find(c => c.id === selectedClasses[index - 1]);
-                  const class2 = drugClasses.find(c => c.id === classId);
-                  if (!class1 || !class2) return null;
-                  
-                  const x1 = class1.position.x;
-                  const y1 = class1.position.y;
-                  const x2 = class2.position.x;
-                  const y2 = class2.position.y;
-                  
-                  const color = currentInteraction?.type === 'preferencial' ? '#22c55e' : 
-                               currentInteraction?.type === 'nao-recomendada' ? '#ef4444' : 
-                               currentInteraction?.type === 'cuidado' ? '#f97316' : '#eab308';
-                  
-                  return (
-                    <line
-                      key={`${classId}-${index}`}
-                      x1={`${x1}%`}
-                      y1={`${y1}%`}
-                      x2={`${x2}%`}
-                      y2={`${y2}%`}
-                      stroke={color}
-                      strokeWidth="3"
-                      strokeDasharray={currentInteraction?.type === 'nao-recomendada' ? '8,4' : 'none'}
-                    />
-                  );
-                })}
-              </svg>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4 mb-4">
-            <Button onClick={resetSelection} variant="outline" size="sm">
-              <RotateCcw size={16} className="mr-2" />
-              Limpar Seleção
+          <div className="flex gap-4 mb-4">
+            <Button
+              variant={viewMode === 'classes' ? 'default' : 'outline'}
+              onClick={() => {
+                setViewMode('classes');
+                setSelectedMedications([]);
+                setCurrentInteraction(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Heart size={16} />
+              Por Classes
             </Button>
-            <div className="text-sm text-gray-600">
-              Selecionadas: {selectedClasses.length}/4 classes
-            </div>
-          </div>
-
-          {/* Legenda */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1 bg-green-500"></div>
-              <span>Preferenciais</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1 bg-yellow-500"></div>
-              <span>Possíveis</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1 bg-orange-500"></div>
-              <span>Com cuidado</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1 bg-red-500 border-dashed border border-red-500"></div>
-              <span>Não recomendadas</span>
-            </div>
+            <Button
+              variant={viewMode === 'medications' ? 'default' : 'outline'}
+              onClick={() => {
+                setViewMode('medications');
+                setSelectedClasses([]);
+                setCurrentInteraction(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Pill size={16} />
+              Por Medicamentos
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Informações das classes selecionadas */}
-      {selectedClasses.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {selectedClasses.map(classId => {
-            const drugClass = drugClasses.find(c => c.id === classId);
-            if (!drugClass) return null;
-            
-            return (
-              <Card key={classId}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">{drugClass.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <h4 className="font-semibold mb-2 text-sm">Representantes:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {drugClass.representatives.map(drug => (
-                        <Badge key={drug} variant="secondary" className="text-xs">{drug}</Badge>
-                      ))}
-                    </div>
+      {viewMode === 'classes' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="text-red-600" size={24} />
+              Diagrama de Classes Terapêuticas
+            </CardTitle>
+            <CardDescription>
+              Clique em até 4 classes de medicamentos para verificar a compatibilidade e receber recomendações
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="relative w-full h-80 border-2 border-gray-200 rounded-lg bg-gray-50 mb-4">
+              {/* Grid organizado de classes */}
+              <div className="grid grid-cols-4 gap-4 p-6 h-full">
+                {drugClasses.map((drugClass) => (
+                  <div
+                    key={drugClass.id}
+                    className="flex items-center justify-center"
+                  >
+                    <Button
+                      variant={selectedClasses.includes(drugClass.id) ? "default" : "outline"}
+                      size="sm"
+                      className={`
+                        ${selectedClasses.includes(drugClass.id) ? drugClass.color + ' text-white' : 'bg-white'}
+                        hover:scale-105 transition-all duration-200 text-xs w-full h-16 p-2
+                      `}
+                      onClick={() => handleClassClick(drugClass.id)}
+                    >
+                      <div className="text-center">
+                        <div className="font-semibold text-[10px] leading-tight">{drugClass.shortName}</div>
+                      </div>
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                ))}
+              </div>
+
+              {/* Linhas de conexão para classes selecionadas */}
+              {selectedClasses.length >= 2 && (
+                <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                  {selectedClasses.map((classId, index) => {
+                    if (index === 0) return null;
+                    
+                    const currentIndex = drugClasses.findIndex(c => c.id === classId);
+                    const prevIndex = drugClasses.findIndex(c => c.id === selectedClasses[index - 1]);
+                    
+                    if (currentIndex === -1 || prevIndex === -1) return null;
+                    
+                    const currentRow = Math.floor(currentIndex / 4);
+                    const currentCol = currentIndex % 4;
+                    const prevRow = Math.floor(prevIndex / 4);
+                    const prevCol = prevIndex % 4;
+                    
+                    const x1 = (prevCol * 25) + 12.5;
+                    const y1 = (prevRow * 33.33) + 16.67;
+                    const x2 = (currentCol * 25) + 12.5;
+                    const y2 = (currentRow * 33.33) + 16.67;
+                    
+                    const color = currentInteraction?.type === 'preferencial' ? '#22c55e' : 
+                                 currentInteraction?.type === 'nao-recomendada' ? '#ef4444' : 
+                                 currentInteraction?.type === 'cuidado' ? '#f97316' : '#eab308';
+                    
+                    return (
+                      <line
+                        key={`${classId}-${index}`}
+                        x1={`${x1}%`}
+                        y1={`${y1}%`}
+                        x2={`${x2}%`}
+                        y2={`${y2}%`}
+                        stroke={color}
+                        strokeWidth="3"
+                        strokeDasharray={currentInteraction?.type === 'nao-recomendada' ? '8,4' : 'none'}
+                      />
+                    );
+                  })}
+                </svg>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <Button onClick={resetSelection} variant="outline" size="sm">
+                <RotateCcw size={16} className="mr-2" />
+                Limpar Seleção
+              </Button>
+              <div className="text-sm text-gray-600">
+                Selecionadas: {selectedClasses.length}/4 classes
+              </div>
+            </div>
+
+            {/* Legenda */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-green-500"></div>
+                <span>Preferenciais</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-yellow-500"></div>
+                <span>Possíveis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-orange-500"></div>
+                <span>Com cuidado</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-red-500 border-dashed border border-red-500"></div>
+                <span>Não recomendadas</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Pill className="text-blue-600" size={24} />
+              Seleção por Medicamentos Específicos
+            </CardTitle>
+            <CardDescription>
+              Selecione até 4 medicamentos específicos para análise de compatibilidade
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {[1, 2, 3, 4].map((num) => (
+                <div key={num} className="space-y-2">
+                  <label className="text-sm font-medium">Medicamento {num}:</label>
+                  <Select
+                    value={selectedMedications[num - 1] || ''}
+                    onValueChange={(value) => {
+                      if (value && !selectedMedications.includes(value)) {
+                        const newSelection = [...selectedMedications];
+                        newSelection[num - 1] = value;
+                        setSelectedMedications(newSelection.filter(Boolean));
+                        handleMedicationSelect(value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um medicamento" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg z-50 max-h-60">
+                      {drugClasses.map((drugClass) => (
+                        <div key={drugClass.id}>
+                          <div className="px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100">
+                            {drugClass.name}
+                          </div>
+                          {drugClass.representatives.map((med) => (
+                            <SelectItem 
+                              key={med} 
+                              value={med}
+                              disabled={selectedMedications.includes(med)}
+                            >
+                              {med}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+
+            {selectedMedications.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2">Medicamentos Selecionados:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedMedications.map((med) => (
+                    <Badge 
+                      key={med} 
+                      variant="secondary" 
+                      className="cursor-pointer hover:bg-red-100"
+                      onClick={() => removeMedication(med)}
+                    >
+                      {med} ✕
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-4">
+              <Button onClick={resetSelection} variant="outline" size="sm">
+                <RotateCcw size={16} className="mr-2" />
+                Limpar Seleção
+              </Button>
+              <div className="text-sm text-gray-600">
+                Selecionados: {selectedMedications.length}/4 medicamentos
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Informações das classes/medicamentos selecionados */}
+      {(selectedClasses.length > 0 || selectedMedications.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {viewMode === 'classes' 
+            ? selectedClasses.map(classId => {
+                const drugClass = drugClasses.find(c => c.id === classId);
+                if (!drugClass) return null;
+                
+                return (
+                  <Card key={classId}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">{drugClass.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm">Representantes:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {drugClass.representatives.map(drug => (
+                            <Badge key={drug} variant="secondary" className="text-xs">{drug}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            : selectedMedications.map(medication => {
+                const classId = allMedications[medication];
+                const drugClass = drugClasses.find(c => c.id === classId);
+                if (!drugClass) return null;
+                
+                return (
+                  <Card key={medication}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">{medication}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm">Classe:</h4>
+                        <Badge variant="outline" className="text-xs">{drugClass.shortName}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+          }
         </div>
       )}
 
