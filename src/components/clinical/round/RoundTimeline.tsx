@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Search, Filter, Eye, Edit, Trash2, User, MapPin } from 'lucide-react';
 import { useRoundData } from '@/hooks/useRoundData';
 import { RoundViewModal } from './components/RoundViewModal';
+import { RoundPrintOptions } from './components/RoundPrintOptions';
 import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -112,6 +113,9 @@ export const RoundTimeline: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Opções de Impressão */}
+      <RoundPrintOptions rounds={filteredRounds} />
 
       {/* Lista de Rounds */}
       <div className="space-y-4">
