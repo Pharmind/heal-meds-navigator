@@ -15,13 +15,23 @@ import {
   Microscope
 } from 'lucide-react';
 
+type SensitivityResult = 'sensitive' | 'variable' | 'resistant';
+
+type PathogenData = {
+  [antibiotic: string]: SensitivityResult;
+};
+
+type AntibioticMatrix = {
+  [pathogen: string]: PathogenData;
+};
+
 const AntibioticFlowchart = () => {
   const [selectedPathogen, setSelectedPathogen] = useState('');
   const [selectedAntibiotic, setSelectedAntibiotic] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
 
   // Matriz de espectro baseada na imagem
-  const antibioticMatrix = {
+  const antibioticMatrix: AntibioticMatrix = {
     // Cocos Gram Positivos
     'Staphylococcus aureus': {
       'Penicilina': 'resistant',
@@ -100,7 +110,7 @@ const AntibioticFlowchart = () => {
   const pathogens = Object.keys(antibioticMatrix);
   const antibiotics = selectedPathogen ? Object.keys(antibioticMatrix[selectedPathogen] || {}) : [];
 
-  const getSensitivityColor = (sensitivity: string) => {
+  const getSensitivityColor = (sensitivity: SensitivityResult) => {
     switch (sensitivity) {
       case 'sensitive': return 'bg-green-100 text-green-800 border-green-300';
       case 'variable': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
@@ -109,7 +119,7 @@ const AntibioticFlowchart = () => {
     }
   };
 
-  const getSensitivityIcon = (sensitivity: string) => {
+  const getSensitivityIcon = (sensitivity: SensitivityResult) => {
     switch (sensitivity) {
       case 'sensitive': return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'variable': return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
@@ -121,7 +131,10 @@ const AntibioticFlowchart = () => {
   const getRecommendation = () => {
     if (!selectedPathogen || !selectedAntibiotic) return null;
 
-    const sensitivity = antibioticMatrix[selectedPathogen]?.[selectedAntibiotic];
+    const pathogenData = antibioticMatrix[selectedPathogen];
+    if (!pathogenData) return null;
+
+    const sensitivity = pathogenData[selectedAntibiotic];
     if (!sensitivity) return null;
 
     const recommendations = {
