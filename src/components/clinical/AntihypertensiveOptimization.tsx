@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Settings, Pill, Activity, Target, Shield } from 'lucide-react';
+import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Settings, Pill, Activity, Target, Shield, BookOpen, Zap } from 'lucide-react';
 
 interface DrugClass {
   id: string;
@@ -26,13 +26,27 @@ interface Interaction {
   alternative: string;
 }
 
+interface Guideline {
+  id: string;
+  name: string;
+  description: string;
+  combinations: {
+    classes: string[];
+    medications: string[];
+    description: string;
+    evidence: string;
+  }[];
+}
+
 const AntihypertensiveOptimization = () => {
   // All hooks must be called at the top level, before any conditional logic
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   const [currentInteraction, setCurrentInteraction] = useState<Interaction | null>(null);
-  const [viewMode, setViewMode] = useState<'classes' | 'medications'>('classes');
+  const [viewMode, setViewMode] = useState<'classes' | 'medications' | 'guidelines'>('classes');
   const [showDetails, setShowDetails] = useState(false);
+  const [selectedGuideline, setSelectedGuideline] = useState<string>('');
+  const [selectedGuidelineCombination, setSelectedGuidelineCombination] = useState<number | null>(null);
 
   const drugClasses: DrugClass[] = [
     {
@@ -169,6 +183,177 @@ const AntihypertensiveOptimization = () => {
     }
   ];
 
+  const guidelines: Guideline[] = [
+    {
+      id: 'aha-acc-2017',
+      name: 'AHA/ACC 2017',
+      description: 'Diretrizes da American Heart Association e American College of Cardiology',
+      combinations: [
+        {
+          classes: ['diureticos-tiazidicos', 'ieca'],
+          medications: ['Clortalidona', 'Lisinopril'],
+          description: 'Combinação de primeira linha para maioria dos pacientes',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['diureticos-tiazidicos', 'bra'],
+          medications: ['Clortalidona', 'Losartana'],
+          description: 'Alternativa quando IECA não é tolerado',
+          evidence: 'Classe I, Nível de Evidência B'
+        },
+        {
+          classes: ['bcc-dihidropiridinas', 'ieca'],
+          medications: ['Amlodipina', 'Lisinopril'],
+          description: 'Excelente para pacientes com doença coronariana',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'],
+          medications: ['Clortalidona', 'Lisinopril', 'Amlodipina'],
+          description: 'Tripla terapia padrão-ouro',
+          evidence: 'Classe I, Nível de Evidência A'
+        }
+      ]
+    },
+    {
+      id: 'esc-esh-2018',
+      name: 'ESC/ESH 2018',
+      description: 'Diretrizes da European Society of Cardiology e European Society of Hypertension',
+      combinations: [
+        {
+          classes: ['ieca', 'bcc-dihidropiridinas'],
+          medications: ['Enalapril', 'Amlodipina'],
+          description: 'Combinação preferencial inicial',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['bra', 'bcc-dihidropiridinas'],
+          medications: ['Valsartana', 'Amlodipina'],
+          description: 'Alternativa com menor incidência de tosse',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['ieca', 'diureticos-tiazidicos'],
+          medications: ['Enalapril', 'Indapamida'],
+          description: 'Combinação clássica com evidência robusta',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['ieca', 'bcc-dihidropiridinas', 'diureticos-tiazidicos'],
+          medications: ['Enalapril', 'Amlodipina', 'Indapamida'],
+          description: 'Tripla terapia em dose fixa preferencial',
+          evidence: 'Classe I, Nível de Evidência A'
+        }
+      ]
+    },
+    {
+      id: 'sbc-2020',
+      name: 'SBC 2020',
+      description: 'Diretrizes da Sociedade Brasileira de Cardiologia',
+      combinations: [
+        {
+          classes: ['diureticos-tiazidicos', 'ieca'],
+          medications: ['Hidroclorotiazida', 'Enalapril'],
+          description: 'Dupla terapia de escolha no Brasil',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['diureticos-tiazidicos', 'bra'],
+          medications: ['Hidroclorotiazida', 'Losartana'],
+          description: 'Alternativa nacional bem estabelecida',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['bcc-dihidropiridinas', 'ieca'],
+          medications: ['Anlodipino', 'Enalapril'],
+          description: 'Boa opção para idosos brasileiros',
+          evidence: 'Classe IIa, Nível de Evidência B'
+        },
+        {
+          classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'],
+          medications: ['Hidroclorotiazida', 'Enalapril', 'Anlodipino'],
+          description: 'Tripla terapia adaptada ao perfil brasileiro',
+          evidence: 'Classe I, Nível de Evidência B'
+        }
+      ]
+    },
+    {
+      id: 'resistente',
+      name: 'Hipertensão Resistente',
+      description: 'Abordagem para hipertensão resistente verdadeira',
+      combinations: [
+        {
+          classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas', 'diureticos-poupadores'],
+          medications: ['Clortalidona', 'Lisinopril', 'Amlodipina', 'Espironolactona'],
+          description: 'Quádrupla terapia com espironolactona',
+          evidence: 'Classe I, Nível de Evidência B'
+        },
+        {
+          classes: ['diureticos-tiazidicos', 'bra', 'bcc-dihidropiridinas', 'alfabloqueadores'],
+          medications: ['Indapamida', 'Telmisartana', 'Amlodipina', 'Doxazosina'],
+          description: 'Alternativa com alfabloqueador para hiperplasia prostática',
+          evidence: 'Classe IIa, Nível de Evidência C'
+        },
+        {
+          classes: ['diureticos-ansa', 'ieca', 'bcc-dihidropiridinas', 'betabloqueadores'],
+          medications: ['Furosemida', 'Ramipril', 'Amlodipina', 'Carvedilol'],
+          description: 'Para pacientes com insuficiência cardíaca associada',
+          evidence: 'Classe IIa, Nível de Evidência B'
+        }
+      ]
+    },
+    {
+      id: 'diabetes',
+      name: 'Diabetes Mellitus',
+      description: 'Combinações específicas para pacientes diabéticos',
+      combinations: [
+        {
+          classes: ['ieca', 'diureticos-tiazidicos'],
+          medications: ['Ramipril', 'Indapamida'],
+          description: 'Proteção renal e cardiovascular em diabéticos',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['bra', 'bcc-dihidropiridinas'],
+          medications: ['Irbesartana', 'Amlodipina'],
+          description: 'Alternativa com menor risco metabólico',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['ieca', 'bcc-dihidropiridinas', 'diureticos-poupadores'],
+          medications: ['Enalapril', 'Amlodipina', 'Espironolactona'],
+          description: 'Tripla terapia para diabéticos com microalbuminúria',
+          evidence: 'Classe IIa, Nível de Evidência B'
+        }
+      ]
+    },
+    {
+      id: 'idosos',
+      name: 'Pacientes Idosos',
+      description: 'Abordagem específica para pacientes ≥65 anos',
+      combinations: [
+        {
+          classes: ['diureticos-tiazidicos', 'bcc-dihidropiridinas'],
+          medications: ['Indapamida', 'Amlodipina'],
+          description: 'Combinação bem tolerada em idosos',
+          evidence: 'Classe I, Nível de Evidência A'
+        },
+        {
+          classes: ['bra', 'diureticos-tiazidicos'],
+          medications: ['Telmisartana', 'Indapamida'],
+          description: 'Menor risco de tosse e angioedema',
+          evidence: 'Classe I, Nível de Evidência B'
+        },
+        {
+          classes: ['bcc-dihidropiridinas', 'ieca'],
+          medications: ['Lercanidipina', 'Enalapril'],
+          description: 'BCC de longa ação para idosos',
+          evidence: 'Classe IIa, Nível de Evidência B'
+        }
+      ]
+    }
+  ];
+
   // Todos os medicamentos organizados por classe
   const allMedications = drugClasses.reduce((acc, drugClass) => {
     drugClass.representatives.forEach(med => {
@@ -178,7 +363,6 @@ const AntihypertensiveOptimization = () => {
   }, {} as Record<string, string>);
 
   const interactions: Interaction[] = [
-    // Combinações PREFERENCIAIS (Primeira linha)
     {
       classes: ['diureticos-tiazidicos', 'ieca'],
       type: 'preferencial',
@@ -380,6 +564,28 @@ const AntihypertensiveOptimization = () => {
     }
   };
 
+  const handleGuidelineSelect = (guidelineId: string) => {
+    setSelectedGuideline(guidelineId);
+    setSelectedGuidelineCombination(null);
+    setSelectedClasses([]);
+    setSelectedMedications([]);
+    setCurrentInteraction(null);
+  };
+
+  const handleGuidelineCombinationSelect = (combinationIndex: number) => {
+    const guideline = guidelines.find(g => g.id === selectedGuideline);
+    if (!guideline) return;
+    
+    const combination = guideline.combinations[combinationIndex];
+    setSelectedGuidelineCombination(combinationIndex);
+    setSelectedClasses(combination.classes);
+    setSelectedMedications(combination.medications);
+    
+    // Analisar a combinação
+    const interaction = findInteraction(combination.classes);
+    setCurrentInteraction(interaction);
+  };
+
   const findInteraction = (classes: string[]): Interaction | null => {
     // Procura por combinação exata
     let interaction = interactions.find(int => 
@@ -463,6 +669,8 @@ const AntihypertensiveOptimization = () => {
     setSelectedClasses([]);
     setSelectedMedications([]);
     setCurrentInteraction(null);
+    setSelectedGuideline('');
+    setSelectedGuidelineCombination(null);
   };
 
   const getInteractionIcon = (type: string) => {
@@ -526,6 +734,8 @@ const AntihypertensiveOptimization = () => {
               onClick={() => {
                 setViewMode('classes');
                 setSelectedMedications([]);
+                setSelectedGuideline('');
+                setSelectedGuidelineCombination(null);
                 setCurrentInteraction(null);
               }}
               className="flex items-center gap-2"
@@ -538,12 +748,27 @@ const AntihypertensiveOptimization = () => {
               onClick={() => {
                 setViewMode('medications');
                 setSelectedClasses([]);
+                setSelectedGuideline('');
+                setSelectedGuidelineCombination(null);
                 setCurrentInteraction(null);
               }}
               className="flex items-center gap-2"
             >
               <Pill size={16} />
               Por Medicamentos
+            </Button>
+            <Button
+              variant={viewMode === 'guidelines' ? 'default' : 'outline'}
+              onClick={() => {
+                setViewMode('guidelines');
+                setSelectedClasses([]);
+                setSelectedMedications([]);
+                setCurrentInteraction(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <BookOpen size={16} />
+              Por Diretrizes
             </Button>
             <Button
               variant={showDetails ? 'default' : 'outline'}
@@ -556,6 +781,87 @@ const AntihypertensiveOptimization = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modo de Diretrizes */}
+      {viewMode === 'guidelines' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="text-purple-600" size={24} />
+              Seleção por Diretrizes Clínicas
+            </CardTitle>
+            <CardDescription>
+              Escolha uma diretriz específica e o sistema mostrará as combinações recomendadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Selecione a Diretriz:</label>
+              <Select value={selectedGuideline} onValueChange={handleGuidelineSelect}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolha uma diretriz" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border shadow-lg z-50">
+                  {guidelines.map((guideline) => (
+                    <SelectItem key={guideline.id} value={guideline.id}>
+                      {guideline.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedGuideline && (
+              <div className="space-y-4">
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">
+                    {guidelines.find(g => g.id === selectedGuideline)?.name}
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    {guidelines.find(g => g.id === selectedGuideline)?.description}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Combinações Recomendadas:</label>
+                  <div className="grid gap-3">
+                    {guidelines.find(g => g.id === selectedGuideline)?.combinations.map((combination, index) => (
+                      <Card 
+                        key={index} 
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          selectedGuidelineCombination === index ? 'ring-2 ring-purple-500 bg-purple-50' : ''
+                        }`}
+                        onClick={() => handleGuidelineCombinationSelect(index)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <h5 className="font-semibold text-sm">
+                              {combination.classes.map(classId => 
+                                getDrugClassName(classId)
+                              ).join(' + ')}
+                            </h5>
+                            <Badge variant="outline" className="text-xs">
+                              {combination.evidence}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{combination.description}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {combination.medications.map(med => (
+                              <Badge key={med} variant="secondary" className="text-xs">
+                                {med}
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {viewMode === 'classes' ? (
         <Card>
@@ -667,7 +973,7 @@ const AntihypertensiveOptimization = () => {
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : viewMode === 'medications' ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -749,7 +1055,7 @@ const AntihypertensiveOptimization = () => {
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* Informações detalhadas das classes (quando showDetails está ativo) */}
       {showDetails && (
@@ -821,7 +1127,7 @@ const AntihypertensiveOptimization = () => {
       {/* Informações das classes/medicamentos selecionados */}
       {(selectedClasses.length > 0 || selectedMedications.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {viewMode === 'classes' 
+          {viewMode === 'classes' || viewMode === 'guidelines'
             ? selectedClasses.map(classId => {
                 const drugClass = drugClasses.find(c => c.id === classId);
                 if (!drugClass) return null;
