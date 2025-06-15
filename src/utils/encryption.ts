@@ -39,13 +39,13 @@ export class EncryptionService {
     obj: T, 
     sensitiveFields: string[]
   ): T {
-    const encrypted = { ...obj };
+    const encrypted = { ...obj } as any;
     sensitiveFields.forEach(field => {
       if (encrypted[field] && typeof encrypted[field] === 'string') {
         encrypted[field] = this.encrypt(encrypted[field]);
       }
     });
-    return encrypted;
+    return encrypted as T;
   }
 
   // Decrypt an object's sensitive fields
@@ -53,13 +53,13 @@ export class EncryptionService {
     obj: T, 
     sensitiveFields: string[]
   ): T {
-    const decrypted = { ...obj };
+    const decrypted = { ...obj } as any;
     sensitiveFields.forEach(field => {
       if (decrypted[field] && typeof decrypted[field] === 'string') {
         decrypted[field] = this.decrypt(decrypted[field]);
       }
     });
-    return decrypted;
+    return decrypted as T;
   }
 
   // Hash data for search purposes (one-way)
