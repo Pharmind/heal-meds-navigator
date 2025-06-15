@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -249,6 +248,20 @@ const AntihypertensiveOptimization = () => {
       type: 'preferencial',
       recommendation: 'TRIPLA TERAPIA IDEAL - Combinação padrão-ouro para casos que não respondem à dupla terapia.',
       alternative: 'Esta é a melhor combinação para tripla terapia. Mantenha as três classes.'
+    },
+
+    // Combinações para quádrupla terapia
+    {
+      classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas', 'diureticos-poupadores'],
+      type: 'possivel',
+      recommendation: 'QUÁDRUPLA TERAPIA PARA HIPERTENSÃO RESISTENTE - Use apenas em casos refratários com monitoração intensiva.',
+      alternative: 'Esta combinação é reservada para hipertensão resistente verdadeira. Monitore função renal, K+ e PA rigorosamente.'
+    },
+    {
+      classes: ['diureticos-tiazidicos', 'bra', 'bcc-dihidropiridinas', 'alfabloqueadores'],
+      type: 'possivel',
+      recommendation: 'QUÁDRUPLA TERAPIA com alfabloqueador - Útil em homens com HAS resistente e sintomas prostáticos.',
+      alternative: 'Monitorize hipotensão ortostática. Considere substituir alfabloqueador por espironolactona se não há indicação prostática.'
     }
   ];
 
@@ -257,10 +270,10 @@ const AntihypertensiveOptimization = () => {
     
     if (selectedClasses.includes(classId)) {
       newSelection = selectedClasses.filter(id => id !== classId);
-    } else if (selectedClasses.length < 3) {
+    } else if (selectedClasses.length < 4) {
       newSelection = [...selectedClasses, classId];
     } else {
-      // Se já tem 3 selecionados, remove o primeiro e adiciona o novo
+      // Se já tem 4 selecionados, remove o primeiro e adiciona o novo
       newSelection = [...selectedClasses.slice(1), classId];
     }
     
@@ -300,6 +313,36 @@ const AntihypertensiveOptimization = () => {
               alternative: pairInteraction.alternative
             };
           }
+        }
+      }
+
+      // Análise específica para múltiplas classes
+      if (classes.length === 4) {
+        return {
+          classes,
+          type: 'cuidado',
+          recommendation: 'QUÁDRUPLA TERAPIA - Reservada para hipertensão resistente verdadeira. Requer investigação de causas secundárias e monitoração intensiva.',
+          alternative: 'Confirme adesão, causas secundárias e técnica de medição da PA. Considere consulta com especialista em hipertensão.'
+        };
+      } else if (classes.length === 3) {
+        // Verifica se é a tripla terapia padrão
+        const standardTriple = ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'].every(cls => classes.includes(cls)) ||
+                              ['diureticos-tiazidicos', 'bra', 'bcc-dihidropiridinas'].every(cls => classes.includes(cls));
+        
+        if (standardTriple) {
+          return {
+            classes,
+            type: 'preferencial',
+            recommendation: 'TRIPLA TERAPIA PADRÃO - Combinação ideal para casos que não respondem à dupla terapia.',
+            alternative: 'Esta é a melhor combinação para tripla terapia. Ajuste doses antes de adicionar 4ª classe.'
+          };
+        } else {
+          return {
+            classes,
+            type: 'possivel',
+            recommendation: 'Tripla terapia não padronizada - considere ajustar para combinação padrão.',
+            alternative: 'Prefira: Tiazídico + IECA/BRA + BCC dihidropiridínico como tripla terapia padrão.'
+          };
         }
       }
 
@@ -387,7 +430,7 @@ const AntihypertensiveOptimization = () => {
             Diagrama Interativo de Combinações
           </CardTitle>
           <CardDescription>
-            Clique em até 3 classes de medicamentos para verificar a compatibilidade e receber recomendações
+            Clique em até 4 classes de medicamentos para verificar a compatibilidade e receber recomendações
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -460,7 +503,7 @@ const AntihypertensiveOptimization = () => {
               Limpar Seleção
             </Button>
             <div className="text-sm text-gray-600">
-              Selecionadas: {selectedClasses.length}/3 classes
+              Selecionadas: {selectedClasses.length}/4 classes
             </div>
           </div>
 
@@ -488,7 +531,7 @@ const AntihypertensiveOptimization = () => {
 
       {/* Informações das classes selecionadas */}
       {selectedClasses.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {selectedClasses.map(classId => {
             const drugClass = drugClasses.find(c => c.id === classId);
             if (!drugClass) return null;
@@ -545,6 +588,7 @@ const AntihypertensiveOptimization = () => {
           <div className="space-y-2 text-sm text-blue-800">
             <p>• <strong>1ª linha (dupla):</strong> IECA/BRA + Tiazídico OU IECA/BRA + BCC-DHP OU Tiazídico + BCC-DHP</p>
             <p>• <strong>1ª linha (tripla):</strong> IECA/BRA + Tiazídico + BCC dihidropiridínico</p>
+            <p>• <strong>Quádrupla terapia:</strong> Reservada para hipertensão resistente verdadeira após investigação</p>
             <p>• <strong>EVITAR:</strong> IECA + BRA, BB + Verapamil/Diltiazem, dupla diurese</p>
             <p>• <strong>Monitorar:</strong> Função renal, K+, Na+, frequência cardíaca, pressão arterial</p>
             <p>• <strong>Individualizar:</strong> Considere idade, comorbidades, efeitos adversos e aderência</p>
