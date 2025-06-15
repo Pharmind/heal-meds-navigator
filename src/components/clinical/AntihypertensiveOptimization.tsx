@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Settings, Pill } from 'lucide-react';
+import { Heart, AlertTriangle, CheckCircle, Info, RotateCcw, Settings, Pill, Activity, Target, Shield } from 'lucide-react';
 
 interface DrugClass {
   id: string;
@@ -14,6 +14,9 @@ interface DrugClass {
   representatives: string[];
   position: { x: number; y: number };
   color: string;
+  mechanism: string;
+  adverseEffects: string[];
+  contraindications: string[];
 }
 
 interface Interaction {
@@ -29,6 +32,7 @@ const AntihypertensiveOptimization = () => {
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   const [currentInteraction, setCurrentInteraction] = useState<Interaction | null>(null);
   const [viewMode, setViewMode] = useState<'classes' | 'medications'>('classes');
+  const [showDetails, setShowDetails] = useState(false);
 
   const drugClasses: DrugClass[] = [
     {
@@ -37,7 +41,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Tiazídicos',
       representatives: ['Hidroclorotiazida', 'Clortalidona', 'Indapamida'],
       position: { x: 20, y: 20 },
-      color: 'bg-yellow-500'
+      color: 'bg-yellow-500',
+      mechanism: 'Bloqueiam cotransportador Na⁺/Cl⁻ no túbulo contorcido distal, aumentando excreção de sódio e água',
+      adverseEffects: ['Hipocalemia', 'Hiponatremia', 'Hiperglicemia', 'Hiperuricemia', 'Dislipidemia'],
+      contraindications: ['Anúria', 'Insuficiência renal grave', 'Alergia a sulfonamidas']
     },
     {
       id: 'diureticos-ansa',
@@ -45,7 +52,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Alça',
       representatives: ['Furosemida', 'Bumetanida', 'Torasemida'],
       position: { x: 40, y: 20 },
-      color: 'bg-yellow-600'
+      color: 'bg-yellow-600',
+      mechanism: 'Bloqueiam cotransportador Na⁺/K⁺/2Cl⁻ na alça de Henle, causando diurese potente',
+      adverseEffects: ['Hipocalemia grave', 'Hiponatremia', 'Ototoxicidade', 'Nefrotoxicidade'],
+      contraindications: ['Anúria', 'Depleção severa de eletrólitos', 'Estado comatoso hepático']
     },
     {
       id: 'diureticos-poupadores',
@@ -53,7 +63,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Poup. K+',
       representatives: ['Espironolactona', 'Amilorida', 'Eplerenona'],
       position: { x: 60, y: 20 },
-      color: 'bg-yellow-400'
+      color: 'bg-yellow-400',
+      mechanism: 'Bloqueiam canais de sódio (amilorida) ou receptores mineralocorticoides (espironolactona)',
+      adverseEffects: ['Hipercalemia', 'Ginecomastia (espironolactona)', 'Disfunção erétil'],
+      contraindications: ['Hipercalemia', 'Insuficiência renal severa', 'Doença de Addison']
     },
     {
       id: 'betabloqueadores',
@@ -61,7 +74,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'BB',
       representatives: ['Propranolol', 'Metoprolol', 'Atenolol', 'Carvedilol', 'Bisoprolol'],
       position: { x: 80, y: 20 },
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
+      mechanism: 'Bloqueiam receptores β-adrenérgicos, reduzindo frequência cardíaca e contractilidade',
+      adverseEffects: ['Bradicardia', 'Broncoespasmo', 'Fadiga', 'Disfunção erétil', 'Mascaramento de hipoglicemia'],
+      contraindications: ['Asma', 'DPOC grave', 'Bloqueio AV', 'ICC descompensada', 'Bradicardia severa']
     },
     {
       id: 'bra',
@@ -69,7 +85,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'BRA',
       representatives: ['Losartana', 'Valsartana', 'Telmisartana', 'Irbesartana'],
       position: { x: 20, y: 40 },
-      color: 'bg-green-500'
+      color: 'bg-green-500',
+      mechanism: 'Bloqueiam receptores AT1 da angiotensina II, causando vasodilatação',
+      adverseEffects: ['Hipercalemia', 'Hipotensão', 'Angioedema (raro)', 'Tosse (rara)'],
+      contraindications: ['Estenose bilateral da artéria renal', 'Gravidez', 'Angioedema prévio']
     },
     {
       id: 'ieca',
@@ -77,7 +96,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'IECA',
       representatives: ['Enalapril', 'Captopril', 'Lisinopril', 'Ramipril'],
       position: { x: 40, y: 40 },
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
+      mechanism: 'Inibem enzima conversora de angiotensina, reduzindo formação de angiotensina II',
+      adverseEffects: ['Tosse seca (10-15%)', 'Hipercalemia', 'Angioedema', 'Disgeusia'],
+      contraindications: ['Angioedema prévio', 'Estenose bilateral da artéria renal', 'Gravidez']
     },
     {
       id: 'bcc-dihidropiridinas',
@@ -85,7 +107,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'BCC-DHP',
       representatives: ['Amlodipina', 'Nifedipina', 'Felodipina', 'Lercanidipina'],
       position: { x: 60, y: 40 },
-      color: 'bg-red-500'
+      color: 'bg-red-500',
+      mechanism: 'Bloqueiam canais de cálcio tipo L, causando vasodilatação arteriolar',
+      adverseEffects: ['Edema periférico', 'Rubor facial', 'Taquicardia reflexa', 'Cefaleia'],
+      contraindications: ['Choque cardiogênico', 'Estenose aórtica severa', 'Hipotensão']
     },
     {
       id: 'bcc-nao-dihidropiridinas',
@@ -93,7 +118,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'BCC-NDHP',
       representatives: ['Verapamil', 'Diltiazem'],
       position: { x: 80, y: 40 },
-      color: 'bg-red-600'
+      color: 'bg-red-600',
+      mechanism: 'Bloqueiam canais de cálcio, com efeito cronotrópico e inotrópico negativo',
+      adverseEffects: ['Bradicardia', 'Bloqueio AV', 'Constipação', 'Depressão miocárdica'],
+      contraindications: ['Síndrome do nó sinusal', 'Bloqueio AV 2º/3º grau', 'ICC severa']
     },
     {
       id: 'alfabloqueadores',
@@ -101,7 +129,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Alfa-Bloq',
       representatives: ['Doxazosina', 'Prazosina', 'Terazosina'],
       position: { x: 20, y: 60 },
-      color: 'bg-orange-500'
+      color: 'bg-orange-500',
+      mechanism: 'Bloqueiam receptores α1-adrenérgicos, causando vasodilatação',
+      adverseEffects: ['Hipotensão ortostática', 'Tontura', 'Edema', 'Taquicardia reflexa'],
+      contraindications: ['Hipotensão ortostática', 'Sincope de causa desconhecida']
     },
     {
       id: 'acao-central',
@@ -109,7 +140,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Centrais',
       representatives: ['Clonidina', 'Metildopa', 'Moxonidina'],
       position: { x: 40, y: 60 },
-      color: 'bg-gray-600'
+      color: 'bg-gray-600',
+      mechanism: 'Ativam receptores α2 centrais ou reduzem atividade simpática central',
+      adverseEffects: ['Sedação', 'Boca seca', 'Fadiga', 'Depressão', 'Efeito rebote'],
+      contraindications: ['Depressão severa', 'Doença cerebrovascular ativa']
     },
     {
       id: 'vasodilatadores',
@@ -117,7 +151,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'Vasodil.',
       representatives: ['Hidralazina', 'Minoxidil'],
       position: { x: 60, y: 60 },
-      color: 'bg-pink-500'
+      color: 'bg-pink-500',
+      mechanism: 'Relaxamento direto da musculatura lisa vascular',
+      adverseEffects: ['Taquicardia reflexa', 'Retenção hídrica', 'Síndrome lúpus-like (hidralazina)'],
+      contraindications: ['Doença coronariana', 'Aneurisma aórtico', 'Mitral valve regurgitation']
     },
     {
       id: 'inibidores-renina',
@@ -125,7 +162,10 @@ const AntihypertensiveOptimization = () => {
       shortName: 'I-Renina',
       representatives: ['Alisquireno'],
       position: { x: 80, y: 60 },
-      color: 'bg-teal-500'
+      color: 'bg-teal-500',
+      mechanism: 'Inibem diretamente a renina, bloqueando formação de angiotensina I',
+      adverseEffects: ['Diarreia', 'Hipercalemia', 'Angioedema', 'Tosse'],
+      contraindications: ['Gravidez', 'Combinação com IECA/BRA em diabéticos']
     }
   ];
 
@@ -505,6 +545,14 @@ const AntihypertensiveOptimization = () => {
               <Pill size={16} />
               Por Medicamentos
             </Button>
+            <Button
+              variant={showDetails ? 'default' : 'outline'}
+              onClick={() => setShowDetails(!showDetails)}
+              className="flex items-center gap-2"
+            >
+              <Activity size={16} />
+              {showDetails ? 'Ocultar' : 'Mostrar'} Detalhes
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -703,6 +751,73 @@ const AntihypertensiveOptimization = () => {
         </Card>
       )}
 
+      {/* Informações detalhadas das classes (quando showDetails está ativo) */}
+      {showDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="text-purple-600" size={24} />
+              Informações Detalhadas das Classes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              {drugClasses.map((drugClass) => (
+                <div key={drugClass.id} className="border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`w-4 h-4 rounded ${drugClass.color}`}></div>
+                    <h4 className="font-semibold">{drugClass.name}</h4>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <h5 className="font-semibold mb-2 flex items-center gap-1">
+                        <Activity size={14} />
+                        Mecanismo de Ação:
+                      </h5>
+                      <p className="text-gray-700">{drugClass.mechanism}</p>
+                    </div>
+                    
+                    <div>
+                      <h5 className="font-semibold mb-2 flex items-center gap-1">
+                        <AlertTriangle size={14} />
+                        Efeitos Adversos:
+                      </h5>
+                      <ul className="list-disc list-inside text-gray-700">
+                        {drugClass.adverseEffects.map((effect, index) => (
+                          <li key={index}>{effect}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <h5 className="font-semibold mb-2 flex items-center gap-1">
+                        <Shield size={14} />
+                        Contraindicações:
+                      </h5>
+                      <ul className="list-disc list-inside text-gray-700">
+                        {drugClass.contraindications.map((contraindication, index) => (
+                          <li key={index}>{contraindication}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <h5 className="font-semibold mb-2">Representantes:</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {drugClass.representatives.map(drug => (
+                        <Badge key={drug} variant="outline" className="text-xs">{drug}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Informações das classes/medicamentos selecionados */}
       {(selectedClasses.length > 0 || selectedMedications.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -787,6 +902,56 @@ const AntihypertensiveOptimization = () => {
             <p>• <strong>EVITAR:</strong> IECA + BRA, BB + Verapamil/Diltiazem, dupla diurese</p>
             <p>• <strong>Monitorar:</strong> Função renal, K+, Na+, frequência cardíaca, pressão arterial</p>
             <p>• <strong>Individualizar:</strong> Considere idade, comorbidades, efeitos adversos e aderência</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Nova seção: Considerações Especiais */}
+      <Card className="bg-orange-50 border-orange-200">
+        <CardHeader>
+          <CardTitle className="text-orange-900 flex items-center gap-2">
+            <Shield size={20} />
+            Considerações Especiais por População
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-orange-800">
+            <div>
+              <h4 className="font-semibold mb-2">Idosos (≥65 anos):</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Iniciar com doses menores (50% da dose usual)</li>
+                <li>Atenção especial à hipotensão ortostática</li>
+                <li>Evitar alfabloqueadores como primeira escolha</li>
+                <li>Monitorar função renal e eletrólitos</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Diabéticos:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>IECA/BRA são primeira escolha (proteção renal)</li>
+                <li>Evitar betabloqueadores não-seletivos</li>
+                <li>Cuidado com tiazídicos em altas doses</li>
+                <li>Meta pressórica mais rigorosa (&lt;130/80)</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Insuficiência Cardíaca:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>IECA/BRA + betabloqueador + diurético</li>
+                <li>Adicionar espironolactona se FE reduzida</li>
+                <li>Evitar BCC não-dihidropiridínicos</li>
+                <li>Monitorar K+ com duplo bloqueio SRAA</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Doença Renal Crônica:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>IECA/BRA para proteção renal</li>
+                <li>Ajustar doses conforme clearance</li>
+                <li>Monitorar K+ e creatinina semanalmente</li>
+                <li>Evitar duplo bloqueio do SRAA</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
