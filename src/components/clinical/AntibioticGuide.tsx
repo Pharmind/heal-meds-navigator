@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,9 +16,11 @@ import {
   Target,
   Clock,
   Shield,
-  Activity
+  Activity,
+  FileText
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import AntibioticRecommendations from './AntibioticRecommendations';
 
 const AntibioticGuide = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -226,12 +227,28 @@ const AntibioticGuide = () => {
       </div>
 
       <Tabs defaultValue="antibiotics" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="antibiotics">Antibióticos</TabsTrigger>
+          <TabsTrigger value="antibiogram">Antibiograma</TabsTrigger>
           <TabsTrigger value="protocols">Protocolos</TabsTrigger>
           <TabsTrigger value="pathogens">Patógenos</TabsTrigger>
           <TabsTrigger value="monitoring">Monitorização</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="antibiogram" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText size={20} />
+                Recomendações Baseadas no Antibiograma
+              </CardTitle>
+              <CardDescription>
+                Insira os resultados do antibiograma e receba recomendações automáticas de escalonamento ou descalonamento
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <AntibioticRecommendations />
+        </TabsContent>
 
         <TabsContent value="antibiotics" className="space-y-4">
           <Card>
