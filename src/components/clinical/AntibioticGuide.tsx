@@ -422,14 +422,14 @@ const AntibioticGuide = () => {
                       <ul className="text-sm space-y-1">
                         <li><strong>Nível vale:</strong> 15-20mg/L (graves), 10-15mg/L (outras)</li>
                         <li><strong>Coleta:</strong> Antes da 4ª dose</li>
-                        <li><strong>AUC/MIC:</strong> Alvo >400</li>
+                        <li><strong>AUC/MIC:</strong> Alvo maior que 400</li>
                       </ul>
                     </div>
                     <div className="border rounded-lg p-4">
                       <h4 className="font-semibold mb-2">Aminoglicosídeos</h4>
                       <ul className="text-sm space-y-1">
-                        <li><strong>Gentamicina:</strong> Vale <2mg/L, Pico 5-10mg/L</li>
-                        <li><strong>Amicacina:</strong> Vale <5mg/L, Pico 20-30mg/L</li>
+                        <li><strong>Gentamicina:</strong> Vale menor que 2mg/L, Pico 5-10mg/L</li>
+                        <li><strong>Amicacina:</strong> Vale menor que 5mg/L, Pico 20-30mg/L</li>
                         <li><strong>Coleta:</strong> Vale antes da dose, pico 30min após</li>
                       </ul>
                     </div>
@@ -440,7 +440,7 @@ const AntibioticGuide = () => {
                       <AlertDescription>
                         <strong>Ajustes para Função Renal</strong><br/>
                         ClCr 30-50: Reduzir dose 25-50%<br/>
-                        ClCr <30: Ajuste individualizado<br/>
+                        ClCr menor que 30: Ajuste individualizado<br/>
                         Diálise: Dose pós-sessão
                       </AlertDescription>
                     </Alert>
