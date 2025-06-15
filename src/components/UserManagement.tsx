@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +34,7 @@ interface UserPermission {
   has_access: boolean;
 }
 
-type ModuleName = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation';
+type ModuleName = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'round-reports';
 
 const MODULES: { id: ModuleName; name: string }[] = [
   { id: 'search', name: 'Busca Geral' },
@@ -52,7 +51,8 @@ const MODULES: { id: ModuleName; name: string }[] = [
   { id: 'pictogram', name: 'Pictograma' },
   { id: 'discharge-guidelines', name: 'Orientações de Alta' },
   { id: 'drug-interactions', name: 'Interações Medicamentosas' },
-  { id: 'treatment-estimation', name: 'Estimativa de Tratamento' }
+  { id: 'treatment-estimation', name: 'Estimativa de Tratamento' },
+  { id: 'round-reports', name: 'Relatórios de Round' }
 ];
 
 const UserManagement = () => {

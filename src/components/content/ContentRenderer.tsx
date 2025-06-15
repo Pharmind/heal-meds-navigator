@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,10 +11,11 @@ import HighAlertSection from '@/components/clinical/HighAlertSection';
 import ElderlySection from '@/components/clinical/ElderlySection';
 import SequentialTherapySection from '@/components/clinical/SequentialTherapySection';
 import MultiprofessionalRound from '@/components/clinical/MultiprofessionalRound';
+import RoundReportsSection from '@/components/clinical/RoundReportsSection';
 import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round' | 'user-management';
+type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round' | 'round-reports' | 'user-management';
 
 interface ContentRendererProps {
   selectedSection: Section;
@@ -93,6 +93,7 @@ const ContentRenderer = ({
     'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
     'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />,
     'multiprofessional-round': <MultiprofessionalRound />,
+    'round-reports': <RoundReportsSection />,
     'user-management': <UserManagement />
   };
 
