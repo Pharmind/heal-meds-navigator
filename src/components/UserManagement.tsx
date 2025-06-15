@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,7 +35,7 @@ interface UserPermission {
   has_access: boolean;
 }
 
-type ModuleName = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'round-reports';
+type ModuleName = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round' | 'round-reports';
 
 const MODULES: { id: ModuleName; name: string }[] = [
   { id: 'search', name: 'Busca Geral' },
@@ -52,6 +53,7 @@ const MODULES: { id: ModuleName; name: string }[] = [
   { id: 'discharge-guidelines', name: 'Orientações de Alta' },
   { id: 'drug-interactions', name: 'Interações Medicamentosas' },
   { id: 'treatment-estimation', name: 'Estimativa de Tratamento' },
+  { id: 'multiprofessional-round', name: 'Round Multiprofissional' },
   { id: 'round-reports', name: 'Relatórios de Round' }
 ];
 
@@ -122,7 +124,7 @@ const UserManagement = () => {
         .from('user_module_permissions')
         .upsert({
           user_id: userId,
-          module_name: moduleId,
+          module_name: moduleId as any,
           has_access: hasAccess,
           granted_by: profile.id,
           granted_at: new Date().toISOString(),
@@ -187,7 +189,7 @@ const UserManagement = () => {
 
       const permissionUpdates = MODULES.map(module => ({
         user_id: userId,
-        module_name: module.id,
+        module_name: module.id as any,
         has_access: true,
         granted_by: profile.id,
         granted_at: new Date().toISOString(),

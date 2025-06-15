@@ -9,51 +9,60 @@ import MenuSection from '@/components/sidebar/MenuSection';
 import EmptyStateMessage from '@/components/sidebar/EmptyStateMessage';
 
 interface AppSidebarProps {
-  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round') => void;
+  onSectionChange: (section: 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'multiprofessional-round' | 'round-reports') => void;
   selectedSection: string;
 }
 
 const AppSidebar = ({ onSectionChange, selectedSection }: AppSidebarProps) => {
   const isMobile = useIsMobile();
-  const { padronizacaoItems, farmaciaClinicaItems } = useSidebarMenuItems();
-  const [openSections, setOpenSections] = useState({
-    padronizacao: true,
-    farmaciaClinica: false
+  const { menuItems } = useSidebarMenuItems();
+  const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({});
+
+  // Initialize open sections based on menu items
+  useState(() => {
+    const initialOpenSections: {[key: string]: boolean} = {};
+    menuItems.forEach((group, index) => {
+      initialOpenSections[group.title] = index === 0; // First group open by default
+    });
+    setOpenSections(initialOpenSections);
   });
 
-  const toggleSection = (section: 'padronizacao' | 'farmaciaClinica') => {
+  const toggleSection = (sectionTitle: string) => {
     setOpenSections(prev => ({
       ...prev,
-      [section]: !prev[section]
+      [sectionTitle]: !prev[sectionTitle]
     }));
   };
 
-  const hasAnyItems = padronizacaoItems.length > 0 || farmaciaClinicaItems.length > 0;
+  const hasAnyItems = menuItems.length > 0;
 
   return (
     <div className="h-full flex flex-col bg-white min-h-screen">
       <SidebarHeader />
       
       <div className={`flex-1 ${isMobile ? 'px-2 py-3' : 'px-4 py-6'} bg-gradient-to-b from-gray-50 to-white overflow-y-auto`}>
-        <MenuSection
-          title="Padronizado"
-          icon={Database}
-          isOpen={openSections.padronizacao}
-          onToggle={() => toggleSection('padronizacao')}
-          items={padronizacaoItems}
-          selectedSection={selectedSection}
-          onSectionChange={onSectionChange}
-        />
+        {menuItems.map((group) => {
+          // Map the group data to MenuSection props
+          const menuSectionItems = group.items.map(item => ({
+            id: item.section,
+            label: item.title,
+            icon: item.icon,
+            color: 'text-heal-green-600' // Default color
+          }));
 
-        <MenuSection
-          title="Farmácia Clínica"
-          icon={Heart}
-          isOpen={openSections.farmaciaClinica}
-          onToggle={() => toggleSection('farmaciaClinica')}
-          items={farmaciaClinicaItems}
-          selectedSection={selectedSection}
-          onSectionChange={onSectionChange}
-        />
+          return (
+            <MenuSection
+              key={group.title}
+              title={group.title}
+              icon={group.title === 'Padronizado' ? Database : Heart}
+              isOpen={openSections[group.title] || false}
+              onToggle={() => toggleSection(group.title)}
+              items={menuSectionItems}
+              selectedSection={selectedSection}
+              onSectionChange={onSectionChange}
+            />
+          );
+        })}
 
         {!hasAnyItems && <EmptyStateMessage />}
       </div>
