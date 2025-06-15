@@ -24,6 +24,7 @@ interface Interaction {
 }
 
 const AntihypertensiveOptimization = () => {
+  // All hooks must be called at the top level, before any conditional logic
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
   const [currentInteraction, setCurrentInteraction] = useState<Interaction | null>(null);
@@ -267,7 +268,10 @@ const AntihypertensiveOptimization = () => {
   ];
 
   const handleClassClick = (classId: string) => {
-    if (viewMode !== 'classes') return;
+    // Only process if in classes mode
+    if (viewMode !== 'classes') {
+      return;
+    }
     
     let newSelection: string[];
     
