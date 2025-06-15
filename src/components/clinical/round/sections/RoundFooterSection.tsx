@@ -33,7 +33,7 @@ export const RoundFooterSection: React.FC<RoundFooterSectionProps> = ({
             </Label>
             <Textarea
               id="present_professionals"
-              value={formData.present_professionals}
+              value={(formData.present_professionals as string) || ''}
               onChange={(e) => updateFormData('present_professionals', e.target.value)}
               placeholder="Ex: Dr. João Silva (Médico), Ana Santos (Enfermeira), Carlos Lima (Farmacêutico)..."
               rows={3}
@@ -48,7 +48,7 @@ export const RoundFooterSection: React.FC<RoundFooterSectionProps> = ({
             <Input
               id="next_evaluation"
               type="date"
-              value={formData.next_evaluation}
+              value={(formData.next_evaluation as string) || ''}
               onChange={(e) => updateFormData('next_evaluation', e.target.value)}
               className="w-full"
             />

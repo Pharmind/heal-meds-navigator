@@ -120,6 +120,17 @@ export const useRoundData = () => {
 
     setIsLoading(true);
     try {
+      // Validações básicas
+      if (!formData.patient_name?.trim()) {
+        toast.error('Nome do paciente é obrigatório');
+        return null;
+      }
+      
+      if (!formData.bed?.trim()) {
+        toast.error('Leito é obrigatório');
+        return null;
+      }
+
       // Primeiro, criar ou encontrar o paciente
       const patientData = {
         patient_name: formData.patient_name,

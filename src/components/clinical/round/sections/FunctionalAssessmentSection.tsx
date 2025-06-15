@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -63,7 +64,7 @@ export const FunctionalAssessmentSection: React.FC<FunctionalAssessmentSectionPr
                   </Label>
                   <Textarea
                     id={`${item.key}_obs`}
-                    value={formData[item.obsKey] as string}
+                    value={(formData[item.obsKey] as string) || ''}
                     onChange={(e) => updateFormData(item.obsKey, e.target.value)}
                     placeholder={`Observações sobre ${item.label.toLowerCase()}`}
                     className="w-full"
