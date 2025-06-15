@@ -7,8 +7,6 @@ import { FileText, BarChart3, Download, Calendar, TrendingUp, PieChart, AlertCir
 import { useRoundData } from '@/hooks/useRoundData';
 import { useRoundReports } from '@/hooks/useRoundReports';
 import { RoundReportModal } from '@/components/clinical/round/components/RoundReportModal';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 const RoundReportsSection = () => {
   const { rounds, isLoading } = useRoundData();
@@ -30,16 +28,18 @@ const RoundReportsSection = () => {
   // Dados para período específico (últimos 30 dias)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const last30DaysMetrics = useRoundReports(rounds.filter(round => 
+  const last30DaysRounds = rounds.filter(round => 
     new Date(round.round_date) >= thirtyDaysAgo
-  )).metrics;
+  );
+  const last30DaysMetrics = useRoundReports(last30DaysRounds).metrics;
 
   // Dados para período específico (últimos 7 dias)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const last7DaysMetrics = useRoundReports(rounds.filter(round => 
+  const last7DaysRounds = rounds.filter(round => 
     new Date(round.round_date) >= sevenDaysAgo
-  )).metrics;
+  );
+  const last7DaysMetrics = useRoundReports(last7DaysRounds).metrics;
 
   return (
     <div className="space-y-6">
