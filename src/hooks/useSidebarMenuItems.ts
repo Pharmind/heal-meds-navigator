@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import {
   Search,
@@ -39,7 +40,8 @@ interface MenuItem {
     | "drug-interactions"
     | "treatment-estimation"
     | "multiprofessional-round"
-    | "round-reports";
+    | "round-reports"
+    | "calculator";
   hasAccess: boolean;
 }
 
@@ -149,6 +151,17 @@ export const useSidebarMenuItems = () => {
           icon: Calculator,
           section: "treatment-estimation" as const,
           hasAccess: hasPermission("treatment-estimation")
+        }
+      ]
+    },
+    {
+      title: "Calculadora",
+      items: [
+        {
+          title: "Calculadoras Médicas",
+          icon: Calculator,
+          section: "calculator" as const,
+          hasAccess: hasPermission("calculator")
         }
       ]
     },
