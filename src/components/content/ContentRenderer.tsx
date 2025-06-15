@@ -17,7 +17,7 @@ import MedicalCalculators from '@/components/medical/MedicalCalculators';
 import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'therapeutic-alternatives' | 'multiprofessional-round' | 'round-reports' | 'calculator' | 'user-management';
+type Section = 'search' | 'medications' | 'materials' | 'diets' | 'intoxication' | 'high-alert' | 'elderly' | 'sequential-therapy' | 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'therapeutic-alternatives' | 'antihypertensive-optimization' | 'multiprofessional-round' | 'round-reports' | 'calculator' | 'user-management';
 
 interface ContentRendererProps {
   selectedSection: Section;
@@ -95,6 +95,7 @@ const ContentRenderer = ({
     'drug-interactions': <ClinicalPharmacy activeTab="drug-interactions" />,
     'treatment-estimation': <ClinicalPharmacy activeTab="treatment-estimation" />,
     'therapeutic-alternatives': <ClinicalPharmacy activeTab="therapeutic-alternatives" />,
+    'antihypertensive-optimization': <ClinicalPharmacy activeTab="antihypertensive-optimization" />,
     'multiprofessional-round': <MultiprofessionalRound />,
     'round-reports': <RoundReportsSection />,
     'calculator': <MedicalCalculators />,

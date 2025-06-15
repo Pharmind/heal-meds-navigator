@@ -17,7 +17,8 @@ import {
   Calculator,
   Stethoscope,
   FileBarChart,
-  RefreshCw
+  RefreshCw,
+  Heart
 } from 'lucide-react';
 
 interface MenuItem {
@@ -40,6 +41,7 @@ interface MenuItem {
     | "drug-interactions"
     | "treatment-estimation"
     | "therapeutic-alternatives"
+    | "antihypertensive-optimization"
     | "multiprofessional-round"
     | "round-reports"
     | "calculator";
@@ -158,6 +160,12 @@ export const useSidebarMenuItems = () => {
           icon: RefreshCw,
           section: "therapeutic-alternatives" as const,
           hasAccess: hasPermission("therapeutic-alternatives")
+        },
+        {
+          title: "Otimização Anti-hipertensiva",
+          icon: Heart,
+          section: "antihypertensive-optimization" as const,
+          hasAccess: hasPermission("antihypertensive-optimization")
         }
       ]
     },
