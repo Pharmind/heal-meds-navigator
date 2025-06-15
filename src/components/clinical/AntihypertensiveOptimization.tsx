@@ -18,7 +18,7 @@ interface DrugClass {
 
 interface Interaction {
   classes: string[];
-  type: 'preferencial' | 'nao-recomendada' | 'possivel';
+  type: 'preferencial' | 'nao-recomendada' | 'possivel' | 'cuidado';
   recommendation: string;
   alternative: string;
 }
@@ -29,108 +29,226 @@ const AntihypertensiveOptimization = () => {
 
   const drugClasses: DrugClass[] = [
     {
-      id: 'diureticos',
+      id: 'diureticos-tiazidicos',
       name: 'Diuréticos tiazídicos',
-      shortName: 'Diuréticos',
+      shortName: 'Tiazídicos',
       representatives: ['Hidroclorotiazida', 'Clortalidona', 'Indapamida'],
-      position: { x: 50, y: 10 },
+      position: { x: 50, y: 5 },
       color: 'bg-yellow-500'
+    },
+    {
+      id: 'diureticos-ansa',
+      name: 'Diuréticos de alça',
+      shortName: 'Alça',
+      representatives: ['Furosemida', 'Bumetanida', 'Torasemida'],
+      position: { x: 20, y: 15 },
+      color: 'bg-yellow-600'
+    },
+    {
+      id: 'diureticos-poupadores',
+      name: 'Diuréticos poupadores de K+',
+      shortName: 'Poup. K+',
+      representatives: ['Espironolactona', 'Amilorida', 'Eplerenona'],
+      position: { x: 80, y: 15 },
+      color: 'bg-yellow-400'
     },
     {
       id: 'betabloqueadores',
       name: 'Betabloqueadores',
       shortName: 'BB',
-      representatives: ['Propranolol', 'Metoprolol', 'Atenolol', 'Carvedilol'],
-      position: { x: 10, y: 50 },
+      representatives: ['Propranolol', 'Metoprolol', 'Atenolol', 'Carvedilol', 'Bisoprolol'],
+      position: { x: 15, y: 40 },
       color: 'bg-blue-500'
     },
     {
       id: 'bra',
       name: 'Bloqueadores dos receptores da angiotensina',
       shortName: 'BRA',
-      representatives: ['Losartana', 'Valsartana', 'Telmisartana'],
-      position: { x: 90, y: 30 },
+      representatives: ['Losartana', 'Valsartana', 'Telmisartana', 'Irbesartana'],
+      position: { x: 85, y: 35 },
       color: 'bg-green-500'
     },
     {
       id: 'ieca',
       name: 'Inibidores da ECA',
       shortName: 'IECA',
-      representatives: ['Enalapril', 'Captopril', 'Lisinopril'],
-      position: { x: 50, y: 90 },
+      representatives: ['Enalapril', 'Captopril', 'Lisinopril', 'Ramipril'],
+      position: { x: 50, y: 85 },
       color: 'bg-purple-500'
     },
     {
-      id: 'calcio',
-      name: 'Bloqueadores dos canais de cálcio',
-      shortName: 'BCC',
-      representatives: ['Amlodipina', 'Nifedipina', 'Verapamil', 'Diltiazem'],
-      position: { x: 90, y: 70 },
+      id: 'bcc-dihidropiridinas',
+      name: 'BCC Dihidropiridínicos',
+      shortName: 'BCC-DHP',
+      representatives: ['Amlodipina', 'Nifedipina', 'Felodipina', 'Lercanidipina'],
+      position: { x: 85, y: 65 },
       color: 'bg-red-500'
     },
     {
-      id: 'outros',
-      name: 'Outros anti-hipertensivos',
-      shortName: 'Outros',
-      representatives: ['Clonidina', 'Doxazosina', 'Hidralazina'],
-      position: { x: 10, y: 90 },
-      color: 'bg-gray-500'
+      id: 'bcc-nao-dihidropiridinas',
+      name: 'BCC Não-Dihidropiridínicos',
+      shortName: 'BCC-NDHP',
+      representatives: ['Verapamil', 'Diltiazem'],
+      position: { x: 70, y: 85 },
+      color: 'bg-red-600'
+    },
+    {
+      id: 'alfabloqueadores',
+      name: 'Alfabloqueadores',
+      shortName: 'Alfa-Bloq',
+      representatives: ['Doxazosina', 'Prazosina', 'Terazosina'],
+      position: { x: 15, y: 70 },
+      color: 'bg-orange-500'
+    },
+    {
+      id: 'acao-central',
+      name: 'Ação Central',
+      shortName: 'Centrais',
+      representatives: ['Clonidina', 'Metildopa', 'Moxonidina'],
+      position: { x: 30, y: 90 },
+      color: 'bg-gray-600'
+    },
+    {
+      id: 'vasodilatadores',
+      name: 'Vasodilatadores diretos',
+      shortName: 'Vasodil.',
+      representatives: ['Hidralazina', 'Minoxidil'],
+      position: { x: 30, y: 10 },
+      color: 'bg-pink-500'
+    },
+    {
+      id: 'inibidores-renina',
+      name: 'Inibidores da renina',
+      shortName: 'I-Renina',
+      representatives: ['Alisquireno'],
+      position: { x: 70, y: 10 },
+      color: 'bg-teal-500'
     }
   ];
 
   const interactions: Interaction[] = [
-    // Combinações preferenciais
+    // Combinações PREFERENCIAIS (Primeira linha)
     {
-      classes: ['diureticos', 'ieca'],
+      classes: ['diureticos-tiazidicos', 'ieca'],
       type: 'preferencial',
-      recommendation: 'Combinação preferencial - excelente sinergia terapêutica.',
-      alternative: 'Manter esta combinação, considerada primeira linha.'
+      recommendation: 'Combinação de primeira linha - excelente sinergia terapêutica e proteção cardiovascular.',
+      alternative: 'Manter esta combinação. É considerada padrão-ouro para hipertensão essencial.'
     },
     {
-      classes: ['diureticos', 'bra'],
+      classes: ['diureticos-tiazidicos', 'bra'],
       type: 'preferencial',
-      recommendation: 'Combinação preferencial - boa tolerabilidade e eficácia.',
-      alternative: 'Manter esta combinação, adequada para hipertensão essencial.'
+      recommendation: 'Combinação de primeira linha - boa tolerabilidade, menor incidência de tosse.',
+      alternative: 'Excelente escolha para pacientes que não toleram IECA.'
     },
     {
-      classes: ['calcio', 'ieca'],
+      classes: ['bcc-dihidropiridinas', 'ieca'],
       type: 'preferencial',
-      recommendation: 'Combinação preferencial - proteção cardiovascular.',
-      alternative: 'Excelente para pacientes com risco cardiovascular aumentado.'
+      recommendation: 'Combinação de primeira linha - proteção cardiovascular e renal.',
+      alternative: 'Ideal para pacientes com risco cardiovascular aumentado ou diabéticos.'
     },
     {
-      classes: ['calcio', 'bra'],
+      classes: ['bcc-dihidropiridinas', 'bra'],
       type: 'preferencial',
-      recommendation: 'Combinação preferencial - boa eficácia anti-hipertensiva.',
-      alternative: 'Adequada especialmente para idosos e diabéticos.'
+      recommendation: 'Combinação de primeira linha - boa eficácia e tolerabilidade.',
+      alternative: 'Especialmente adequada para idosos e pacientes diabéticos.'
     },
-    
-    // Combinações não recomendadas
+    {
+      classes: ['diureticos-tiazidicos', 'bcc-dihidropiridinas'],
+      type: 'preferencial',
+      recommendation: 'Combinação de primeira linha - complementaridade de mecanismos.',
+      alternative: 'Boa opção quando IECA/BRA não são tolerados.'
+    },
+
+    // Combinações POSSÍVEIS (Segunda linha)
+    {
+      classes: ['betabloqueadores', 'diureticos-tiazidicos'],
+      type: 'possivel',
+      recommendation: 'Combinação possível, mas atenção aos efeitos metabólicos (glicemia, lipídios).',
+      alternative: 'Monitore glicemia e perfil lipídico. Prefira IECA/BRA + diurético se possível.'
+    },
+    {
+      classes: ['betabloqueadores', 'bcc-dihidropiridinas'],
+      type: 'possivel',
+      recommendation: 'Combinação aceitável com BCC dihidropiridínicos (amlodipina, nifedipina).',
+      alternative: 'Evite verapamil/diltiazem. Prefira amlodipina com betabloqueadores.'
+    },
+    {
+      classes: ['diureticos-poupadores', 'ieca'],
+      type: 'possivel',
+      recommendation: 'Combinação útil em ICC, mas monitore potássio rigorosamente.',
+      alternative: 'Ideal para insuficiência cardíaca. Controle K+ sérico regularmente.'
+    },
+    {
+      classes: ['diureticos-poupadores', 'bra'],
+      type: 'possivel',
+      recommendation: 'Combinação com risco de hipercalemia - monitoração intensiva necessária.',
+      alternative: 'Use apenas se estritamente necessário. Monitore função renal e K+.'
+    },
+    {
+      classes: ['alfabloqueadores', 'diureticos-tiazidicos'],
+      type: 'possivel',
+      recommendation: 'Combinação de segunda linha para hiperplasia prostática benigna.',
+      alternative: 'Útil em homens com HAS e sintomas prostáticos.'
+    },
+    {
+      classes: ['diureticos-ansa', 'ieca'],
+      type: 'possivel',
+      recommendation: 'Combinação para ICC com sobrecarga hídrica.',
+      alternative: 'Reservado para insuficiência cardíaca descompensada.'
+    },
+
+    // Combinações com CUIDADO
+    {
+      classes: ['diureticos-tiazidicos', 'diureticos-ansa'],
+      type: 'cuidado',
+      recommendation: 'Dupla diurese - risco de desidratação e distúrbios eletrolíticos.',
+      alternative: 'Use apenas em casos específicos (ICC grave). Monitore função renal e eletrólitos.'
+    },
+    {
+      classes: ['betabloqueadores', 'acao-central'],
+      type: 'cuidado',
+      recommendation: 'Risco de bradicardia excessiva e hipotensão.',
+      alternative: 'Monitore FC e PA. Considere reduzir doses ou trocar por outras classes.'
+    },
+    {
+      classes: ['vasodilatadores', 'betabloqueadores'],
+      type: 'cuidado',
+      recommendation: 'Hidralazina pode causar taquicardia reflexa - BB pode ser protetor.',
+      alternative: 'Combinação específica para casos refratários. Inicie BB antes.'
+    },
+
+    // Combinações NÃO RECOMENDADAS
     {
       classes: ['ieca', 'bra'],
       type: 'nao-recomendada',
-      recommendation: 'Combinação não recomendada - risco de hipercalemia e piora da função renal.',
-      alternative: 'Substitua por: IECA + Bloqueador de canal de cálcio ou IECA + Diurético tiazídico.'
+      recommendation: 'CONTRAINDICADO - Duplo bloqueio do SRAA aumenta risco de hipercalemia e injúria renal.',
+      alternative: 'NUNCA combine. Use IECA + BCC dihidropiridínico ou IECA + diurético tiazídico.'
     },
     {
-      classes: ['betabloqueadores', 'calcio'],
+      classes: ['betabloqueadores', 'bcc-nao-dihidropiridinas'],
       type: 'nao-recomendada',
-      recommendation: 'Combinação não recomendada com verapamil/diltiazem - risco de bloqueio cardíaco.',
-      alternative: 'Use Betabloqueador + Amlodipina (di-hidropiridínico) ou substitua por IECA/BRA.'
-    },
-    
-    // Combinações possíveis mas menos testadas
-    {
-      classes: ['betabloqueadores', 'diureticos'],
-      type: 'possivel',
-      recommendation: 'Combinação possível, mas atenção aos efeitos metabólicos.',
-      alternative: 'Monitore glicemia e perfil lipídico. Considere IECA + Diurético se houver alterações.'
+      recommendation: 'CONTRAINDICADO - Verapamil/Diltiazem + BB causam bloqueio cardíaco grave.',
+      alternative: 'Substitua por: BB + BCC dihidropiridínico (amlodipina) ou IECA + BCC.'
     },
     {
-      classes: ['outros', 'diureticos'],
-      type: 'possivel',
-      recommendation: 'Combinação de segunda linha - pode ser usada em casos específicos.',
-      alternative: 'Prefira combinações de primeira linha quando possível.'
+      classes: ['diureticos-poupadores', 'inibidores-renina'],
+      type: 'nao-recomendada',
+      recommendation: 'Alto risco de hipercalemia grave.',
+      alternative: 'Evite esta combinação. Use diurético tiazídico + inibidor da renina.'
+    },
+    {
+      classes: ['acao-central', 'alfabloqueadores'],
+      type: 'nao-recomendada',
+      recommendation: 'Risco de hipotensão ortostática grave, especialmente em idosos.',
+      alternative: 'Evite. Prefira IECA/BRA + diurético ou BCC.'
+    },
+
+    // Tripla terapia padrão (simulando seleção de 3)
+    {
+      classes: ['diureticos-tiazidicos', 'ieca', 'bcc-dihidropiridinas'],
+      type: 'preferencial',
+      recommendation: 'TRIPLA TERAPIA IDEAL - Combinação padrão-ouro para casos que não respondem à dupla terapia.',
+      alternative: 'Esta é a melhor combinação para tripla terapia. Mantenha as três classes.'
     }
   ];
 
@@ -139,15 +257,16 @@ const AntihypertensiveOptimization = () => {
     
     if (selectedClasses.includes(classId)) {
       newSelection = selectedClasses.filter(id => id !== classId);
-    } else if (selectedClasses.length < 2) {
+    } else if (selectedClasses.length < 3) {
       newSelection = [...selectedClasses, classId];
     } else {
-      newSelection = [selectedClasses[1], classId];
+      // Se já tem 3 selecionados, remove o primeiro e adiciona o novo
+      newSelection = [...selectedClasses.slice(1), classId];
     }
     
     setSelectedClasses(newSelection);
     
-    if (newSelection.length === 2) {
+    if (newSelection.length >= 2) {
       const interaction = findInteraction(newSelection);
       setCurrentInteraction(interaction);
     } else {
@@ -156,15 +275,58 @@ const AntihypertensiveOptimization = () => {
   };
 
   const findInteraction = (classes: string[]): Interaction | null => {
-    return interactions.find(interaction => 
-      interaction.classes.length === classes.length &&
-      interaction.classes.every(cls => classes.includes(cls))
-    ) || {
-      classes,
-      type: 'possivel',
-      recommendation: 'Combinação não amplamente estudada - usar com cautela.',
-      alternative: 'Considere usar combinações de primeira linha com mais evidências.'
-    };
+    // Procura por combinação exata
+    let interaction = interactions.find(int => 
+      int.classes.length === classes.length &&
+      int.classes.every(cls => classes.includes(cls))
+    );
+
+    // Se não encontrou combinação exata e tem mais de 2 classes, procura por pares problemáticos
+    if (!interaction && classes.length > 2) {
+      // Verifica se há alguma combinação não recomendada entre os pares
+      for (let i = 0; i < classes.length; i++) {
+        for (let j = i + 1; j < classes.length; j++) {
+          const pairInteraction = interactions.find(int =>
+            int.type === 'nao-recomendada' &&
+            int.classes.length === 2 &&
+            int.classes.includes(classes[i]) &&
+            int.classes.includes(classes[j])
+          );
+          if (pairInteraction) {
+            return {
+              classes,
+              type: 'nao-recomendada',
+              recommendation: `Combinação contém par problemático: ${getDrugClassName(classes[i])} + ${getDrugClassName(classes[j])}. ${pairInteraction.recommendation}`,
+              alternative: pairInteraction.alternative
+            };
+          }
+        }
+      }
+
+      // Se não há pares problemáticos, considera como possível mas complexa
+      return {
+        classes,
+        type: 'cuidado',
+        recommendation: 'Combinação múltipla - requer monitoração intensiva de efeitos adversos e interações.',
+        alternative: 'Considere simplificar o esquema. Avalie se tripla terapia padrão (Tiazídico + IECA/BRA + BCC-DHP) não seria mais apropriada.'
+      };
+    }
+
+    // Se não encontrou nada específico para dupla terapia
+    if (!interaction && classes.length === 2) {
+      return {
+        classes,
+        type: 'possivel',
+        recommendation: 'Combinação não amplamente estudada - usar com cautela e monitoração.',
+        alternative: 'Considere usar combinações de primeira linha com mais evidências clínicas.'
+      };
+    }
+
+    return interaction;
+  };
+
+  const getDrugClassName = (classId: string): string => {
+    return drugClasses.find(cls => cls.id === classId)?.shortName || classId;
   };
 
   const resetSelection = () => {
@@ -178,6 +340,8 @@ const AntihypertensiveOptimization = () => {
         return <CheckCircle className="text-green-600" size={20} />;
       case 'nao-recomendada':
         return <AlertTriangle className="text-red-600" size={20} />;
+      case 'cuidado':
+        return <AlertTriangle className="text-orange-600" size={20} />;
       default:
         return <Info className="text-yellow-600" size={20} />;
     }
@@ -189,8 +353,23 @@ const AntihypertensiveOptimization = () => {
         return 'border-green-200 bg-green-50';
       case 'nao-recomendada':
         return 'border-red-200 bg-red-50';
+      case 'cuidado':
+        return 'border-orange-200 bg-orange-50';
       default:
         return 'border-yellow-200 bg-yellow-50';
+    }
+  };
+
+  const getInteractionTitle = (type: string) => {
+    switch (type) {
+      case 'preferencial':
+        return 'Combinação Preferencial ✅';
+      case 'nao-recomendada':
+        return 'Combinação NÃO Recomendada ⛔';
+      case 'cuidado':
+        return 'Combinação com Cuidado ⚠️';
+      default:
+        return 'Combinação Possível ℹ️';
     }
   };
 
@@ -208,16 +387,11 @@ const AntihypertensiveOptimization = () => {
             Diagrama Interativo de Combinações
           </CardTitle>
           <CardDescription>
-            Clique em duas classes de medicamentos para verificar a compatibilidade e receber recomendações
+            Clique em até 3 classes de medicamentos para verificar a compatibilidade e receber recomendações
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative w-full h-96 border-2 border-gray-200 rounded-lg bg-gray-50 mb-4">
-            {/* Hexágono central representativo */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 border-4 border-gray-300 rounded-lg rotate-45 opacity-20"></div>
-            </div>
-            
             {/* Classes de medicamentos */}
             {drugClasses.map((drugClass) => (
               <div
@@ -233,35 +407,39 @@ const AntihypertensiveOptimization = () => {
                   size="sm"
                   className={`
                     ${selectedClasses.includes(drugClass.id) ? drugClass.color + ' text-white' : 'bg-white'}
-                    hover:scale-105 transition-all duration-200 text-xs min-w-24 h-12
+                    hover:scale-105 transition-all duration-200 text-xs min-w-20 h-10 p-1
                   `}
                   onClick={() => handleClassClick(drugClass.id)}
                 >
                   <div className="text-center">
-                    <div className="font-semibold">{drugClass.shortName}</div>
+                    <div className="font-semibold text-[10px] leading-tight">{drugClass.shortName}</div>
                   </div>
                 </Button>
               </div>
             ))}
 
             {/* Linhas de conexão para classes selecionadas */}
-            {selectedClasses.length === 2 && (
+            {selectedClasses.length >= 2 && (
               <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                {(() => {
-                  const class1 = drugClasses.find(c => c.id === selectedClasses[0]);
-                  const class2 = drugClasses.find(c => c.id === selectedClasses[1]);
+                {selectedClasses.map((classId, index) => {
+                  if (index === 0) return null;
+                  
+                  const class1 = drugClasses.find(c => c.id === selectedClasses[index - 1]);
+                  const class2 = drugClasses.find(c => c.id === classId);
                   if (!class1 || !class2) return null;
                   
-                  const x1 = (class1.position.x / 100) * 100;
-                  const y1 = (class1.position.y / 100) * 100;
-                  const x2 = (class2.position.x / 100) * 100;
-                  const y2 = (class2.position.y / 100) * 100;
+                  const x1 = class1.position.x;
+                  const y1 = class1.position.y;
+                  const x2 = class2.position.x;
+                  const y2 = class2.position.y;
                   
                   const color = currentInteraction?.type === 'preferencial' ? '#22c55e' : 
-                               currentInteraction?.type === 'nao-recomendada' ? '#ef4444' : '#eab308';
+                               currentInteraction?.type === 'nao-recomendada' ? '#ef4444' : 
+                               currentInteraction?.type === 'cuidado' ? '#f97316' : '#eab308';
                   
                   return (
                     <line
+                      key={`${classId}-${index}`}
                       x1={`${x1}%`}
                       y1={`${y1}%`}
                       x2={`${x2}%`}
@@ -271,7 +449,7 @@ const AntihypertensiveOptimization = () => {
                       strokeDasharray={currentInteraction?.type === 'nao-recomendada' ? '8,4' : 'none'}
                     />
                   );
-                })()}
+                })}
               </svg>
             )}
           </div>
@@ -282,23 +460,27 @@ const AntihypertensiveOptimization = () => {
               Limpar Seleção
             </Button>
             <div className="text-sm text-gray-600">
-              Selecionadas: {selectedClasses.length}/2 classes
+              Selecionadas: {selectedClasses.length}/3 classes
             </div>
           </div>
 
           {/* Legenda */}
-          <div className="grid grid-cols-3 gap-4 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-4 h-1 bg-green-500"></div>
-              <span>Combinações preferenciais</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1 bg-red-500 border-dashed border border-red-500"></div>
-              <span>Combinações não recomendadas</span>
+              <span>Preferenciais</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-1 bg-yellow-500"></div>
-              <span>Combinações possíveis</span>
+              <span>Possíveis</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-1 bg-orange-500"></div>
+              <span>Com cuidado</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-1 bg-red-500 border-dashed border border-red-500"></div>
+              <span>Não recomendadas</span>
             </div>
           </div>
         </CardContent>
@@ -306,22 +488,22 @@ const AntihypertensiveOptimization = () => {
 
       {/* Informações das classes selecionadas */}
       {selectedClasses.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {selectedClasses.map(classId => {
             const drugClass = drugClasses.find(c => c.id === classId);
             if (!drugClass) return null;
             
             return (
               <Card key={classId}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{drugClass.name}</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">{drugClass.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div>
-                    <h4 className="font-semibold mb-2">Representantes:</h4>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="font-semibold mb-2 text-sm">Representantes:</h4>
+                    <div className="flex flex-wrap gap-1">
                       {drugClass.representatives.map(drug => (
-                        <Badge key={drug} variant="secondary">{drug}</Badge>
+                        <Badge key={drug} variant="secondary" className="text-xs">{drug}</Badge>
                       ))}
                     </div>
                   </div>
@@ -339,9 +521,7 @@ const AntihypertensiveOptimization = () => {
             {getInteractionIcon(currentInteraction.type)}
             <div className="flex-1">
               <h4 className="font-semibold mb-2">
-                {currentInteraction.type === 'preferencial' && 'Combinação Preferencial'}
-                {currentInteraction.type === 'nao-recomendada' && 'Combinação Não Recomendada'}
-                {currentInteraction.type === 'possivel' && 'Combinação Possível'}
+                {getInteractionTitle(currentInteraction.type)}
               </h4>
               <AlertDescription className="mb-3">
                 {currentInteraction.recommendation}
@@ -359,14 +539,15 @@ const AntihypertensiveOptimization = () => {
       {/* Informações adicionais */}
       <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-blue-900">Diretrizes Gerais</CardTitle>
+          <CardTitle className="text-blue-900">Diretrizes de Combinação</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-blue-800">
-            <p>• <strong>Primeira linha:</strong> IECA/BRA + Diurético tiazídico + Bloqueador de canal de cálcio</p>
-            <p>• <strong>Evitar:</strong> IECA + BRA (risco renal), BB + Verapamil/Diltiazem (risco cardíaco)</p>
-            <p>• <strong>Monitorar:</strong> Função renal, eletrólitos, frequência cardíaca</p>
-            <p>• <strong>Individualizar:</strong> Considere comorbidades, idade e tolerabilidade</p>
+            <p>• <strong>1ª linha (dupla):</strong> IECA/BRA + Tiazídico OU IECA/BRA + BCC-DHP OU Tiazídico + BCC-DHP</p>
+            <p>• <strong>1ª linha (tripla):</strong> IECA/BRA + Tiazídico + BCC dihidropiridínico</p>
+            <p>• <strong>EVITAR:</strong> IECA + BRA, BB + Verapamil/Diltiazem, dupla diurese</p>
+            <p>• <strong>Monitorar:</strong> Função renal, K+, Na+, frequência cardíaca, pressão arterial</p>
+            <p>• <strong>Individualizar:</strong> Considere idade, comorbidades, efeitos adversos e aderência</p>
           </div>
         </CardContent>
       </Card>
