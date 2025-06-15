@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import {
   Search,
@@ -18,7 +19,8 @@ import {
   Stethoscope,
   FileBarChart,
   RefreshCw,
-  Heart
+  Heart,
+  Microscope
 } from 'lucide-react';
 
 interface MenuItem {
@@ -42,6 +44,7 @@ interface MenuItem {
     | "treatment-estimation"
     | "therapeutic-alternatives"
     | "antihypertensive-optimization"
+    | "antibiotic-guide"
     | "multiprofessional-round"
     | "round-reports"
     | "calculator";
@@ -166,6 +169,12 @@ export const useSidebarMenuItems = () => {
           icon: Heart,
           section: "antihypertensive-optimization" as const,
           hasAccess: hasPermission("antihypertensive-optimization")
+        },
+        {
+          title: "Guia ATB",
+          icon: Microscope,
+          section: "antibiotic-guide" as const,
+          hasAccess: hasPermission("antibiotic-guide")
         }
       ]
     },

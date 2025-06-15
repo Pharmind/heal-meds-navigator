@@ -8,14 +8,18 @@ import DrugInteractions from './clinical/DrugInteractions';
 import TreatmentEstimation from './clinical/TreatmentEstimation';
 import TherapeuticAlternatives from './clinical/TherapeuticAlternatives';
 import AntihypertensiveOptimization from './clinical/AntihypertensiveOptimization';
+import AntibioticGuide from './clinical/AntibioticGuide';
 
 interface ClinicalPharmacyProps {
-  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'therapeutic-alternatives' | 'antihypertensive-optimization';
+  activeTab: 'pharmacovigilance' | 'cft' | 'protocols' | 'pictogram' | 'discharge-guidelines' | 'drug-interactions' | 'treatment-estimation' | 'therapeutic-alternatives' | 'antihypertensive-optimization' | 'antibiotic-guide';
 }
 
 const ClinicalPharmacy = ({ activeTab }: ClinicalPharmacyProps) => {
   const renderContent = () => {
     switch (activeTab) {
+      case 'antibiotic-guide':
+        return <AntibioticGuide />;
+        
       case 'antihypertensive-optimization':
         return <AntihypertensiveOptimization />;
         
