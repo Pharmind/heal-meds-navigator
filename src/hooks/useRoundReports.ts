@@ -1,7 +1,7 @@
 
 import { useMemo } from 'react';
 import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
-import { format, subDays, isAfter, isBefore } from 'date-fns';
+import { format, subDays, isAfter, isBefore, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export interface RoundMetrics {
@@ -45,15 +45,20 @@ export const useRoundReports = (rounds: MultiprofessionalRound[]) => {
     if (startDate && endDate) {
       filteredRounds = rounds.filter(round => {
         const roundDate = new Date(round.round_date);
-        return isAfter(roundDate, startDate) && isBefore(roundDate, endDate);
+        return (isAfter(roundDate, startDate) || isSameDay(roundDate, startDate)) && 
+               (isBefore(roundDate, endDate) || isSameDay(roundDate, endDate));
       });
     }
+
+    console.log('Total rounds:', rounds.length);
+    console.log('Filtered rounds:', filteredRounds.length);
 
     const totalRounds = filteredRounds.length;
     
     // Rounds por tipo
     const roundsByType = filteredRounds.reduce((acc, round) => {
-      acc[round.round_type] = (acc[round.round_type] || 0) + 1;
+      const type = round.round_type || 'Não informado';
+      acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -66,20 +71,20 @@ export const useRoundReports = (rounds: MultiprofessionalRound[]) => {
 
     // Intervenções por categoria
     const interventionsByCategory = {
-      pharmacy: filteredRounds.filter(r => r.pharmacy_actions).length,
-      medicine: filteredRounds.filter(r => r.medicine_actions).length,
-      nursing: filteredRounds.filter(r => r.nursing_actions).length,
-      physiotherapy: filteredRounds.filter(r => r.physiotherapy_actions).length,
-      nutrition: filteredRounds.filter(r => r.nutrition_actions).length,
+      pharmacy: filteredRounds.filter(r => r.pharmacy_actions && r.pharmacy_actions.trim() !== '').length,
+      medicine: filteredRounds.filter(r => r.medicine_actions && r.medicine_actions.trim() !== '').length,
+      nursing: filteredRounds.filter(r => r.nursing_actions && r.nursing_actions.trim() !== '').length,
+      physiotherapy: filteredRounds.filter(r => r.physiotherapy_actions && r.physiotherapy_actions.trim() !== '').length,
+      nutrition: filteredRounds.filter(r => r.nutrition_actions && r.nutrition_actions.trim() !== '').length,
     };
 
     // Indicadores clínicos
     const clinicalIndicators = {
-      dvasUsage: filteredRounds.filter(r => r.dvas_usage).length,
-      antibioticTherapy: filteredRounds.filter(r => r.antibiotic_therapy).length,
-      sedationAnalgesia: filteredRounds.filter(r => r.sedation_analgesia).length,
-      tevProphylaxis: filteredRounds.filter(r => r.tev_prophylaxis).length,
-      lamgProphylaxis: filteredRounds.filter(r => r.lamg_prophylaxis).length,
+      dvasUsage: filteredRounds.filter(r => r.dvas_usage === true).length,
+      antibioticTherapy: filteredRounds.filter(r => r.antibiotic_therapy === true).length,
+      sedationAnalgesia: filteredRounds.filter(r => r.sedation_analgesia === true).length,
+      tevProphylaxis: filteredRounds.filter(r => r.tev_prophylaxis === true).length,
+      lamgProphylaxis: filteredRounds.filter(r => r.lamg_prophylaxis === true).length,
     };
 
     // Avaliação funcional
@@ -91,10 +96,9 @@ export const useRoundReports = (rounds: MultiprofessionalRound[]) => {
       diuresisAltered: filteredRounds.filter(r => r.diuresis === 'Alterada').length,
     };
 
-    const dischargeEstimates = filteredRounds.filter(r => r.discharge_estimate).length;
+    const dischargeEstimates = filteredRounds.filter(r => r.discharge_estimate === true).length;
 
     // Dados por período (últimos 30 dias)
-    const thirtyDaysAgo = subDays(new Date(), 30);
     const periodData = [];
     
     for (let i = 29; i >= 0; i--) {
@@ -105,11 +109,11 @@ export const useRoundReports = (rounds: MultiprofessionalRound[]) => {
       
       const interventions = dayRounds.reduce((acc, round) => {
         let count = 0;
-        if (round.pharmacy_actions) count++;
-        if (round.medicine_actions) count++;
-        if (round.nursing_actions) count++;
-        if (round.physiotherapy_actions) count++;
-        if (round.nutrition_actions) count++;
+        if (round.pharmacy_actions && round.pharmacy_actions.trim() !== '') count++;
+        if (round.medicine_actions && round.medicine_actions.trim() !== '') count++;
+        if (round.nursing_actions && round.nursing_actions.trim() !== '') count++;
+        if (round.physiotherapy_actions && round.physiotherapy_actions.trim() !== '') count++;
+        if (round.nutrition_actions && round.nutrition_actions.trim() !== '') count++;
         return acc + count;
       }, 0);
 

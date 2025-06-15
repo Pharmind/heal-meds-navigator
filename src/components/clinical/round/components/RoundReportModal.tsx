@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Download, BarChart3, PieChart, TrendingUp } from 'lucide-react';
+import { Calendar, Download, BarChart3, PieChart, TrendingUp, AlertCircle } from 'lucide-react';
 import { MultiprofessionalRound } from '@/types/multiprofessionalRound';
 import { useRoundReports } from '@/hooks/useRoundReports';
 import { generateRoundReportPDF } from '@/utils/pdfGenerators/roundReportPDF';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 interface RoundReportModalProps {
   rounds: MultiprofessionalRound[];
@@ -29,28 +30,60 @@ export const RoundReportModal: React.FC<RoundReportModalProps> = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
   
   const { metrics, generateMetrics } = useRoundReports(rounds);
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
+      console.log('Iniciando geração do relatório...');
+      
+      if (rounds.length === 0) {
+        toast({
+          title: "Aviso",
+          description: "Não há dados de rounds para gerar o relatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let reportMetrics = metrics;
       
       if (reportType === 'period' && startDate && endDate) {
+        console.log('Gerando métricas para período:', startDate, 'a', endDate);
         reportMetrics = generateMetrics(new Date(startDate), new Date(endDate));
       }
 
-      const pdf = generateRoundReportPDF({
+      console.log('Métricas geradas:', reportMetrics);
+
+      const reportData = {
         metrics: reportMetrics,
         reportType,
         period: startDate && endDate ? { start: startDate, end: endDate } : null,
         generationDate: format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })
-      });
+      };
 
-      pdf.save(`relatorio-rounds-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      console.log('Dados do relatório:', reportData);
+
+      const pdf = generateRoundReportPDF(reportData);
+      const fileName = `relatorio-rounds-${format(new Date(), 'yyyy-MM-dd-HHmm')}.pdf`;
+      
+      pdf.save(fileName);
+      
+      toast({
+        title: "Sucesso",
+        description: "Relatório PDF gerado com sucesso!",
+      });
+      
+      console.log('PDF salvo como:', fileName);
     } catch (error) {
       console.error('Erro ao gerar relatório:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o relatório PDF. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -70,6 +103,18 @@ export const RoundReportModal: React.FC<RoundReportModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Aviso se não há dados */}
+          {rounds.length === 0 && (
+            <Card className="border-orange-200 bg-orange-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-orange-700">
+                  <AlertCircle size={20} />
+                  <span>Não há dados de rounds cadastrados para gerar relatórios.</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Configurações do Relatório */}
           <Card>
             <CardHeader>
@@ -115,111 +160,115 @@ export const RoundReportModal: React.FC<RoundReportModalProps> = ({
             </CardContent>
           </Card>
 
-          {/* Preview das Métricas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total de Rounds</p>
-                    <p className="text-2xl font-bold text-blue-600">{metrics.totalRounds}</p>
-                  </div>
-                  <Calendar className="h-8 w-8 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
+          {rounds.length > 0 && (
+            <>
+              {/* Preview das Métricas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total de Rounds</p>
+                        <p className="text-2xl font-bold text-blue-600">{metrics.totalRounds}</p>
+                      </div>
+                      <Calendar className="h-8 w-8 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Intervenções</p>
-                    <p className="text-2xl font-bold text-green-600">{totalInterventions}</p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Intervenções</p>
+                        <p className="text-2xl font-bold text-green-600">{totalInterventions}</p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-green-500" />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Indicadores</p>
-                    <p className="text-2xl font-bold text-purple-600">{totalClinicalIndicators}</p>
-                  </div>
-                  <BarChart3 className="h-8 w-8 text-purple-500" />
-                </div>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Indicadores</p>
+                        <p className="text-2xl font-bold text-purple-600">{totalClinicalIndicators}</p>
+                      </div>
+                      <BarChart3 className="h-8 w-8 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Est. Alta</p>
-                    <p className="text-2xl font-bold text-orange-600">{metrics.dischargeEstimates}</p>
-                  </div>
-                  <PieChart className="h-8 w-8 text-orange-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Resumo por Categorias */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Intervenções por Área</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(metrics.interventionsByCategory).map(([area, count]) => (
-                  <div key={area} className="flex items-center justify-between">
-                    <span className="capitalize">{area === 'pharmacy' ? 'Farmácia' : 
-                                                  area === 'medicine' ? 'Medicina' :
-                                                  area === 'nursing' ? 'Enfermagem' :
-                                                  area === 'physiotherapy' ? 'Fisioterapia' : 'Nutrição'}</span>
-                    <Badge variant="outline">{count}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Indicadores Clínicos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(metrics.clinicalIndicators).map(([indicator, count]) => (
-                  <div key={indicator} className="flex items-center justify-between">
-                    <span className="text-sm">{
-                      indicator === 'dvasUsage' ? 'DVAs em uso' :
-                      indicator === 'antibioticTherapy' ? 'Antibioticoterapia' :
-                      indicator === 'sedationAnalgesia' ? 'Sedoanalgesia' :
-                      indicator === 'tevProphylaxis' ? 'Profilaxia TEV' : 'Profilaxia LAMG'
-                    }</span>
-                    <Badge variant="secondary">{count}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Rounds por Tipo */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Distribuição por Tipo de Round</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(metrics.roundsByType).map(([type, count]) => (
-                  <Badge key={type} variant="outline" className="px-3 py-1">
-                    {type}: {count}
-                  </Badge>
-                ))}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Est. Alta</p>
+                        <p className="text-2xl font-bold text-orange-600">{metrics.dischargeEstimates}</p>
+                      </div>
+                      <PieChart className="h-8 w-8 text-orange-500" />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Resumo por Categorias */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Intervenções por Área</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {Object.entries(metrics.interventionsByCategory).map(([area, count]) => (
+                      <div key={area} className="flex items-center justify-between">
+                        <span className="capitalize">{area === 'pharmacy' ? 'Farmácia' : 
+                                                      area === 'medicine' ? 'Medicina' :
+                                                      area === 'nursing' ? 'Enfermagem' :
+                                                      area === 'physiotherapy' ? 'Fisioterapia' : 'Nutrição'}</span>
+                        <Badge variant="outline">{count}</Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Indicadores Clínicos</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {Object.entries(metrics.clinicalIndicators).map(([indicator, count]) => (
+                      <div key={indicator} className="flex items-center justify-between">
+                        <span className="text-sm">{
+                          indicator === 'dvasUsage' ? 'DVAs em uso' :
+                          indicator === 'antibioticTherapy' ? 'Antibioticoterapia' :
+                          indicator === 'sedationAnalgesia' ? 'Sedoanalgesia' :
+                          indicator === 'tevProphylaxis' ? 'Profilaxia TEV' : 'Profilaxia LAMG'
+                        }</span>
+                        <Badge variant="secondary">{count}</Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Rounds por Tipo */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Distribuição por Tipo de Round</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(metrics.roundsByType).map(([type, count]) => (
+                      <Badge key={type} variant="outline" className="px-3 py-1">
+                        {type}: {count}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
           {/* Botão de Geração */}
           <div className="flex justify-end gap-2">
@@ -228,7 +277,7 @@ export const RoundReportModal: React.FC<RoundReportModalProps> = ({
             </Button>
             <Button 
               onClick={handleGenerateReport}
-              disabled={isGenerating || (reportType === 'period' && (!startDate || !endDate))}
+              disabled={isGenerating || rounds.length === 0 || (reportType === 'period' && (!startDate || !endDate))}
               className="flex items-center gap-2"
             >
               <Download size={16} />
